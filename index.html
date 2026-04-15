@@ -431,21 +431,20 @@ function scheduleSave(){
 async function persistAll(){
   setSyncStatus('spin','Speichern…');
   try{
-    // Recipes
     const recPayload={recipes:D.recipes,nextId:D.nextId};
     if(dbRecipeId){await sbUpdate('recipes',dbRecipeId,{data:recPayload})}
-    else{const ins=await sbInsert('recipes',{data:recPayload});if(ins&&ins[0])dbRecipeId=ins[0].id}
-    // Week plan
+    else{const ins=await sbInsert('recipes',{data:recPayload});if(ins&&Array.isArray(ins)&&ins[0])dbRecipeId=ins[0].id}
     if(D.weekPlan.days&&D.weekPlan.days.length){
-      if(dbWeekId){await sbUpdate('week_plan',dbWeekId,{data:D.weekPlan})}
-      else{const ins=await sbInsert('week_plan',{data:D.weekPlan});if(ins&&ins[0])dbWeekId=ins[0].id}
+      if(dbWeekId){await sbUpdate('week_plan',dbWeekId,{data:D.weekPlan,updated_at:new Date().toISOString()})}
+      else{const ins=await sbInsert('week_plan',{data:D.weekPlan});if(ins&&Array.isArray(ins)&&ins[0])dbWeekId=ins[0].id}
     }
     setSyncStatus('ok','Synchronisiert');
   }catch(e){setSyncStatus('err','Fehler beim Speichern');console.error(e)}
 }
 
-async function save(msg){
-  scheduleSave();
+async function save(msg, immediate=false){
+  if(immediate){clearTimeout(saveTimer);await persistAll();}
+  else{scheduleSave();}
   if(msg)toast(msg);
 }
 
@@ -671,7 +670,7 @@ async function drawWeek(){
     days:DAYS.map((day,i)=>({day,recipeId:shuffled[i]?shuffled[i].id:null,active:true,portions,note:''})),portions};
   expandedDays.clear();
   closeDrawModal();
-  await save('Woche generiert!');renderWeek();
+  await save('Woche generiert!', true);renderWeek();
 }
 
 // ── Week ──────────────────────────────────────────────────────────────────────
