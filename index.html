@@ -16,7 +16,7 @@
   --bd:rgba(80,81,96,0.15);--bd2:rgba(80,81,96,0.25);
   --green:#598234;--r:12px;--rs:8px;
   --thunder:#505160;--waterfall:#68829E;--moss:#AEBD38;--meadow:#598234;
-  --c-pasta-bg:#f5f0e8;--c-pasta:#8a6830
+  --c-pasta-bg:#f5f0e8;--c-pasta:#8a6830;
   --c-curry-bg:#faeee8;--c-curry:#8a4028;
   --c-suppe-bg:#e8f0f5;--c-suppe:#68829E;
   --c-salat-bg:#eef3e0;--c-salat:#598234;
@@ -111,17 +111,12 @@ textarea{resize:vertical;min-height:60px}
 .day-lbl{font-size:11px;color:var(--text3);margin-bottom:3px;display:flex;align-items:center;gap:6px}
 .day-recipe-name{font-size:14px;font-weight:500;margin-bottom:7px}
 .day-meta{font-size:11px;color:var(--text3);margin-bottom:6px}
-.day-actions{padding:0 14px 10px;display:flex;gap:4px;align-items:center}
-.icon-btn{background:none;border:none;cursor:pointer;color:var(--text3);font-size:13px;padding:2px 4px;border-radius:4px}
-.icon-btn:hover{background:var(--bg2);color:var(--text)}
 .day-detail{border-top:0.5px solid var(--bd);padding:12px 14px;display:none;font-size:13px}
 .day-detail.open{display:block}
 .day-note-input{width:100%;font-size:12px;padding:5px 7px;margin-top:6px;border:0.5px solid var(--bd2);border-radius:var(--rs);background:var(--bg);color:var(--text);font-family:inherit;resize:none;min-height:48px}
 .day-note-input:focus{outline:none;border-color:var(--green)}
 .step-mini{display:flex;gap:7px;align-items:flex-start;padding:3px 0}
 .step-mini-num{width:16px;height:16px;border-radius:50%;background:var(--bg3);color:var(--text2);font-size:10px;font-weight:500;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
-.portions-row{display:flex;align-items:center;gap:6px}
-.portions-row input[type=number]{width:54px}
 .shop-group{margin-bottom:1rem}
 .shop-group-title{font-size:12px;font-weight:500;color:var(--text2);padding-bottom:4px;border-bottom:0.5px solid var(--bd);margin-bottom:6px}
 .shop-item{display:flex;align-items:flex-start;padding:6px 0;border-bottom:0.5px solid var(--bd);font-size:13px;gap:9px}
@@ -151,7 +146,6 @@ textarea{resize:vertical;min-height:60px}
 .login-err{font-size:12px;color:#A32D2D;margin-top:8px;min-height:18px}
 .login-switch{font-size:12px;color:var(--text3);margin-top:12px;text-align:center}
 .login-switch a{color:var(--green);cursor:pointer}
-
 /* Day card action bar */
 .day-actions{padding:8px 10px;display:flex;align-items:center;gap:5px;background:var(--bg2)}
 .icon-btn{
@@ -319,6 +313,7 @@ textarea{resize:vertical;min-height:60px}
     </div>
   </div>
 </div>
+
 <div class="modal-wrap" id="qe-modal" style="display:none">
   <div class="modal" style="max-width:520px">
     <h3>⚡ Schnellerfassung</h3>
@@ -381,19 +376,15 @@ const CATS=['pasta','curry','suppe','salat','auflauf','frühstück','sonstiges']
 const AUFWAND=['einfach','mittel','schwer'];
 const EINHEITEN=['Stück','g','kg','ml','l','EL','TL','Prise','Bund','Dose','Pck.'];
 
-// ── State ────────────────────────────────────────────────────────────────────
 let D={recipes:[],weekPlan:{kw:'',year:0,days:[],portions:2},archive:[],nextId:1};
 let session=null;
 let dbRecipeId=null, dbWeekId=null;
 let rFilters=new Set(), expandedR=null, expandedDays=new Set();
 let shopView='recipe', drawDiff=new Set(['einfach','mittel','schwer']), drawMaxTime=0;
 let saveTimer=null;
-// Archive view state: null = show current week, otherwise = archived week object
 let viewingArchive=null;
 
-// ── Supabase ─────────────────────────────────────────────────────────────────
 let H={'Content-Type':'application/json','apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY};
-
 function setToken(t){H['Authorization']='Bearer '+t;}
 
 async function sbGet(table,filter=''){
@@ -412,7 +403,6 @@ async function sbUpdate(table,id,body){
   return r.json();
 }
 
-// ── Auth ─────────────────────────────────────────────────────────────────────
 async function doLogin(){
   const email=document.getElementById('l-email').value.trim();
   const pw=document.getElementById('l-pw').value;
@@ -451,7 +441,6 @@ function doLogout(){
   document.getElementById('main-screen').style.display='none';
   document.getElementById('login-screen').style.display='flex';
 }
-
 function showRegister(){document.getElementById('login-screen').style.display='none';document.getElementById('register-screen').style.display='flex';}
 function showLogin(){document.getElementById('register-screen').style.display='none';document.getElementById('login-screen').style.display='flex';}
 
@@ -466,10 +455,8 @@ async function onLoggedIn(){
   renderAll();
 }
 
-// ── Load / Save ──────────────────────────────────────────────────────────────
 async function loadData(){
   try{
-    // Recipes
     const recs=await sbGet('recipes','select=id,data');
     if(recs&&recs.length){
       dbRecipeId=recs[0].id;
@@ -480,23 +467,19 @@ async function loadData(){
       const ins=await sbInsert('recipes',{data:{recipes:D.recipes,nextId:D.nextId}});
       if(ins&&ins[0])dbRecipeId=ins[0].id;
     }
-    // Week plan – always exactly one row
     const weeks=await sbGet('week_plan','select=id,data,updated_at');
     if(weeks&&weeks.length){
-      // Use the most recently updated entry
       weeks.sort((a,b)=>new Date(b.updated_at||0)-new Date(a.updated_at||0));
       dbWeekId=weeks[0].id;
       const wp=weeks[0].data;
       if(wp&&wp.days&&wp.days.length) D.weekPlan=wp;
     }
-    // Archive – multiple rows, each is one past week
     const arch=await sbGet('archive','select=id,data,kw,created_at');
     D.archive=Array.isArray(arch)?arch.map(a=>({...a.data,_dbid:a.id})):[];
   }catch(e){setSyncStatus('err','Offline');console.error(e);}
 }
 
 async function saveWeekNow(){
-  // Always update the single week_plan row; create it only if it doesn't exist yet
   setSyncStatus('spin','Speichern…');
   try{
     if(dbWeekId){
@@ -529,7 +512,6 @@ function setSyncStatus(s,l){
 }
 function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),1800);}
 
-// ── Defaults ─────────────────────────────────────────────────────────────────
 const DEFAULTS=[
   {id:1,name:'Spaghetti Pomodoro',cat:'pasta',auf:'einfach',time:25,portions:2,
    ings:[{m:500,u:'g',n:'Spaghetti'},{m:2,u:'Dose',n:'Tomaten'},{m:3,u:'Stück',n:'Knoblauch'},{m:1,u:'Bund',n:'Basilikum'},{m:3,u:'EL',n:'Olivenöl'}],
@@ -575,7 +557,6 @@ const DEFAULTS=[
    steps:['Tofu knusprig braten.','Mango mitbraten.','Kokosmilch und Erdnussbutter einrühren, 10 min köcheln.','Mit Reisnudeln servieren.'],src:null}
 ];
 
-// ── UI ────────────────────────────────────────────────────────────────────────
 function showTab(t){
   ['rezepte','woche','einkauf','archiv'].forEach(id=>document.getElementById('tab-'+id).style.display=id===t?'':'none');
   document.querySelectorAll('.tab').forEach((el,i)=>el.classList.toggle('active',['rezepte','woche','einkauf','archiv'][i]===t));
@@ -591,7 +572,6 @@ function srcHTML(src){
   return`<span class="src-display">📖 ${src.val}${src.seite?', S. '+src.seite:''}</span>`;
 }
 
-// ── Recipes ───────────────────────────────────────────────────────────────────
 function renderRFilters(){
   document.getElementById('r-count').textContent=D.recipes.length+' Rezepte';
   document.getElementById('r-filters').innerHTML=[...CATS,...AUFWAND].map(f=>
@@ -667,27 +647,18 @@ function renderRecipes(){
       </div></div>`:''}
     </div>`;}).join('');
 }
-function toggleER(id){
-  expandedR=expandedR===id?null:id;
-  renderRecipes();
-  initSortable();
-}
+function toggleER(id){expandedR=expandedR===id?null:id;renderRecipes();initSortable();}
 function initSortable(){
   if(expandedR===null)return;
   const listEl=document.getElementById('steps-'+expandedR);
   if(!listEl||typeof Sortable==='undefined')return;
-  // Update step numbers in DOM after drag without re-rendering
   Sortable.create(listEl,{
-    handle:'.drag-handle',
-    animation:150,
+    handle:'.drag-handle',animation:150,
     onEnd:async(evt)=>{
       if(evt.oldIndex===evt.newIndex)return;
-      const r=D.recipes.find(r=>r.id===expandedR);
-      if(!r)return;
-      // Update data model
+      const r=D.recipes.find(r=>r.id===expandedR);if(!r)return;
       const moved=r.steps.splice(evt.oldIndex,1)[0];
       r.steps.splice(evt.newIndex,0,moved);
-      // Update step numbers in DOM only (no full re-render)
       listEl.querySelectorAll('.step-num').forEach((el,i)=>el.textContent=i+1);
       await saveRecipesDebounced();
     }
@@ -723,7 +694,7 @@ async function updR(id,key,val){D.recipes.find(r=>r.id===id)[key]=val;await save
 async function setSrcType(id,type){D.recipes.find(r=>r.id===id).src={type,val:'',seite:''};await saveRecipesDebounced();renderRecipes();}
 async function updSrc(id,key,val){const r=D.recipes.find(r=>r.id===id);if(!r.src)r.src={type:'url',val:'',seite:''};r.src[key]=val;await saveRecipesDebounced();renderRecipes();}
 
-// ── Quick Entry ──────────────────────────────────────────────────────────────
+// ── Quick Entry ───────────────────────────────────────────────────────────────
 function openQE(){
   document.getElementById('qe-name').value='';
   document.getElementById('qe-ings').value='';
@@ -743,24 +714,17 @@ function parseIngredientLine(line){
            .replace(/3⁄4|¾/g,'0.75').replace(/1⁄3|⅓/g,'0.33')
            .replace(/2⁄3|⅔/g,'0.67');
 
-  // Strip filler words: "a/an" after number, "of" before ingredient
-  // e.g. "0.5 a lemon" → "0.5 lemon", "2 cloves of garlic" → "2 cloves garlic"
-  line=line.replace(/^(\d[^\s]*\s+)a\s+/i,'$1').replace(/\bof\s+/gi,'');
+  // Strip filler: "a/an" after number, "of" anywhere
+  line=line.replace(/^(\d[^\s]*\s+)an?\s+/i,'$1').replace(/\bof\s+/gi,'');
 
-  // Handle "N x AMOUNT UNIT name" → extract N as qty, skip the x+amount+unit part
-  // e.g. "2 x 400 g tins of quality plum tomatoes" → 2 Dose plum tomatoes
-  // e.g. "2× 125g mozzarella balls" → 2 Stück mozzarella balls
-  const xRe=/^([0-9]+[.,]?[0-9]*)\s*[×x]\s*(?:[0-9]+[.,]?[0-9]*\s*(?:g|kg|ml|l|grams?|kilograms?)\.?\s+)?(.+)$/i;
-  const xM=line.match(xRe);
-  if(xM){
-    line=`${xM[1]} ${xM[2]}`;
-  }
+  // Handle "N x AMOUNT UNIT name" → keep N, skip the x+amount+unit
+  const xM=line.match(/^([0-9]+[.,]?[0-9]*)\s*[×x]\s*(?:[0-9]+[.,]?[0-9]*\s*(?:g|kg|ml|l|grams?|kilograms?)\.?\s+)?(.+)$/i);
+  if(xM) line=xM[1]+' '+xM[2];
 
   const UNIT_MAP={
     'teaspoons':'TL','teaspoon':'TL','tsp':'TL',
     'tablespoons':'EL','tablespoon':'EL','tbsp':'EL',
-    'grams':'g','gram':'g',
-    'kilograms':'kg','kilogram':'kg',
+    'grams':'g','gram':'g','kilograms':'kg','kilogram':'kg',
     'milliliters':'ml','milliliter':'ml','millilitres':'ml','millilitre':'ml',
     'liters':'l','liter':'l','litres':'l','litre':'l',
     'cups':'cup','cup':'cup',
@@ -775,60 +739,21 @@ function parseIngredientLine(line){
     'Dose':'Dose','Pck.':'Pck.','Stück':'Stück'
   };
 
-  const unitPattern=Object.keys(UNIT_MAP).sort((a,b)=>b.length-a.length)
-    .map(u=>u.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('|');
+  // Static regex — no dynamic construction avoids any escaping issues
+  const UNIT_RE=/^([0-9]+[.,]?[0-9]*)\s*(teaspoons?|tablespoons?|tbsp|tsp|grams?|kilograms?|millilitres?|milliliters?|litres?|liters?|cups?|bunche?s?|cans?|tins?|packs?|packets?|pinche?s?|pieces?|cloves?|kg|ml|EL|TL|Prise|Bund|Dose|Pck\.|Stück|g|l)\.?\s+(.+)$/i;
+  const UNIT_RE2=/^([0-9]+[.,]?[0-9]*)(kg|g|ml|l)\.?\s*(.+)$/i;
 
-  // "400 g spinach" or "2 cloves garlic"
-  const re=new RegExp(`^([0-9]+[.,]?[0-9]*)\\s*(${unitPattern})\\.?\\s+(.+)$`,'i');
-  const m=line.match(re);
-  if(m){
-    const u=UNIT_MAP[m[2].toLowerCase()]||UNIT_MAP[m[2]]||m[2];
-    return{m:parseFloat(m[1].replace(',','.')),u,n:m[3].trim()};
-  }
+  function mapUnit(u){return UNIT_MAP[u.toLowerCase()]||UNIT_MAP[u]||u;}
 
-  // "250g ricotta" (no space between number and unit)
-  const re2=new RegExp(`^([0-9]+[.,]?[0-9]*)(${unitPattern})\\.?\\s+(.+)$`,'i');
-  const m2=line.match(re2);
-  if(m2){
-    const u=UNIT_MAP[m2[2].toLowerCase()]||UNIT_MAP[m2[2]]||m2[2];
-    return{m:parseFloat(m2[1].replace(',','.')),u,n:m2[3].trim()};
-  }
+  let m=line.match(UNIT_RE);
+  if(m)return{m:parseFloat(m[1].replace(',','.')),u:mapUnit(m[2]),n:m[3].trim()};
 
-  // "1 onion", "1 lemon"
-  const re3=/^([0-9]+[.,]?[0-9]*)\s+(.+)$/;
-  const m3=line.match(re3);
-  if(m3)return{m:parseFloat(m3[1].replace(',','.')),u:'Stück',n:m3[2].trim()};
+  m=line.match(UNIT_RE2);
+  if(m)return{m:parseFloat(m[1].replace(',','.')),u:mapUnit(m[2]),n:m[3].trim()};
 
-  // No number: "extra virgin olive oil"
-  return{m:1,u:'Stück',n:line};
+  m=line.match(/^([0-9]+[.,]?[0-9]*)\s+(.+)$/);
+  if(m)return{m:parseFloat(m[1].replace(',','.')),u:'Stück',n:m[2].trim()};
 
-
-  const unitPattern=Object.keys(UNIT_MAP).sort((a,b)=>b.length-a.length)
-    .map(u=>u.replace('.','\\.')).join('|');
-
-  // Pattern: number (unit) name
-  // e.g. "400 g spinach", "2 cloves of garlic", "250g ricotta"
-  const re=new RegExp(`^([0-9]+[.,]?[0-9]*)\\s*(${unitPattern})\\.?\\s+(.+)$`,'i');
-  const m=line.match(re);
-  if(m){
-    const u=UNIT_MAP[m[2].toLowerCase()]||UNIT_MAP[m[2]]||m[2];
-    return{m:parseFloat(m[1].replace(',','.')),u,n:m[3].trim()};
-  }
-
-  // Number directly attached to unit: "250g", "400ml"
-  const re2=new RegExp(`^([0-9]+[.,]?[0-9]*)(${unitPattern})\\.?\\s+(.+)$`,'i');
-  const m2=line.match(re2);
-  if(m2){
-    const u=UNIT_MAP[m2[2].toLowerCase()]||UNIT_MAP[m2[2]]||m2[2];
-    return{m:parseFloat(m2[1].replace(',','.')),u,n:m2[3].trim()};
-  }
-
-  // Number then name (no unit): "1 onion", "2 eggs"
-  const re3=/^([0-9]+[.,]?[0-9]*)\s+(.+)$/;
-  const m3=line.match(re3);
-  if(m3)return{m:parseFloat(m3[1].replace(',','.')),u:'Stück',n:m3[2].trim()};
-
-  // No number: "extra virgin olive oil", "Parmesan cheese"
   return{m:1,u:'Stück',n:line};
 }
 
@@ -840,13 +765,7 @@ async function saveQE(){
   const ings=ingLines.map(parseIngredientLine).filter(Boolean);
   const steps=stepsText?[stepsText]:[];
   const time=parseInt(document.getElementById('qe-time').value)||null;
-  D.recipes.push({
-    id:D.nextId++,
-    name,
-    cat:document.getElementById('qe-cat').value,
-    auf:document.getElementById('qe-auf').value,
-    time,portions:2,ings,steps,src:null
-  });
+  D.recipes.push({id:D.nextId++,name,cat:document.getElementById('qe-cat').value,auf:document.getElementById('qe-auf').value,time,portions:2,ings,steps,src:null});
   closeQE();
   await saveRecipesDebounced();
   renderRFilters();renderRecipes();
@@ -895,7 +814,6 @@ async function drawWeek(){
   while(shuffled.length<7&&extra.length)shuffled.push(extra.shift());
   const portions=+document.getElementById('draw-portions').value||2;
 
-  // Archive the current week before replacing (save to archive table)
   if(D.weekPlan.days&&D.weekPlan.days.some(d=>d.recipeId)){
     const toArchive=JSON.parse(JSON.stringify(D.weekPlan));
     try{
@@ -905,7 +823,6 @@ async function drawWeek(){
     }catch(e){console.error('Archive save error',e);}
   }
 
-  // Set new week plan
   const now=new Date();
   D.weekPlan={kw:`KW ${kw()} / ${now.getFullYear()}`,year:now.getFullYear(),
     days:DAYS.map((day,i)=>({day,recipeId:shuffled[i]?shuffled[i].id:null,active:true,portions,note:''})),
@@ -913,19 +830,15 @@ async function drawWeek(){
   expandedDays.clear();
   viewingArchive=null;
   closeDrawModal();
-  // Save week immediately and reliably
   await saveWeekNow();
   toast('Woche generiert!');
   renderWeek();
 }
 
-// ── Week rendering ────────────────────────────────────────────────────────────
-function backToCurrent(){
-  viewingArchive=null;
-  renderWeek();
-}
+// ── Week ──────────────────────────────────────────────────────────────────────
+function backToCurrent(){viewingArchive=null;renderWeek();}
 
-function renderWeekPlan(plan, readonly=false){
+function renderWeekPlan(plan,readonly=false){
   const el=document.getElementById('week-view');
   if(!plan||!plan.days||!plan.days.length){el.innerHTML='<div class="empty">Keine Tage in dieser Woche.</div>';return;}
   el.innerHTML='<div class="week-grid">'+plan.days.map((d,i)=>{
@@ -978,25 +891,19 @@ function renderWeek(){
   const banner=document.getElementById('archive-banner');
   const btnGen=document.getElementById('btn-generieren');
   const btnBack=document.getElementById('btn-zurueck');
-
   if(viewingArchive){
-    // Show archived week (read-only)
     document.getElementById('week-title').textContent=viewingArchive.kw||'Archivwoche';
     banner.style.display='flex';
     document.getElementById('archive-banner-kw').textContent=viewingArchive.kw||'';
-    btnGen.style.display='none';
-    btnBack.style.display='';
-    renderWeekPlan(viewingArchive, true);
+    btnGen.style.display='none';btnBack.style.display='';
+    renderWeekPlan(viewingArchive,true);
   } else {
-    // Show current week
     document.getElementById('week-title').textContent=D.weekPlan.kw||'Wochenplan';
-    banner.style.display='none';
-    btnGen.style.display='';
-    btnBack.style.display='none';
+    banner.style.display='none';btnGen.style.display='';btnBack.style.display='none';
     if(!D.weekPlan.days||!D.weekPlan.days.length){
       document.getElementById('week-view').innerHTML='<div class="empty">Noch keine Woche generiert.</div>';
     } else {
-      renderWeekPlan(D.weekPlan, false);
+      renderWeekPlan(D.weekPlan,false);
     }
   }
 }
@@ -1089,7 +996,6 @@ function renderArchiv(){
     </div>`;
   }).join('')+'</div>';
 }
-
 function viewArchiveWeek(idx){
   viewingArchive=D.archive[idx];
   expandedDays.clear();
@@ -1124,56 +1030,55 @@ function exportPDF(){
       <div class="meta-row">
         <span class="tag" style="background:${CC[r.cat]||'#888'}22;color:${CC[r.cat]||'#888'}">${r.cat}</span>
         <span class="tag" style="background:${AC[r.auf]||'#888'}22;color:${AC[r.auf]||'#888'}">${r.auf}</span>
-        ${r.time?`<span class="chip">⏱ ${r.time} min</span>`:''}
-        <span class="chip">👤 ${d.portions||plan.portions} Portionen</span>
+        ${r.time?'<span class="chip">&#9201; '+r.time+' min</span>':''}
+        <span class="chip">&#128100; ${d.portions||plan.portions} Portionen</span>
       </div>
       <div class="two-col">
-        <div><h3>Zutaten</h3><ul>${(r.ings||[]).map(ing=>`<li>${fmtIng(ing,factor)}</li>`).join('')||'<li>—</li>'}</ul></div>
-        <div><h3>Zubereitung</h3>${(r.steps||[]).map((s,i)=>`<div class="step"><span class="snum">${i+1}</span>${s}</div>`).join('')||'<p>—</p>'}</div>
+        <div><h3>Zutaten</h3><ul>${(r.ings||[]).map(ing=>'<li>'+fmtIng(ing,factor)+'</li>').join('')||'<li>—</li>'}</ul></div>
+        <div><h3>Zubereitung</h3>${(r.steps||[]).map((s,i)=>'<div class="step"><span class="snum">'+(i+1)+'</span>'+s+'</div>').join('')||'<p>—</p>'}</div>
       </div>
-      ${r.src&&r.src.val?`<div class="src-line">${r.src.type==='url'?`<a href="${r.src.val}">${r.src.val}</a>`:`📖 ${r.src.val}${r.src.seite?', S.'+r.src.seite:''}`}</div>`:''}
-      ${d.note?`<div class="note">📝 ${d.note}</div>`:''}
+      ${r.src&&r.src.val?'<div class="src-line">'+(r.src.type==='url'?'<a href="'+r.src.val+'">'+r.src.val+'</a>':'&#128218; '+r.src.val+(r.src.seite?', S.'+r.src.seite:''))+'</div>':''}
+      ${d.note?'<div class="note">&#128221; '+d.note+'</div>':''}
     </div>`;
   }).join('');
-  const html=`<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><title>${plan.kw}</title>
-  <style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:-apple-system,sans-serif;font-size:12pt;color:#1a1a18}
-  .page{padding:2cm;min-height:100vh;page-break-after:always}.page:last-child{page-break-after:avoid}
-  h1{font-size:22pt;font-weight:500;margin-bottom:6px}h2{font-size:17pt;font-weight:500;margin-bottom:10px}
-  h3{font-size:11pt;font-weight:600;margin-bottom:8px;color:#444}.subtitle{font-size:11pt;color:#888;margin-bottom:24px}
-  .week-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:28px}
-  .day-box{border:0.5px solid #ccc;border-radius:8px;padding:12px}.day-name{font-size:9pt;color:#888;margin-bottom:3px}
-  .day-recipe{font-size:12pt;font-weight:500;margin-bottom:5px}.day-note{font-size:9pt;color:#666;margin-top:4px}
-  .tag{font-size:9pt;padding:2px 8px;border-radius:99px;display:inline-block;margin-right:4px}
-  .meta-row{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
-  .chip{font-size:9pt;color:#666;background:#f5f5f1;padding:2px 8px;border-radius:99px}
-  .two-col{display:grid;grid-template-columns:1fr 1.4fr;gap:20px;margin-bottom:16px}
-  ul{list-style:none;padding:0}ul li{font-size:10.5pt;padding:3px 0;border-bottom:0.5px solid #eee}
-  .step{display:flex;gap:8px;align-items:flex-start;margin-bottom:7px}
-  .snum{width:18px;height:18px;border-radius:50%;background:#eee;color:#555;font-size:9pt;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
-  .src-line{font-size:9pt;color:#666;margin-top:12px;padding-top:8px;border-top:0.5px solid #eee}.src-line a{color:#185FA5}
-  .note{font-size:9.5pt;color:#666;background:#f9f8f4;border-radius:6px;padding:8px 12px;margin-top:10px}
-  .day-badge{font-size:9pt;color:#888;font-weight:500;margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em}
-  .shop-grid{columns:2;gap:16px;margin-top:8px}
-  .shop-item-p{display:flex;justify-content:space-between;padding:4px 0;border-bottom:0.5px solid #eee;font-size:10.5pt;break-inside:avoid}
-  .shop-qty-p{color:#888;font-size:10pt}.shop-recipes{font-size:8.5pt;color:#aaa;margin-left:4px}
-  @media print{.page{padding:1.5cm}}</style></head><body>
-  <div class="page">
-    <h1>${plan.kw}</h1><div class="subtitle">Wochenplan — ${activeDays.length} Tage</div>
-    <div class="week-grid">${plan.days.map(d=>{
-      if(!d.active||!d.recipeId)return`<div class="day-box" style="background:#fafafa"><div class="day-name">${d.day}</div><div style="color:#ccc">—</div></div>`;
+  const kwTitle=plan.kw||'Wochenplan';
+  const html='<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><title>'+kwTitle+'</title>'
+    +'<style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:-apple-system,sans-serif;font-size:12pt;color:#1a1a18}'
+    +'.page{padding:2cm;min-height:100vh;page-break-after:always}.page:last-child{page-break-after:avoid}'
+    +'h1{font-size:22pt;font-weight:500;margin-bottom:6px}h2{font-size:17pt;font-weight:500;margin-bottom:10px}'
+    +'h3{font-size:11pt;font-weight:600;margin-bottom:8px;color:#444}.subtitle{font-size:11pt;color:#888;margin-bottom:24px}'
+    +'.week-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:28px}'
+    +'.day-box{border:0.5px solid #ccc;border-radius:8px;padding:12px}.day-name{font-size:9pt;color:#888;margin-bottom:3px}'
+    +'.day-recipe{font-size:12pt;font-weight:500;margin-bottom:5px}.day-note{font-size:9pt;color:#666;margin-top:4px}'
+    +'.tag{font-size:9pt;padding:2px 8px;border-radius:99px;display:inline-block;margin-right:4px}'
+    +'.meta-row{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:16px}'
+    +'.chip{font-size:9pt;color:#666;background:#f5f5f1;padding:2px 8px;border-radius:99px}'
+    +'.two-col{display:grid;grid-template-columns:1fr 1.4fr;gap:20px;margin-bottom:16px}'
+    +'ul{list-style:none;padding:0}ul li{font-size:10.5pt;padding:3px 0;border-bottom:0.5px solid #eee}'
+    +'.step{display:flex;gap:8px;align-items:flex-start;margin-bottom:7px}'
+    +'.snum{width:18px;height:18px;border-radius:50%;background:#eee;color:#555;font-size:9pt;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}'
+    +'.src-line{font-size:9pt;color:#666;margin-top:12px;padding-top:8px;border-top:0.5px solid #eee}.src-line a{color:#185FA5}'
+    +'.note{font-size:9.5pt;color:#666;background:#f9f8f4;border-radius:6px;padding:8px 12px;margin-top:10px}'
+    +'.day-badge{font-size:9pt;color:#888;font-weight:500;margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em}'
+    +'.shop-grid{columns:2;gap:16px;margin-top:8px}'
+    +'.shop-item-p{display:flex;justify-content:space-between;padding:4px 0;border-bottom:0.5px solid #eee;font-size:10.5pt;break-inside:avoid}'
+    +'.shop-qty-p{color:#888;font-size:10pt}.shop-recipes{font-size:8.5pt;color:#aaa;margin-left:4px}'
+    +'@media print{.page{padding:1.5cm}}</style></head><body>'
+    +'<div class="page"><h1>'+kwTitle+'</h1><div class="subtitle">Wochenplan — '+activeDays.length+' Tage</div>'
+    +'<div class="week-grid">'+plan.days.map(d=>{
+      if(!d.active||!d.recipeId)return'<div class="day-box" style="background:#fafafa"><div class="day-name">'+d.day+'</div><div style="color:#ccc">—</div></div>';
       const r=D.recipes.find(r=>r.id===d.recipeId);if(!r)return'';
-      return`<div class="day-box"><div class="day-name">${d.day}</div><div class="day-recipe">${r.name}</div>
-        <div><span class="tag" style="background:${CC[r.cat]||'#888'}22;color:${CC[r.cat]||'#888'}">${r.cat}</span>
-        <span class="tag" style="background:${AC[r.auf]||'#888'}22;color:${AC[r.auf]||'#888'}">${r.auf}</span></div>
-        ${d.note?`<div class="day-note">📝 ${d.note}</div>`:''}</div>`;
-    }).join('')}</div>
-  </div>
-  ${recipePages}
-  <div class="page"><h1>Einkaufsliste</h1><div class="subtitle">${plan.kw} — aggregiert</div>
-    <div class="shop-grid">${shopItems.map(it=>{const m=Number.isInteger(it.m)?it.m:Math.round(it.m*10)/10;
-      return`<div class="shop-item-p"><span>${it.n}<span class="shop-recipes">${it.recipes.join(' · ')}</span></span><span class="shop-qty-p">${m} ${it.u}</span></div>`;}).join('')}
-    </div>
-  </div></body></html>`;
+      return'<div class="day-box"><div class="day-name">'+d.day+'</div><div class="day-recipe">'+r.name+'</div>'
+        +'<div><span class="tag" style="background:'+( CC[r.cat]||'#888')+'22;color:'+(CC[r.cat]||'#888')+'">'+r.cat+'</span>'
+        +'<span class="tag" style="background:'+(AC[r.auf]||'#888')+'22;color:'+(AC[r.auf]||'#888')+'">'+r.auf+'</span></div>'
+        +(d.note?'<div class="day-note">&#128221; '+d.note+'</div>':'')+'</div>';
+    }).join('')+'</div></div>'
+    +recipePages
+    +'<div class="page"><h1>Einkaufsliste</h1><div class="subtitle">'+kwTitle+' — aggregiert</div>'
+    +'<div class="shop-grid">'+shopItems.map(it=>{
+      const m=Number.isInteger(it.m)?it.m:Math.round(it.m*10)/10;
+      return'<div class="shop-item-p"><span>'+it.n+'<span class="shop-recipes">'+it.recipes.join(' · ')+'</span></span><span class="shop-qty-p">'+m+' '+it.u+'</span></div>';
+    }).join('')+'</div></div></body></html>';
   const blob=new Blob([html],{type:'text/html'});
   const url=URL.createObjectURL(blob);
   const pw=window.open(url,'_blank');
