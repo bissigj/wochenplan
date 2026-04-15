@@ -16,7 +16,7 @@
   --bd:rgba(80,81,96,0.15);--bd2:rgba(80,81,96,0.25);
   --green:#598234;--r:12px;--rs:8px;
   --thunder:#505160;--waterfall:#68829E;--moss:#AEBD38;--meadow:#598234;
-  --c-pasta-bg:#f5f0e8;--c-pasta:#8a6830p
+  --c-pasta-bg:#f5f0e8;--c-pasta:#8a6830
   --c-curry-bg:#faeee8;--c-curry:#8a4028;
   --c-suppe-bg:#e8f0f5;--c-suppe:#68829E;
   --c-salat-bg:#eef3e0;--c-salat:#598234;
@@ -801,7 +801,7 @@ function parseIngredientLine(line){
 
   // No number: "extra virgin olive oil"
   return{m:1,u:'Stück',n:line};
-}
+
 
   const unitPattern=Object.keys(UNIT_MAP).sort((a,b)=>b.length-a.length)
     .map(u=>u.replace('.','\\.')).join('|');
