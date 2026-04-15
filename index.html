@@ -10,47 +10,49 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#fff;--bg2:#f6f5f1;--bg3:#eceae4;--bg4:#e4e2db;
-  --text:#181816;--text2:#68685f;--text3:#9a9a92;
-  --bd:rgba(0,0,0,0.11);--bd2:rgba(0,0,0,0.20);
-  --green:#1D9E75;--r:10px;--rs:6px;
-  --c-pasta-bg:#FAEEDA;--c-pasta:#854F0B;
-  --c-curry-bg:#FAECE7;--c-curry:#993C1D;
-  --c-suppe-bg:#E1F5EE;--c-suppe:#0F6E56;
-  --c-salat-bg:#EAF3DE;--c-salat:#3B6D11;
-  --c-auflauf-bg:#EEEDFE;--c-auflauf:#534AB7;
-  --c-frühstück-bg:#FBEAF0;--c-frühstück:#993556;
-  --c-sonstiges-bg:#F1EFE8;--c-sonstiges:#5F5E5A;
-  --c-einfach-bg:#EAF3DE;--c-einfach:#27500A;
-  --c-mittel-bg:#FAEEDA;--c-mittel:#633806;
-  --c-schwer-bg:#FAECE7;--c-schwer:#712B13;
+  --bg:#fff;--bg2:#f8f9f4;--bg3:#f2f3ee;--bg4:#eaebE4;
+  --text:#505160;--text2:#68829E;--text3:#9aa5b0;
+  --bd:rgba(80,81,96,0.15);--bd2:rgba(80,81,96,0.25);
+  --green:#598234;--r:12px;--rs:8px;
+  --thunder:#505160;--waterfall:#68829E;--moss:#AEBD38;--meadow:#598234;
+  --c-pasta-bg:#f5f0e8;--c-pasta:#8a6830;
+  --c-curry-bg:#faeee8;--c-curry:#8a4028;
+  --c-suppe-bg:#e8f0f5;--c-suppe:#68829E;
+  --c-salat-bg:#eef3e0;--c-salat:#598234;
+  --c-auflauf-bg:#eeecf8;--c-auflauf:#534AB7;
+  --c-frühstück-bg:#f5eef8;--c-frühstück:#7a4a8a;
+  --c-sonstiges-bg:#f0f0ee;--c-sonstiges:#68686a;
+  --c-einfach-bg:#eef5e8;--c-einfach:#598234;
+  --c-mittel-bg:#f0f4e0;--c-mittel:#6a7a20;
+  --c-schwer-bg:#f5eeee;--c-schwer:#8a3838;
 }
 @media(prefers-color-scheme:dark){:root{
-  --bg:#1c1c1a;--bg2:#252522;--bg3:#2d2d2a;--bg4:#363632;
-  --text:#f0ede5;--text2:#a6a69d;--text3:#68685f;
+  --bg:#1e1f1a;--bg2:#252620;--bg3:#2a2b25;--bg4:#303128;
+  --text:#e8e8d8;--text2:#8aa0b8;--text3:#686e58;
   --bd:rgba(255,255,255,0.09);--bd2:rgba(255,255,255,0.18);
-  --c-pasta-bg:#412402;--c-pasta:#FAC775;--c-curry-bg:#4A1B0C;--c-curry:#F5C4B3;
-  --c-suppe-bg:#04342C;--c-suppe:#9FE1CB;--c-salat-bg:#173404;--c-salat:#C0DD97;
-  --c-auflauf-bg:#26215C;--c-auflauf:#CECBF6;--c-frühstück-bg:#4B1528;--c-frühstück:#F4C0D1;
-  --c-sonstiges-bg:#2C2C2A;--c-sonstiges:#D3D1C7;--c-einfach-bg:#173404;--c-einfach:#C0DD97;
-  --c-mittel-bg:#412402;--c-mittel:#FAC775;--c-schwer-bg:#4A1B0C;--c-schwer:#F5C4B3;
+  --thunder:#c8c8d8;--waterfall:#8aa0b8;--moss:#c8d048;--meadow:#78a840;
+  --c-pasta-bg:#2a1e08;--c-pasta:#e0b060;--c-curry-bg:#2a1008;--c-curry:#e09080;
+  --c-suppe-bg:#081828;--c-suppe:#8aa0b8;--c-salat-bg:#102008;--c-salat:#90c060;
+  --c-auflauf-bg:#181028;--c-auflauf:#b0a8e8;--c-frühstück-bg:#200820;--c-frühstück:#c090c8;
+  --c-sonstiges-bg:#202018;--c-sonstiges:#a0a088;--c-einfach-bg:#102008;--c-einfach:#90c060;
+  --c-mittel-bg:#202808;--c-mittel:#b0c040;--c-schwer-bg:#200808;--c-schwer:#d08080;
 }}
-body{font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;background:var(--bg3);color:var(--text);min-height:100vh;font-size:15px;line-height:1.5}
+body{font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;background:var(--bg3);color:var(--thunder);min-height:100vh;font-size:15px;line-height:1.5}
 .app{max-width:900px;margin:0 auto;padding:1.5rem 1rem 5rem}
 .header{display:flex;align-items:center;gap:10px;margin-bottom:1.5rem;flex-wrap:wrap}
 .header h1{font-size:20px;font-weight:500}
 .sync-bar{margin-left:auto;display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text3)}
 .dot{width:6px;height:6px;border-radius:50%;background:var(--text3);flex-shrink:0}
-.dot.ok{background:var(--green)}.dot.err{background:#E24B4A}
+.dot.ok{background:var(--meadow)}.dot.err{background:#E24B4A}
 .dot.spin{animation:pulse 1s ease-in-out infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 .tabs{display:flex;border:0.5px solid var(--bd2);border-radius:var(--rs);overflow:hidden;margin-bottom:1.5rem;background:var(--bg)}
 .tab{flex:1;padding:9px 4px;font-size:13px;background:transparent;border:none;cursor:pointer;color:var(--text2);font-family:inherit;white-space:nowrap}
-.tab.active{background:var(--bg2);color:var(--text);font-weight:500}
+.tab.active{background:var(--thunder);color:#fff;font-weight:500}
 .card{background:var(--bg);border:0.5px solid var(--bd);border-radius:var(--r);padding:1rem 1.25rem;margin-bottom:10px}
 .btn{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;font-size:13px;font-family:inherit;border:0.5px solid var(--bd2);border-radius:var(--rs);background:transparent;color:var(--text);cursor:pointer;white-space:nowrap}
 .btn:hover{background:var(--bg2)}.btn:active{transform:scale(0.98)}
-.btn-p{background:var(--text);color:var(--bg);border-color:var(--text)}.btn-p:hover{opacity:.85;background:var(--text)}
+.btn-p{background:var(--meadow);color:#fff;border-color:var(--meadow)}.btn-p:hover{opacity:.85;background:var(--meadow)}
 .btn-d{color:#A32D2D;border-color:transparent}.btn-d:hover{background:#FCEBEB}
 .btn-full{width:100%;justify-content:center;padding:11px;font-size:14px;font-weight:500}
 .btn-sm{padding:4px 10px;font-size:12px}
@@ -148,6 +150,33 @@ textarea{resize:vertical;min-height:60px}
 .login-err{font-size:12px;color:#A32D2D;margin-top:8px;min-height:18px}
 .login-switch{font-size:12px;color:var(--text3);margin-top:12px;text-align:center}
 .login-switch a{color:var(--green);cursor:pointer}
+
+/* Day card action bar */
+.day-actions{padding:8px 10px;display:flex;align-items:center;gap:5px;background:var(--bg2)}
+.icon-btn{
+  width:30px;height:30px;border-radius:var(--rs);
+  border:1.5px solid var(--meadow);
+  background:#eef5e8;color:var(--meadow);
+  cursor:pointer;font-size:14px;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+@media(prefers-color-scheme:dark){.icon-btn{background:#102008;border-color:var(--meadow);color:var(--meadow)}}
+.icon-btn:hover{background:var(--meadow);color:#fff}
+.portions-row{margin-left:auto;display:flex;align-items:center;gap:4px;flex-shrink:0}
+.portions-row input[type=number]{
+  width:30px;height:30px;
+  border:1.5px solid var(--bd2);border-radius:var(--rs);
+  background:var(--bg);color:var(--thunder);
+  font-size:13px;font-weight:500;font-family:inherit;
+  text-align:center;padding:0;
+  -webkit-appearance:none;-moz-appearance:textfield;appearance:textfield;
+}
+.portions-row input[type=number]::-webkit-inner-spin-button,
+.portions-row input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+.portions-row input[type=number]:focus{outline:none;border-color:var(--waterfall)}
+/* Weekend day cards */
+.day-card-weekend{border-left:3px solid var(--moss) !important}
+.day-lbl-weekend{color:var(--meadow) !important}
 </style>
 </head>
 <body>
@@ -677,9 +706,10 @@ function renderWeekPlan(plan, readonly=false){
     const stepsHTML=(r.steps||[]).length
       ?r.steps.map((s,si)=>`<div class="step-mini"><span class="step-mini-num">${si+1}</span><span style="font-size:12px">${s}</span></div>`).join('')
       :'<span style="font-size:12px;color:var(--text3)">Keine Schritte.</span>';
-    return`<div class="day-card ${d.active?'':'off'}">
+    const isWeekend=(i>=5);
+    return`<div class="day-card ${d.active?'':'off'} ${isWeekend?'day-card-weekend':''}">
       <div class="day-card-top" onclick="toggleDay(${i})">
-        <div class="day-lbl">${d.day}${!d.active?'<span style="font-size:10px;background:var(--bg3);padding:1px 6px;border-radius:99px">ausgeblendet</span>':''}</div>
+        <div class="day-lbl ${isWeekend?'day-lbl-weekend':''}">${d.day}${!d.active?'<span style="font-size:10px;background:var(--bg3);padding:1px 6px;border-radius:99px">ausgeblendet</span>':''}</div>
         ${d.active?`<div class="day-recipe-name">${r.name}</div>
           <div class="day-meta">${r.time?r.time+' min · ':''}${r.auf}</div>
           <div class="row" style="gap:4px;flex-wrap:wrap">
@@ -688,11 +718,11 @@ function renderWeekPlan(plan, readonly=false){
           </div>`:'<div style="font-size:13px;color:var(--text3)">—</div>'}
       </div>
       ${!readonly&&d.active?`<div class="day-actions">
-        <button class="icon-btn" onclick="toggleDayActive(${i},event)">${d.active?'👁':'👁‍🗨'}</button>
-        <button class="icon-btn" onclick="rerollDay(${i},event)" title="Neu ziehen">↺</button>
-        <div class="portions-row" style="margin-left:auto">
+        <button class="icon-btn" onclick="toggleDayActive(${i},event)">👁</button>
+        <button class="icon-btn" onclick="rerollDay(${i},event)">↺</button>
+        <div class="portions-row">
           <span style="font-size:11px;color:var(--text3)">Port.</span>
-          <input type="number" value="${d.portions||plan.portions}" min="1" max="20" onclick="event.stopPropagation()" onchange="setPortions(${i},+this.value)" style="width:50px" />
+          <input type="number" value="${d.portions||plan.portions}" min="1" max="20" onclick="event.stopPropagation()" onchange="setPortions(${i},+this.value)" />
         </div>
       </div>`:''}
       ${d.active&&isOpen?`<div class="day-detail open">
