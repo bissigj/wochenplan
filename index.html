@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Wochenplan">
-<title>🫙 Wochenplan</title>
+<title>Wochenplan</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -186,13 +186,18 @@ textarea{resize:vertical;min-height:60px}
 /* Inline selects in recipe detail */
 .inline-select{padding:3px 6px;font-size:12px;border:0.5px solid var(--bd2);border-radius:var(--rs);background:var(--bg);color:var(--text);font-family:inherit;cursor:pointer}
 .inline-select:focus{outline:none;border-color:var(--meadow)}
+/* Quick entry */
+.qe-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.qe-textarea{width:100%;font-size:13px;font-family:inherit;padding:8px 10px;border:0.5px solid var(--bd2);border-radius:var(--rs);background:var(--bg);color:var(--text);resize:vertical;min-height:120px;line-height:1.5}
+.qe-textarea:focus{outline:none;border-color:var(--meadow)}
+.qe-hint{font-size:11px;color:var(--text3);margin-top:4px}
 </style>
 </head>
 <body>
 
 <div class="login-wrap" id="login-screen">
   <div class="login-box">
-    <h2>🫙 Wochenplan</h2>
+    <h2>Wochenplan</h2>
     <p>Melde dich an um loszulegen.</p>
     <div class="login-field"><label>E-Mail</label><input type="email" id="l-email" placeholder="name@beispiel.ch" /></div>
     <div class="login-field"><label>Passwort</label><input type="password" id="l-pw" placeholder="Passwort" onkeydown="if(event.key==='Enter')doLogin()" /></div>
@@ -204,7 +209,7 @@ textarea{resize:vertical;min-height:60px}
 
 <div class="login-wrap" id="register-screen" style="display:none">
   <div class="login-box">
-    <h2>🫙 Registrieren</h2>
+    <h2>Registrieren</h2>
     <p>Erstelle ein Konto für den Wochenplan.</p>
     <div class="login-field"><label>E-Mail</label><input type="email" id="r-email" placeholder="name@beispiel.ch" /></div>
     <div class="login-field"><label>Passwort</label><input type="password" id="r-pw" placeholder="Mindestens 6 Zeichen" onkeydown="if(event.key==='Enter')doRegister()" /></div>
@@ -217,7 +222,7 @@ textarea{resize:vertical;min-height:60px}
 <div id="main-screen" style="display:none">
   <div class="app">
     <div class="header">
-      <span style="font-size:22px">🫙</span>
+      <span style="font-size:22px"></span>
       <h1>Wochenplan</h1>
       <div class="sync-bar">
         <span class="dot" id="sync-dot"></span>
@@ -233,7 +238,10 @@ textarea{resize:vertical;min-height:60px}
     </div>
 
     <div id="tab-rezepte">
-      <p class="label" style="margin-bottom:6px">Neues Rezept</p>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <p class="label" style="margin:0">Neues Rezept</p>
+        <button class="btn btn-sm" onclick="openQE()">+ Schnellerfassung</button>
+      </div>
       <div class="card">
         <div class="row">
           <input type="text" id="new-name" placeholder="Rezeptname…" style="flex:2;min-width:130px" />
@@ -618,6 +626,7 @@ function initSortable(){
   if(expandedR===null)return;
   const listEl=document.getElementById('steps-'+expandedR);
   if(!listEl||typeof Sortable==='undefined')return;
+  // Update step numbers in DOM after drag without re-rendering
   Sortable.create(listEl,{
     handle:'.drag-handle',
     animation:150,
@@ -625,8 +634,10 @@ function initSortable(){
       if(evt.oldIndex===evt.newIndex)return;
       const r=D.recipes.find(r=>r.id===expandedR);
       if(!r)return;
+      // Update data model
       const moved=r.steps.splice(evt.oldIndex,1)[0];
       r.steps.splice(evt.newIndex,0,moved);
+      // Update step numbers in DOM only (no full re-render)
       listEl.querySelectorAll('.step-num').forEach((el,i)=>el.textContent=i+1);
       await saveRecipesDebounced();
     }
@@ -661,6 +672,60 @@ async function delStep(id,i){D.recipes.find(r=>r.id===id).steps.splice(i,1);awai
 async function updR(id,key,val){D.recipes.find(r=>r.id===id)[key]=val;await saveRecipesDebounced();}
 async function setSrcType(id,type){D.recipes.find(r=>r.id===id).src={type,val:'',seite:''};await saveRecipesDebounced();renderRecipes();}
 async function updSrc(id,key,val){const r=D.recipes.find(r=>r.id===id);if(!r.src)r.src={type:'url',val:'',seite:''};r.src[key]=val;await saveRecipesDebounced();renderRecipes();}
+
+// ── Quick Entry ──────────────────────────────────────────────────────────────
+function openQE(){
+  document.getElementById('qe-name').value='';
+  document.getElementById('qe-ings').value='';
+  document.getElementById('qe-steps').value='';
+  document.getElementById('qe-time').value='';
+  document.getElementById('qe-modal').style.display='flex';
+  setTimeout(()=>document.getElementById('qe-name').focus(),100);
+}
+function closeQE(){document.getElementById('qe-modal').style.display='none';}
+
+function parseIngredientLine(line){
+  line=line.trim();
+  if(!line)return null;
+  // Match: optional number, optional unit, rest is name
+  // e.g. "500g Mehl", "2 Eier", "3 EL Olivenöl", "400 ml Kokosmilch", "1 Dose Tomaten"
+  const UNITS=['kg','g','ml','l','EL','TL','Prise','Bund','Dose','Pck\.','Stück'];
+  const re=new RegExp(`^([0-9]+[.,]?[0-9]*)\s*(${UNITS.join('|')})\.?\s+(.+)$`,'i');
+  const m=line.match(re);
+  if(m){
+    return{m:parseFloat(m[1].replace(',','.')),u:m[2].replace('.',''),n:m[3].trim()};
+  }
+  // Just a number then name: "2 Eier"
+  const re2=/^([0-9]+[.,]?[0-9]*)\s+(.+)$/;
+  const m2=line.match(re2);
+  if(m2){
+    return{m:parseFloat(m2[1].replace(',','.')),u:'Stück',n:m2[2].trim()};
+  }
+  // No number found: treat as 1 Stück
+  return{m:1,u:'Stück',n:line};
+}
+
+async function saveQE(){
+  const name=document.getElementById('qe-name').value.trim();
+  if(!name){document.getElementById('qe-name').focus();return;}
+  const ingLines=document.getElementById('qe-ings').value.split('
+').filter(l=>l.trim());
+  const stepsText=document.getElementById('qe-steps').value.trim();
+  const ings=ingLines.map(parseIngredientLine).filter(Boolean);
+  const steps=stepsText?[stepsText]:[];
+  const time=parseInt(document.getElementById('qe-time').value)||null;
+  D.recipes.push({
+    id:D.nextId++,
+    name,
+    cat:document.getElementById('qe-cat').value,
+    auf:document.getElementById('qe-auf').value,
+    time,portions:2,ings,steps,src:null
+  });
+  closeQE();
+  await saveRecipesDebounced();
+  renderRFilters();renderRecipes();
+  toast('Rezept hinzugefügt');
+}
 
 // ── Draw Modal ────────────────────────────────────────────────────────────────
 function openDrawModal(){updatePoolInfo();document.getElementById('draw-modal').style.display='flex';}
