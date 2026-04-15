@@ -16,7 +16,7 @@
   --bd:rgba(80,81,96,0.15);--bd2:rgba(80,81,96,0.25);
   --green:#598234;--r:12px;--rs:8px;
   --thunder:#505160;--waterfall:#68829E;--moss:#AEBD38;--meadow:#598234;
-  --c-pasta-bg:#f5f0e8;--c-pasta:#8a6830;
+  --c-pasta-bg:#f5f0e8;--c-pasta:#8a6830p
   --c-curry-bg:#faeee8;--c-curry:#8a4028;
   --c-suppe-bg:#e8f0f5;--c-suppe:#68829E;
   --c-salat-bg:#eef3e0;--c-salat:#598234;
@@ -737,21 +737,64 @@ function closeQE(){document.getElementById('qe-modal').style.display='none';}
 function parseIngredientLine(line){
   line=line.trim();
   if(!line)return null;
-  // Match: optional number, optional unit, rest is name
-  // e.g. "500g Mehl", "2 Eier", "3 EL Olivenöl", "400 ml Kokosmilch", "1 Dose Tomaten"
-  const UNITS=['kg','g','ml','l','EL','TL','Prise','Bund','Dose','Pck\.','Stück'];
-  const re=new RegExp(`^([0-9]+[.,]?[0-9]*)\s*(${UNITS.join('|')})\.?\s+(.+)$`,'i');
+
+  // Normalize unicode fractions: ½ → 0.5, ¼ → 0.25, ¾ → 0.75, ⅓ → 0.33, ⅔ → 0.67
+  line=line.replace(/1⁄4|¼/g,'0.25').replace(/1⁄2|½/g,'0.5')
+           .replace(/3⁄4|¾/g,'0.75').replace(/1⁄3|⅓/g,'0.33')
+           .replace(/2⁄3|⅔/g,'0.67');
+
+  // Strip leading "2 x " or "2x " multiplier notation → treat as qty
+  // e.g. "2 x 400 g tins of plum tomatoes" → m=2, u=x400g, n=tins...
+  // Better: just keep the first number as quantity, strip "x"
+  line=line.replace(/^(\d+)\s*x\s*/i,'$1× ');
+
+  // Unit map: english + german → canonical
+  const UNIT_MAP={
+    'teaspoons':'TL','teaspoon':'TL','tsp':'TL',
+    'tablespoons':'EL','tablespoon':'EL','tbsp':'EL',
+    'grams':'g','gram':'g',
+    'kilograms':'kg','kilogram':'kg',
+    'milliliters':'ml','milliliter':'ml','millilitres':'ml','millilitre':'ml',
+    'liters':'l','liter':'l','litres':'l','litre':'l',
+    'cups':'cup','cup':'cup',
+    'bunch':'Bund','bunches':'Bund',
+    'can':'Dose','cans':'Dose','tin':'Dose','tins':'Dose',
+    'pack':'Pck.','packs':'Pck.','packet':'Pck.',
+    'pinch':'Prise','pinches':'Prise',
+    'piece':'Stück','pieces':'Stück',
+    'cloves':'Stück','clove':'Stück',
+    // German
+    'kg':'kg','g':'g','ml':'ml','l':'l',
+    'EL':'EL','TL':'TL','Prise':'Prise','Bund':'Bund',
+    'Dose':'Dose','Pck.':'Pck.','Stück':'Stück'
+  };
+
+  const unitPattern=Object.keys(UNIT_MAP).sort((a,b)=>b.length-a.length)
+    .map(u=>u.replace('.','\\.')).join('|');
+
+  // Pattern: number (unit) name
+  // e.g. "400 g spinach", "2 cloves of garlic", "250g ricotta"
+  const re=new RegExp(`^([0-9]+[.,]?[0-9]*)\\s*(${unitPattern})\\.?\\s+(.+)$`,'i');
   const m=line.match(re);
   if(m){
-    return{m:parseFloat(m[1].replace(',','.')),u:m[2].replace('.',''),n:m[3].trim()};
+    const u=UNIT_MAP[m[2].toLowerCase()]||UNIT_MAP[m[2]]||m[2];
+    return{m:parseFloat(m[1].replace(',','.')),u,n:m[3].trim()};
   }
-  // Just a number then name: "2 Eier"
-  const re2=/^([0-9]+[.,]?[0-9]*)\s+(.+)$/;
+
+  // Number directly attached to unit: "250g", "400ml"
+  const re2=new RegExp(`^([0-9]+[.,]?[0-9]*)(${unitPattern})\\.?\\s+(.+)$`,'i');
   const m2=line.match(re2);
   if(m2){
-    return{m:parseFloat(m2[1].replace(',','.')),u:'Stück',n:m2[2].trim()};
+    const u=UNIT_MAP[m2[2].toLowerCase()]||UNIT_MAP[m2[2]]||m2[2];
+    return{m:parseFloat(m2[1].replace(',','.')),u,n:m2[3].trim()};
   }
-  // No number found: treat as 1 Stück
+
+  // Number then name (no unit): "1 onion", "2 eggs"
+  const re3=/^([0-9]+[.,]?[0-9]*)\s+(.+)$/;
+  const m3=line.match(re3);
+  if(m3)return{m:parseFloat(m3[1].replace(',','.')),u:'Stück',n:m3[2].trim()};
+
+  // No number: "extra virgin olive oil", "Parmesan cheese"
   return{m:1,u:'Stück',n:line};
 }
 
