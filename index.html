@@ -687,21 +687,18 @@ function closeQE(){document.getElementById('qe-modal').style.display='none';}
 function parseIngredientLine(line){
   line=line.trim();
   if(!line)return null;
-  // Match: optional number, optional unit, rest is name
-  // e.g. "500g Mehl", "2 Eier", "3 EL Olivenöl", "400 ml Kokosmilch", "1 Dose Tomaten"
-  const UNITS=['kg','g','ml','l','EL','TL','Prise','Bund','Dose','Pck\.','Stück'];
-  const re=new RegExp(`^([0-9]+[.,]?[0-9]*)\s*(${UNITS.join('|')})\.?\s+(.+)$`,'i');
+  const UNITS=['kg','g','ml','l','EL','TL','Prise','Bund','Dose','Pck.','Stück'];
+  const unitPat=UNITS.map(u=>u.replace('.','\\.').replace('ü','ü')).join('|');
+  const re=new RegExp('^([0-9]+[.,]?[0-9]*)\\s*('+unitPat+')\\.?\\s+(.+)$','i');
   const m=line.match(re);
   if(m){
     return{m:parseFloat(m[1].replace(',','.')),u:m[2].replace('.',''),n:m[3].trim()};
   }
-  // Just a number then name: "2 Eier"
   const re2=/^([0-9]+[.,]?[0-9]*)\s+(.+)$/;
   const m2=line.match(re2);
   if(m2){
     return{m:parseFloat(m2[1].replace(',','.')),u:'Stück',n:m2[2].trim()};
   }
-  // No number found: treat as 1 Stück
   return{m:1,u:'Stück',n:line};
 }
 
