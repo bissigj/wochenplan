@@ -25,30 +25,24 @@
   --c-mittel-bg:#FAEEDA;--c-mittel:#633806;
   --c-schwer-bg:#FAECE7;--c-schwer:#712B13;
 }
-@media(prefers-color-scheme:dark){
-  :root{
-    --bg:#1c1c1a;--bg2:#252522;--bg3:#2d2d2a;--bg4:#363632;
-    --text:#f0ede5;--text2:#a6a69d;--text3:#68685f;
-    --bd:rgba(255,255,255,0.09);--bd2:rgba(255,255,255,0.18);
-    --c-pasta-bg:#412402;--c-pasta:#FAC775;
-    --c-curry-bg:#4A1B0C;--c-curry:#F5C4B3;
-    --c-suppe-bg:#04342C;--c-suppe:#9FE1CB;
-    --c-salat-bg:#173404;--c-salat:#C0DD97;
-    --c-auflauf-bg:#26215C;--c-auflauf:#CECBF6;
-    --c-frühstück-bg:#4B1528;--c-frühstück:#F4C0D1;
-    --c-sonstiges-bg:#2C2C2A;--c-sonstiges:#D3D1C7;
-    --c-einfach-bg:#173404;--c-einfach:#C0DD97;
-    --c-mittel-bg:#412402;--c-mittel:#FAC775;
-    --c-schwer-bg:#4A1B0C;--c-schwer:#F5C4B3;
-  }
-}
+@media(prefers-color-scheme:dark){:root{
+  --bg:#1c1c1a;--bg2:#252522;--bg3:#2d2d2a;--bg4:#363632;
+  --text:#f0ede5;--text2:#a6a69d;--text3:#68685f;
+  --bd:rgba(255,255,255,0.09);--bd2:rgba(255,255,255,0.18);
+  --c-pasta-bg:#412402;--c-pasta:#FAC775;--c-curry-bg:#4A1B0C;--c-curry:#F5C4B3;
+  --c-suppe-bg:#04342C;--c-suppe:#9FE1CB;--c-salat-bg:#173404;--c-salat:#C0DD97;
+  --c-auflauf-bg:#26215C;--c-auflauf:#CECBF6;--c-frühstück-bg:#4B1528;--c-frühstück:#F4C0D1;
+  --c-sonstiges-bg:#2C2C2A;--c-sonstiges:#D3D1C7;--c-einfach-bg:#173404;--c-einfach:#C0DD97;
+  --c-mittel-bg:#412402;--c-mittel:#FAC775;--c-schwer-bg:#4A1B0C;--c-schwer:#F5C4B3;
+}}
 body{font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;background:var(--bg3);color:var(--text);min-height:100vh;font-size:15px;line-height:1.5}
 .app{max-width:900px;margin:0 auto;padding:1.5rem 1rem 5rem}
 .header{display:flex;align-items:center;gap:10px;margin-bottom:1.5rem;flex-wrap:wrap}
 .header h1{font-size:20px;font-weight:500}
 .sync-bar{margin-left:auto;display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text3)}
 .dot{width:6px;height:6px;border-radius:50%;background:var(--text3);flex-shrink:0}
-.dot.ok{background:var(--green)}.dot.err{background:#E24B4A}.dot.spin{animation:pulse 1s ease-in-out infinite}
+.dot.ok{background:var(--green)}.dot.err{background:#E24B4A}
+.dot.spin{animation:pulse 1s ease-in-out infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 .tabs{display:flex;border:0.5px solid var(--bd2);border-radius:var(--rs);overflow:hidden;margin-bottom:1.5rem;background:var(--bg)}
 .tab{flex:1;padding:9px 4px;font-size:13px;background:transparent;border:none;cursor:pointer;color:var(--text2);font-family:inherit;white-space:nowrap}
@@ -63,8 +57,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-se
 input[type=text],input[type=url],input[type=number],input[type=email],input[type=password],select,textarea{
   padding:6px 9px;font-size:13px;font-family:inherit;
   border:0.5px solid var(--bd2);border-radius:var(--rs);
-  background:var(--bg);color:var(--text);width:100%
-}
+  background:var(--bg);color:var(--text);width:100%}
 input:focus,select:focus,textarea:focus{outline:none;border-color:var(--green)}
 textarea{resize:vertical;min-height:60px}
 .tag{font-size:11px;padding:2px 8px;border-radius:99px;white-space:nowrap}
@@ -95,7 +88,7 @@ textarea{resize:vertical;min-height:60px}
 .steps-list{list-style:none;display:flex;flex-direction:column;gap:6px;margin-bottom:8px}
 .step-item{display:flex;align-items:flex-start;gap:8px}
 .step-num{width:20px;height:20px;border-radius:50%;background:var(--bg3);color:var(--text2);font-size:11px;font-weight:500;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
-.step-text{flex:1;font-size:13px;color:var(--text)}
+.step-text{flex:1;font-size:13px}
 .recipe-row{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
 .recipe-name-col{flex:1;min-width:100px;font-size:14px}
 .recipe-meta{font-size:12px;color:var(--text3)}
@@ -106,6 +99,7 @@ textarea{resize:vertical;min-height:60px}
 @media(max-width:560px){.detail-grid{grid-template-columns:1fr}}
 .week-header{display:flex;align-items:center;gap:10px;margin-bottom:1rem;flex-wrap:wrap}
 .week-title{font-size:16px;font-weight:500}
+.archive-banner{background:var(--bg4);border:0.5px solid var(--bd2);border-radius:var(--rs);padding:8px 14px;margin-bottom:1rem;font-size:13px;display:flex;align-items:center;gap:10px}
 .week-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}
 .day-card{background:var(--bg);border:0.5px solid var(--bd);border-radius:var(--r);overflow:hidden}
 .day-card.off{opacity:.45}
@@ -125,7 +119,6 @@ textarea{resize:vertical;min-height:60px}
 .step-mini-num{width:16px;height:16px;border-radius:50%;background:var(--bg3);color:var(--text2);font-size:10px;font-weight:500;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
 .portions-row{display:flex;align-items:center;gap:6px}
 .portions-row input[type=number]{width:54px}
-.shop-toggle{display:flex;gap:6px;margin-bottom:1rem}
 .shop-group{margin-bottom:1rem}
 .shop-group-title{font-size:12px;font-weight:500;color:var(--text2);padding-bottom:4px;border-bottom:0.5px solid var(--bd);margin-bottom:6px}
 .shop-item{display:flex;align-items:flex-start;padding:6px 0;border-bottom:0.5px solid var(--bd);font-size:13px;gap:9px}
@@ -134,9 +127,9 @@ textarea{resize:vertical;min-height:60px}
 .shop-item label{flex:1;cursor:pointer}
 .shop-item label.done{text-decoration:line-through;color:var(--text3)}
 .shop-qty{font-size:12px;color:var(--text3);margin-left:auto;padding-left:8px;white-space:nowrap;margin-top:2px}
-.archive-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:0.5px solid var(--bd);font-size:13px}
+.archive-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:0.5px solid var(--bd);font-size:13px}
 .archive-item:last-child{border-bottom:none}
-.archive-kw{font-weight:500;min-width:80px}
+.archive-kw{font-weight:500;min-width:90px}
 .archive-recipes{flex:1;color:var(--text2);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .modal-wrap{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:100;padding:1rem}
 .modal{background:var(--bg);border-radius:var(--r);padding:1.5rem;width:100%;max-width:380px;border:0.5px solid var(--bd2)}
@@ -146,7 +139,6 @@ textarea{resize:vertical;min-height:60px}
 .toast.show{opacity:1}
 .src-display{display:flex;align-items:center;gap:6px;font-size:12px}
 .src-display a{color:#185FA5;word-break:break-all}
-/* Login screen */
 .login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1rem}
 .login-box{background:var(--bg);border:0.5px solid var(--bd);border-radius:var(--r);padding:2rem;width:100%;max-width:340px}
 .login-box h2{font-size:18px;font-weight:500;margin-bottom:.5rem}
@@ -155,51 +147,35 @@ textarea{resize:vertical;min-height:60px}
 .login-field label{display:block;font-size:12px;color:var(--text2);margin-bottom:4px}
 .login-err{font-size:12px;color:#A32D2D;margin-top:8px;min-height:18px}
 .login-switch{font-size:12px;color:var(--text3);margin-top:12px;text-align:center}
-.login-switch a{color:var(--green);cursor:pointer;text-decoration:none}
-code{font-family:monospace;font-size:13px}
+.login-switch a{color:var(--green);cursor:pointer}
 </style>
 </head>
 <body>
 
-<!-- Login -->
 <div class="login-wrap" id="login-screen">
   <div class="login-box">
     <h2>🫙 Wochenplan</h2>
     <p>Melde dich an um loszulegen.</p>
-    <div class="login-field">
-      <label>E-Mail</label>
-      <input type="email" id="l-email" placeholder="name@beispiel.ch" />
-    </div>
-    <div class="login-field">
-      <label>Passwort</label>
-      <input type="password" id="l-pw" placeholder="Passwort" onkeydown="if(event.key==='Enter')doLogin()" />
-    </div>
+    <div class="login-field"><label>E-Mail</label><input type="email" id="l-email" placeholder="name@beispiel.ch" /></div>
+    <div class="login-field"><label>Passwort</label><input type="password" id="l-pw" placeholder="Passwort" onkeydown="if(event.key==='Enter')doLogin()" /></div>
     <div class="login-err" id="l-err"></div>
     <button class="btn btn-p btn-full" style="margin-top:4px" onclick="doLogin()">Anmelden</button>
     <div class="login-switch">Noch kein Konto? <a onclick="showRegister()">Registrieren</a></div>
   </div>
 </div>
 
-<!-- Register -->
 <div class="login-wrap" id="register-screen" style="display:none">
   <div class="login-box">
     <h2>🫙 Registrieren</h2>
     <p>Erstelle ein Konto für den Wochenplan.</p>
-    <div class="login-field">
-      <label>E-Mail</label>
-      <input type="email" id="r-email" placeholder="name@beispiel.ch" />
-    </div>
-    <div class="login-field">
-      <label>Passwort</label>
-      <input type="password" id="r-pw" placeholder="Mindestens 6 Zeichen" onkeydown="if(event.key==='Enter')doRegister()" />
-    </div>
+    <div class="login-field"><label>E-Mail</label><input type="email" id="r-email" placeholder="name@beispiel.ch" /></div>
+    <div class="login-field"><label>Passwort</label><input type="password" id="r-pw" placeholder="Mindestens 6 Zeichen" onkeydown="if(event.key==='Enter')doRegister()" /></div>
     <div class="login-err" id="r-err"></div>
     <button class="btn btn-p btn-full" style="margin-top:4px" onclick="doRegister()">Konto erstellen</button>
     <div class="login-switch">Bereits registriert? <a onclick="showLogin()">Anmelden</a></div>
   </div>
 </div>
 
-<!-- Main App -->
 <div id="main-screen" style="display:none">
   <div class="app">
     <div class="header">
@@ -211,7 +187,6 @@ code{font-family:monospace;font-size:13px}
         <button class="btn btn-sm" onclick="doLogout()">Abmelden</button>
       </div>
     </div>
-
     <div class="tabs">
       <button class="tab active" onclick="showTab('rezepte')">Rezepte</button>
       <button class="tab" onclick="showTab('woche')">Woche</button>
@@ -219,7 +194,6 @@ code{font-family:monospace;font-size:13px}
       <button class="tab" onclick="showTab('archiv')">Archiv</button>
     </div>
 
-    <!-- REZEPTE -->
     <div id="tab-rezepte">
       <p class="label" style="margin-bottom:6px">Neues Rezept</p>
       <div class="card">
@@ -245,17 +219,19 @@ code{font-family:monospace;font-size:13px}
       <div id="r-list"></div>
     </div>
 
-    <!-- WOCHE -->
     <div id="tab-woche" style="display:none">
       <div class="week-header">
         <span class="week-title" id="week-title">Wochenplan</span>
-        <button class="btn btn-sm" onclick="openDrawModal()">🎲 Neu generieren</button>
+        <button class="btn btn-sm" id="btn-generieren" onclick="openDrawModal()">🎲 Neu generieren</button>
+        <button class="btn btn-sm" id="btn-zurueck" onclick="backToCurrent()" style="display:none">← Aktuelle Woche</button>
         <button class="btn btn-sm" onclick="exportPDF()">↓ PDF</button>
+      </div>
+      <div id="archive-banner" class="archive-banner" style="display:none">
+        <span>📁 Archivansicht</span><span id="archive-banner-kw" style="color:var(--text2)"></span>
       </div>
       <div id="week-view"><div class="empty">Noch keine Woche generiert.</div></div>
     </div>
 
-    <!-- EINKAUF -->
     <div id="tab-einkauf" style="display:none">
       <div class="row" style="margin-bottom:1rem">
         <div class="pills">
@@ -266,14 +242,12 @@ code{font-family:monospace;font-size:13px}
       <div id="shop-view"><div class="empty">Erst eine Woche generieren.</div></div>
     </div>
 
-    <!-- ARCHIV -->
     <div id="tab-archiv" style="display:none">
-      <div id="archiv-view"><div class="empty">Noch keine gespeicherten Wochen.</div></div>
+      <div id="archiv-view"><div class="empty">Noch keine archivierten Wochen.</div></div>
     </div>
   </div>
 </div>
 
-<!-- Draw Modal -->
 <div class="modal-wrap" id="draw-modal" style="display:none">
   <div class="modal">
     <h3>🎲 Woche generieren</h3>
@@ -303,11 +277,9 @@ code{font-family:monospace;font-size:13px}
 <div class="toast" id="toast"></div>
 
 <script>
-// ── Config ───────────────────────────────────────────────────────────────────
 const SUPA_URL='https://qbodqcxhmlkqvmdxstrn.supabase.co';
 const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFib2RxY3hobWxrcXZtZHhzdHJuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYwODM3NTIsImV4cCI6MjA5MTY1OTc1Mn0.Xh5vyf0A2fieS5weyho-kHBwL5Red64L40D2axTEBNY';
 
-// ── Constants ────────────────────────────────────────────────────────────────
 const DAYS=['Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag','Sonntag'];
 const CATS=['pasta','curry','suppe','salat','auflauf','frühstück','sonstiges'];
 const AUFWAND=['einfach','mittel','schwer'];
@@ -315,46 +287,46 @@ const EINHEITEN=['Stück','g','kg','ml','l','EL','TL','Prise','Bund','Dose','Pck
 
 // ── State ────────────────────────────────────────────────────────────────────
 let D={recipes:[],weekPlan:{kw:'',year:0,days:[],portions:2},archive:[],nextId:1};
+let session=null;
+let dbRecipeId=null, dbWeekId=null;
 let rFilters=new Set(), expandedR=null, expandedDays=new Set();
 let shopView='recipe', drawDiff=new Set(['einfach','mittel','schwer']), drawMaxTime=0;
-let saveTimer=null, dbRecipeId=null, dbWeekId=null;
+let saveTimer=null;
+// Archive view state: null = show current week, otherwise = archived week object
+let viewingArchive=null;
 
-// ── Supabase API ─────────────────────────────────────────────────────────────
-const H={'Content-Type':'application/json','apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY};
+// ── Supabase ─────────────────────────────────────────────────────────────────
+let H={'Content-Type':'application/json','apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY};
+
+function setToken(t){H['Authorization']='Bearer '+t;}
 
 async function sbGet(table,filter=''){
   const r=await fetch(`${SUPA_URL}/rest/v1/${table}?${filter}&order=created_at.asc`,{headers:{...H,'Prefer':'return=representation'}});
+  if(!r.ok){console.error('sbGet',table,r.status,await r.text());return[];}
   return r.json();
 }
 async function sbInsert(table,body){
   const r=await fetch(`${SUPA_URL}/rest/v1/${table}`,{method:'POST',headers:{...H,'Prefer':'return=representation'},body:JSON.stringify(body)});
+  if(!r.ok){console.error('sbInsert',table,r.status,await r.text());return[];}
   return r.json();
 }
 async function sbUpdate(table,id,body){
   const r=await fetch(`${SUPA_URL}/rest/v1/${table}?id=eq.${id}`,{method:'PATCH',headers:{...H,'Prefer':'return=representation'},body:JSON.stringify(body)});
+  if(!r.ok){console.error('sbUpdate',table,r.status,await r.text());return[];}
   return r.json();
-}
-async function sbDelete(table,id){
-  await fetch(`${SUPA_URL}/rest/v1/${table}?id=eq.${id}`,{method:'DELETE',headers:H});
 }
 
 // ── Auth ─────────────────────────────────────────────────────────────────────
-let session=null;
-
-function setToken(token){H['Authorization']='Bearer '+token;}
-
 async function doLogin(){
   const email=document.getElementById('l-email').value.trim();
   const pw=document.getElementById('l-pw').value;
   document.getElementById('l-err').textContent='';
   try{
     const r=await fetch(`${SUPA_URL}/auth/v1/token?grant_type=password`,{
-      method:'POST',
-      headers:{'Content-Type':'application/json','apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY},
-      body:JSON.stringify({email,password:pw})
-    });
+      method:'POST',headers:{'Content-Type':'application/json','apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY},
+      body:JSON.stringify({email,password:pw})});
     const d=await r.json();
-    if(d.error||d.error_code){document.getElementById('l-err').textContent=d.error_description||d.msg||d.error||'Login fehlgeschlagen';return;}
+    if(d.error||d.error_code){document.getElementById('l-err').textContent=d.error_description||d.msg||d.error;return;}
     session=d;setToken(d.access_token);
     await onLoggedIn();
   }catch(e){document.getElementById('l-err').textContent='Verbindungsfehler: '+e.message;}
@@ -366,12 +338,10 @@ async function doRegister(){
   document.getElementById('r-err').textContent='';
   try{
     const r=await fetch(`${SUPA_URL}/auth/v1/signup`,{
-      method:'POST',
-      headers:{'Content-Type':'application/json','apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY},
-      body:JSON.stringify({email,password:pw})
-    });
+      method:'POST',headers:{'Content-Type':'application/json','apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY},
+      body:JSON.stringify({email,password:pw})});
     const d=await r.json();
-    if(d.error||d.error_code){document.getElementById('r-err').textContent=d.error_description||d.msg||d.error||'Registrierung fehlgeschlagen';return;}
+    if(d.error||d.error_code){document.getElementById('r-err').textContent=d.error_description||d.msg||d.error;return;}
     if(d.access_token){session=d;setToken(d.access_token);await onLoggedIn();return;}
     document.getElementById('l-email').value=email;
     document.getElementById('l-pw').value=pw;
@@ -386,8 +356,8 @@ function doLogout(){
   document.getElementById('login-screen').style.display='flex';
 }
 
-function showRegister(){document.getElementById('login-screen').style.display='none';document.getElementById('register-screen').style.display='flex'}
-function showLogin(){document.getElementById('register-screen').style.display='none';document.getElementById('login-screen').style.display='flex'}
+function showRegister(){document.getElementById('login-screen').style.display='none';document.getElementById('register-screen').style.display='flex';}
+function showLogin(){document.getElementById('register-screen').style.display='none';document.getElementById('login-screen').style.display='flex';}
 
 async function onLoggedIn(){
   localStorage.setItem('wp_session',JSON.stringify(session));
@@ -403,63 +373,71 @@ async function onLoggedIn(){
 // ── Load / Save ──────────────────────────────────────────────────────────────
 async function loadData(){
   try{
+    // Recipes
     const recs=await sbGet('recipes','select=id,data');
-    if(recs&&Array.isArray(recs)&&recs.length){
+    if(recs&&recs.length){
       dbRecipeId=recs[0].id;
-      const rd=recs[0].data;
-      D.recipes=rd.recipes||[];D.nextId=rd.nextId||1;
-    } else if(Array.isArray(recs)){
+      D.recipes=recs[0].data.recipes||[];
+      D.nextId=recs[0].data.nextId||1;
+    } else {
       D.recipes=DEFAULTS.map(r=>({...r}));D.nextId=DEFAULTS.length+1;
       const ins=await sbInsert('recipes',{data:{recipes:D.recipes,nextId:D.nextId}});
-      if(ins&&Array.isArray(ins)&&ins[0])dbRecipeId=ins[0].id;
+      if(ins&&ins[0])dbRecipeId=ins[0].id;
     }
-    const weeks=await sbGet('week_plan','select=id,data');
-    if(weeks&&Array.isArray(weeks)&&weeks.length){
+    // Week plan – always exactly one row
+    const weeks=await sbGet('week_plan','select=id,data,updated_at');
+    if(weeks&&weeks.length){
+      // Use the most recently updated entry
+      weeks.sort((a,b)=>new Date(b.updated_at||0)-new Date(a.updated_at||0));
       dbWeekId=weeks[0].id;
-      D.weekPlan=weeks[0].data||{kw:'',year:0,days:[],portions:2};
+      const wp=weeks[0].data;
+      if(wp&&wp.days&&wp.days.length) D.weekPlan=wp;
     }
-    const arch=await sbGet('archive','select=id,data,kw');
+    // Archive – multiple rows, each is one past week
+    const arch=await sbGet('archive','select=id,data,kw,created_at');
     D.archive=Array.isArray(arch)?arch.map(a=>({...a.data,_dbid:a.id})):[];
-  }catch(e){setSyncStatus('err','Offline');console.error(e)}
+  }catch(e){setSyncStatus('err','Offline');console.error(e);}
 }
 
-function scheduleSave(){
-  clearTimeout(saveTimer);
-  saveTimer=setTimeout(()=>persistAll(),800);
-}
-
-async function persistAll(){
+async function saveWeekNow(){
+  // Always update the single week_plan row; create it only if it doesn't exist yet
   setSyncStatus('spin','Speichern…');
   try{
-    const recPayload={recipes:D.recipes,nextId:D.nextId};
-    if(dbRecipeId){await sbUpdate('recipes',dbRecipeId,{data:recPayload})}
-    else{const ins=await sbInsert('recipes',{data:recPayload});if(ins&&Array.isArray(ins)&&ins[0])dbRecipeId=ins[0].id}
-    if(D.weekPlan.days&&D.weekPlan.days.length){
-      if(dbWeekId){await sbUpdate('week_plan',dbWeekId,{data:D.weekPlan,updated_at:new Date().toISOString()})}
-      else{const ins=await sbInsert('week_plan',{data:D.weekPlan});if(ins&&Array.isArray(ins)&&ins[0])dbWeekId=ins[0].id}
+    if(dbWeekId){
+      await sbUpdate('week_plan',dbWeekId,{data:D.weekPlan,updated_at:new Date().toISOString()});
+    } else {
+      const ins=await sbInsert('week_plan',{data:D.weekPlan});
+      if(ins&&ins[0])dbWeekId=ins[0].id;
     }
     setSyncStatus('ok','Synchronisiert');
-  }catch(e){setSyncStatus('err','Fehler beim Speichern');console.error(e)}
+  }catch(e){setSyncStatus('err','Fehler beim Speichern');console.error(e);}
 }
 
-async function save(msg, immediate=false){
-  if(immediate){clearTimeout(saveTimer);await persistAll();}
-  else{scheduleSave();}
-  if(msg)toast(msg);
+async function saveRecipesDebounced(){
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(async()=>{
+    setSyncStatus('spin','Speichern…');
+    try{
+      const payload={recipes:D.recipes,nextId:D.nextId};
+      if(dbRecipeId){await sbUpdate('recipes',dbRecipeId,{data:payload});}
+      else{const ins=await sbInsert('recipes',{data:payload});if(ins&&ins[0])dbRecipeId=ins[0].id;}
+      setSyncStatus('ok','Synchronisiert');
+    }catch(e){setSyncStatus('err','Fehler beim Speichern');console.error(e);}
+  },800);
 }
 
-function setSyncStatus(state,label){
+function setSyncStatus(s,l){
   const dot=document.getElementById('sync-dot');
-  const lbl=document.getElementById('sync-label');
-  dot.className='dot'+(state==='ok'?' ok':state==='err'?' err':state==='spin'?' spin':'');
-  if(lbl)lbl.textContent=label;
+  dot.className='dot'+(s==='ok'?' ok':s==='err'?' err':s==='spin'?' spin':'');
+  document.getElementById('sync-label').textContent=l;
 }
+function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),1800);}
 
 // ── Defaults ─────────────────────────────────────────────────────────────────
 const DEFAULTS=[
   {id:1,name:'Spaghetti Pomodoro',cat:'pasta',auf:'einfach',time:25,portions:2,
    ings:[{m:500,u:'g',n:'Spaghetti'},{m:2,u:'Dose',n:'Tomaten'},{m:3,u:'Stück',n:'Knoblauch'},{m:1,u:'Bund',n:'Basilikum'},{m:3,u:'EL',n:'Olivenöl'}],
-   steps:['Spaghetti nach Packung kochen.','Knoblauch in Olivenöl anschwitzen.','Tomaten dazugeben, 15 min köcheln.','Spaghetti mit Sauce und Basilikum servieren.'],src:{type:'url',val:'https://www.chefkoch.de',seite:''}},
+   steps:['Spaghetti nach Packung kochen.','Knoblauch in Olivenöl anschwitzen.','Tomaten dazugeben, 15 min köcheln.','Mit Basilikum servieren.'],src:{type:'url',val:'https://www.chefkoch.de',seite:''}},
   {id:2,name:'Kürbissuppe',cat:'suppe',auf:'einfach',time:40,portions:4,
    ings:[{m:1,u:'Stück',n:'Hokkaido Kürbis'},{m:400,u:'ml',n:'Kokosmilch'},{m:30,u:'g',n:'Ingwer'},{m:2,u:'Stück',n:'Zwiebeln'},{m:1,u:'l',n:'Gemüsebrühe'}],
    steps:['Kürbis würfeln, Zwiebeln und Ingwer anschwitzen.','Kürbis mit Brühe 20 min köcheln.','Kokosmilch hinzufügen, pürieren.'],src:{type:'buch',val:'Ottolenghi Simple',seite:'42'}},
@@ -468,7 +446,7 @@ const DEFAULTS=[
    steps:['Currypaste anbraten.','Kichererbsen und Tomaten dazugeben.','Kokosmilch einrühren, 15 min köcheln.','Spinat unterheben.'],src:null},
   {id:4,name:'Zucchini-Frittata',cat:'auflauf',auf:'mittel',time:30,portions:4,
    ings:[{m:2,u:'Stück',n:'Zucchini'},{m:6,u:'Stück',n:'Eier'},{m:150,u:'g',n:'Feta'},{m:2,u:'Stück',n:'Knoblauch'},{m:2,u:'EL',n:'Olivenöl'}],
-   steps:['Zucchini anbraten.','Eier verquirlen, Feta zerbröckeln.','Beides über Zucchini giessen, stocken lassen.','Unter Grill 3 min bräunen.'],src:{type:'buch',val:'Plenty',seite:'118'}},
+   steps:['Zucchini anbraten.','Eier verquirlen, Feta zerbröckeln.','Beides über Zucchini giessen.','Unter Grill 3 min bräunen.'],src:{type:'buch',val:'Plenty',seite:'118'}},
   {id:5,name:'Rote Linsensuppe',cat:'suppe',auf:'einfach',time:30,portions:4,
    ings:[{m:300,u:'g',n:'Rote Linsen'},{m:2,u:'Stück',n:'Karotten'},{m:2,u:'Stück',n:'Zwiebeln'},{m:1,u:'TL',n:'Kreuzkümmel'},{m:1,u:'Stück',n:'Zitrone'}],
    steps:['Zwiebeln und Karotten anschwitzen.','Linsen mit Brühe 30 min köcheln.','Mit Kreuzkümmel und Zitrone abschmecken.'],src:null},
@@ -480,7 +458,7 @@ const DEFAULTS=[
    steps:['Quinoa kochen.','Kichererbsen rösten.','Alles anrichten, Tahini-Dressing darüber.'],src:null},
   {id:8,name:'Shakshuka',cat:'frühstück',auf:'einfach',time:25,portions:2,
    ings:[{m:4,u:'Stück',n:'Eier'},{m:2,u:'Dose',n:'Tomaten'},{m:2,u:'Stück',n:'Paprika'},{m:1,u:'Stück',n:'Zwiebeln'},{m:1,u:'EL',n:'Harissa'}],
-   steps:['Zwiebeln und Paprika anschwitzen.','Tomaten und Harissa dazugeben, 10 min köcheln.','Eier einlegen, 5 min pochieren.'],src:null},
+   steps:['Zwiebeln und Paprika anschwitzen.','Tomaten und Harissa 10 min köcheln.','Eier einlegen, 5 min pochieren.'],src:null},
   {id:9,name:'Süsskartoffel-Dal',cat:'curry',auf:'mittel',time:40,portions:4,
    ings:[{m:600,u:'g',n:'Süsskartoffeln'},{m:200,u:'g',n:'Rote Linsen'},{m:1,u:'Dose',n:'Tomaten'},{m:200,u:'ml',n:'Kokosmilch'},{m:2,u:'TL',n:'Garam Masala'}],
    steps:['Süsskartoffeln würfeln.','Mit Linsen und Tomaten aufsetzen.','Garam Masala und Kokosmilch einrühren, 25 min köcheln.'],src:{type:'buch',val:'BOSH!',seite:'76'}},
@@ -492,30 +470,29 @@ const DEFAULTS=[
    steps:['Tomaten und Gurke schneiden.','Feta und Oliven dazugeben.','Mit Olivenöl und Oregano anmachen.'],src:null},
   {id:12,name:'Pasta e Fagioli',cat:'pasta',auf:'mittel',time:40,portions:4,
    ings:[{m:300,u:'g',n:'Kleine Pasta'},{m:2,u:'Dose',n:'Cannellini Bohnen'},{m:1,u:'Dose',n:'Tomaten'},{m:1,u:'Stück',n:'Rosmarin'},{m:3,u:'Stück',n:'Knoblauch'}],
-   steps:['Knoblauch und Rosmarin anschwitzen.','Bohnen und Tomaten dazugeben, 15 min köcheln.','Hälfte der Bohnen pürieren, Pasta darin kochen.'],src:null},
+   steps:['Knoblauch und Rosmarin anschwitzen.','Bohnen und Tomaten 15 min köcheln.','Hälfte Bohnen pürieren, Pasta darin kochen.'],src:null},
   {id:13,name:'Lauch-Käse-Quiche',cat:'auflauf',auf:'schwer',time:70,portions:6,
    ings:[{m:1,u:'Pck.',n:'Blätterteig'},{m:2,u:'Stück',n:'Lauch'},{m:3,u:'Stück',n:'Eier'},{m:200,u:'ml',n:'Sahne'},{m:150,u:'g',n:'Gruyère'}],
-   steps:['Teig blind backen 10 min.','Lauch anschwitzen.','Eier-Sahne-Käse-Guss über Lauch giessen, 35 min backen.'],src:null},
+   steps:['Teig blind backen 10 min.','Lauch anschwitzen.','Eier-Sahne-Käse-Guss über Lauch, 35 min backen.'],src:null},
   {id:14,name:'Mango-Erdnuss-Curry',cat:'curry',auf:'mittel',time:35,portions:4,
    ings:[{m:400,u:'g',n:'Tofu'},{m:1,u:'Stück',n:'Mango'},{m:400,u:'ml',n:'Kokosmilch'},{m:3,u:'EL',n:'Erdnussbutter'},{m:200,u:'g',n:'Reisnudeln'}],
-   steps:['Tofu knusprig braten.','Mango kurz mitbraten.','Kokosmilch und Erdnussbutter einrühren, 10 min köcheln.','Mit Reisnudeln servieren.'],src:null}
+   steps:['Tofu knusprig braten.','Mango mitbraten.','Kokosmilch und Erdnussbutter einrühren, 10 min köcheln.','Mit Reisnudeln servieren.'],src:null}
 ];
 
-// ── UI Helpers ────────────────────────────────────────────────────────────────
+// ── UI ────────────────────────────────────────────────────────────────────────
 function showTab(t){
   ['rezepte','woche','einkauf','archiv'].forEach(id=>document.getElementById('tab-'+id).style.display=id===t?'':'none');
   document.querySelectorAll('.tab').forEach((el,i)=>el.classList.toggle('active',['rezepte','woche','einkauf','archiv'][i]===t));
   if(t==='einkauf')renderShop();
   if(t==='archiv')renderArchiv();
 }
-function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),1800)}
-function renderAll(){renderRFilters();renderRecipes();renderWeek()}
-function kw(d){const dt=new Date(d||Date.now());const jan4=new Date(dt.getFullYear(),0,4);const sw=jan4.getTime()-(((jan4.getDay()+6)%7)*86400000);return Math.floor((dt.getTime()-sw)/604800000)+1}
-function fmtIng(ing,factor=1){const m=ing.m*factor;const s=Number.isInteger(m)?m:m.toFixed(1);return`${s} ${ing.u} ${ing.n}`}
+function renderAll(){renderRFilters();renderRecipes();renderWeek();}
+function kw(d){const dt=new Date(d||Date.now());const jan4=new Date(dt.getFullYear(),0,4);const sw=jan4.getTime()-(((jan4.getDay()+6)%7)*86400000);return Math.floor((dt.getTime()-sw)/604800000)+1;}
+function fmtIng(ing,factor=1){const m=ing.m*factor;return`${Number.isInteger(m)?m:m.toFixed(1)} ${ing.u} ${ing.n}`;}
 function srcHTML(src){
   if(!src||!src.val)return'';
-  if(src.type==='url'){const l=src.val.replace(/^https?:\/\/(www\.)?/,'').split('/')[0];return`<span class="src-display">🔗 <a href="${src.val}" target="_blank">${l}</a></span>`}
-  return`<span class="src-display">📖 ${src.val}${src.seite?', S. '+src.seite:''}</span>`
+  if(src.type==='url'){const l=src.val.replace(/^https?:\/\/(www\.)?/,'').split('/')[0];return`<span class="src-display">🔗 <a href="${src.val}" target="_blank">${l}</a></span>`;}
+  return`<span class="src-display">📖 ${src.val}${src.seite?', S. '+src.seite:''}</span>`;
 }
 
 // ── Recipes ───────────────────────────────────────────────────────────────────
@@ -524,7 +501,7 @@ function renderRFilters(){
   document.getElementById('r-filters').innerHTML=[...CATS,...AUFWAND].map(f=>
     `<button class="pill ${rFilters.has(f)?'on':''}" onclick="toggleRF('${f}')">${f}</button>`).join('');
 }
-function toggleRF(f){rFilters.has(f)?rFilters.delete(f):rFilters.add(f);renderRFilters();renderRecipes()}
+function toggleRF(f){rFilters.has(f)?rFilters.delete(f):rFilters.add(f);renderRFilters();renderRecipes();}
 function renderRecipes(){
   const el=document.getElementById('r-list');
   let vis=D.recipes;
@@ -532,8 +509,8 @@ function renderRecipes(){
     const cf=[...rFilters].filter(f=>CATS.includes(f));
     const af=[...rFilters].filter(f=>AUFWAND.includes(f));
     return(cf.length===0||cf.includes(r.cat))&&(af.length===0||af.includes(r.auf));
-  })}
-  if(!vis.length){el.innerHTML='<div class="empty">Keine Rezepte gefunden.</div>';return}
+  });}
+  if(!vis.length){el.innerHTML='<div class="empty">Keine Rezepte gefunden.</div>';return;}
   el.innerHTML=vis.map(r=>{
     const isOpen=expandedR===r.id;
     return`<div class="card">
@@ -582,19 +559,19 @@ function renderRecipes(){
           <div style="margin-top:6px">${srcHTML(r.src)}</div>
         </div>
       </div></div>`:''}
-    </div>`}).join('');
+    </div>`;}).join('');
 }
-function toggleER(id){expandedR=expandedR===id?null:id;renderRecipes()}
+function toggleER(id){expandedR=expandedR===id?null:id;renderRecipes();}
 async function addRecipe(){
   const n=document.getElementById('new-name').value.trim();if(!n)return;
   D.recipes.push({id:D.nextId++,name:n,cat:document.getElementById('new-cat').value,auf:document.getElementById('new-auf').value,time:null,portions:2,ings:[],steps:[],src:null});
   document.getElementById('new-name').value='';
-  await save();renderRFilters();renderRecipes();
+  await saveRecipesDebounced();renderRFilters();renderRecipes();
 }
 async function delR(id){
   D.recipes=D.recipes.filter(r=>r.id!==id);
   D.weekPlan.days=(D.weekPlan.days||[]).filter(d=>d.recipeId!==id);
-  await save();renderRFilters();renderRecipes();renderWeek();
+  await saveRecipesDebounced();renderRFilters();renderRecipes();renderWeek();
 }
 async function addIng(id){
   const m=parseFloat(document.getElementById('im-'+id).value);
@@ -603,25 +580,25 @@ async function addIng(id){
   if(!n||isNaN(m))return;
   D.recipes.find(r=>r.id===id).ings.push({m,u,n});
   document.getElementById('im-'+id).value='';document.getElementById('in-'+id).value='';
-  await save();renderRecipes();
+  await saveRecipesDebounced();renderRecipes();
 }
-async function delIng(id,i){D.recipes.find(r=>r.id===id).ings.splice(i,1);await save();renderRecipes()}
+async function delIng(id,i){D.recipes.find(r=>r.id===id).ings.splice(i,1);await saveRecipesDebounced();renderRecipes();}
 async function addStep(id){
   const inp=document.getElementById('st-'+id);const v=inp.value.trim();if(!v)return;
-  D.recipes.find(r=>r.id===id).steps.push(v);inp.value='';await save();renderRecipes();
+  D.recipes.find(r=>r.id===id).steps.push(v);inp.value='';await saveRecipesDebounced();renderRecipes();
 }
-async function delStep(id,i){D.recipes.find(r=>r.id===id).steps.splice(i,1);await save();renderRecipes()}
-async function updR(id,key,val){D.recipes.find(r=>r.id===id)[key]=val;await save()}
-async function setSrcType(id,type){const r=D.recipes.find(r=>r.id===id);r.src={type,val:'',seite:''};await save();renderRecipes()}
-async function updSrc(id,key,val){const r=D.recipes.find(r=>r.id===id);if(!r.src)r.src={type:'url',val:'',seite:''};r.src[key]=val;await save();renderRecipes()}
+async function delStep(id,i){D.recipes.find(r=>r.id===id).steps.splice(i,1);await saveRecipesDebounced();renderRecipes();}
+async function updR(id,key,val){D.recipes.find(r=>r.id===id)[key]=val;await saveRecipesDebounced();}
+async function setSrcType(id,type){D.recipes.find(r=>r.id===id).src={type,val:'',seite:''};await saveRecipesDebounced();renderRecipes();}
+async function updSrc(id,key,val){const r=D.recipes.find(r=>r.id===id);if(!r.src)r.src={type:'url',val:'',seite:''};r.src[key]=val;await saveRecipesDebounced();renderRecipes();}
 
 // ── Draw Modal ────────────────────────────────────────────────────────────────
-function openDrawModal(){updatePoolInfo();document.getElementById('draw-modal').style.display='flex'}
-function closeDrawModal(){document.getElementById('draw-modal').style.display='none'}
+function openDrawModal(){updatePoolInfo();document.getElementById('draw-modal').style.display='flex';}
+function closeDrawModal(){document.getElementById('draw-modal').style.display='none';}
 function toggleDrawPill(btn){
   const v=btn.dataset.v;
-  if(drawDiff.has(v)&&drawDiff.size>1){drawDiff.delete(v);btn.classList.remove('on')}
-  else{drawDiff.add(v);btn.classList.add('on')}
+  if(drawDiff.has(v)&&drawDiff.size>1){drawDiff.delete(v);btn.classList.remove('on');}
+  else{drawDiff.add(v);btn.classList.add('on');}
   updatePoolInfo();
 }
 function setTimePill(btn){
@@ -631,8 +608,7 @@ function setTimePill(btn){
 }
 function updatePoolInfo(){
   const pool=getPool();const recent=getRecentIds();
-  const fresh=pool.filter(r=>!recent.includes(r.id));
-  document.getElementById('draw-pool-info').textContent=`${pool.length} Rezepte im Pool (${fresh.length} nicht kürzlich verwendet)`;
+  document.getElementById('draw-pool-info').textContent=`${pool.length} Rezepte im Pool (${pool.filter(r=>!recent.includes(r.id)).length} nicht kürzlich verwendet)`;
 }
 function getPool(){
   return D.recipes.filter(r=>{
@@ -643,12 +619,13 @@ function getPool(){
 }
 function getRecentIds(){
   const ids=new Set();
-  D.archive.slice(-2).forEach(w=>(w.days||[]).forEach(d=>{if(d.recipeId)ids.add(d.recipeId)}));
+  D.archive.slice(-2).forEach(w=>(w.days||[]).forEach(d=>{if(d.recipeId)ids.add(d.recipeId);}));
   return[...ids];
 }
+
 async function drawWeek(){
   const pool=getPool();
-  if(pool.length<1){toast('Zu wenige Rezepte für diese Filter!');return}
+  if(pool.length<1){toast('Zu wenige Rezepte für diese Filter!');return;}
   const recent=getRecentIds();
   const fresh=pool.filter(r=>!recent.includes(r.id));
   const src=fresh.length>=7?fresh:pool;
@@ -656,72 +633,119 @@ async function drawWeek(){
   const extra=[...pool].filter(r=>!shuffled.find(s=>s.id===r.id)).sort(()=>Math.random()-.5);
   while(shuffled.length<7&&extra.length)shuffled.push(extra.shift());
   const portions=+document.getElementById('draw-portions').value||2;
-  // Archive current week
+
+  // Archive the current week before replacing (save to archive table)
   if(D.weekPlan.days&&D.weekPlan.days.some(d=>d.recipeId)){
     const toArchive=JSON.parse(JSON.stringify(D.weekPlan));
     try{
       const ins=await sbInsert('archive',{data:toArchive,kw:toArchive.kw});
       if(ins&&ins[0])toArchive._dbid=ins[0].id;
       D.archive.push(toArchive);
-    }catch(e){console.error(e)}
+    }catch(e){console.error('Archive save error',e);}
   }
+
+  // Set new week plan
   const now=new Date();
   D.weekPlan={kw:`KW ${kw()} / ${now.getFullYear()}`,year:now.getFullYear(),
-    days:DAYS.map((day,i)=>({day,recipeId:shuffled[i]?shuffled[i].id:null,active:true,portions,note:''})),portions};
+    days:DAYS.map((day,i)=>({day,recipeId:shuffled[i]?shuffled[i].id:null,active:true,portions,note:''})),
+    portions};
   expandedDays.clear();
+  viewingArchive=null;
   closeDrawModal();
-  await save('Woche generiert!', true);renderWeek();
+  // Save week immediately and reliably
+  await saveWeekNow();
+  toast('Woche generiert!');
+  renderWeek();
 }
 
-// ── Week ──────────────────────────────────────────────────────────────────────
-function renderWeek(){
+// ── Week rendering ────────────────────────────────────────────────────────────
+function backToCurrent(){
+  viewingArchive=null;
+  renderWeek();
+}
+
+function renderWeekPlan(plan, readonly=false){
   const el=document.getElementById('week-view');
-  document.getElementById('week-title').textContent=D.weekPlan.kw||'Wochenplan';
-  if(!D.weekPlan.days||!D.weekPlan.days.length){el.innerHTML='<div class="empty">Noch keine Woche generiert.</div>';return}
-  el.innerHTML='<div class="week-grid">'+D.weekPlan.days.map((d,i)=>{
+  if(!plan||!plan.days||!plan.days.length){el.innerHTML='<div class="empty">Keine Tage in dieser Woche.</div>';return;}
+  el.innerHTML='<div class="week-grid">'+plan.days.map((d,i)=>{
     const r=D.recipes.find(r=>r.id===d.recipeId);
     if(!r)return'';
     const isOpen=expandedDays.has(i);
-    const factor=(d.portions||D.weekPlan.portions||2)/(r.portions||2);
+    const factor=(d.portions||plan.portions||2)/(r.portions||2);
     const ingsHTML=(r.ings||[]).length
       ?r.ings.map(ing=>`<span style="font-size:12px;padding:2px 7px;background:var(--bg2);border-radius:99px;border:0.5px solid var(--bd);color:var(--text2);display:inline-block;margin:2px">${fmtIng(ing,factor)}</span>`).join('')
       :'<span style="font-size:12px;color:var(--text3)">Keine Zutaten.</span>';
     const stepsHTML=(r.steps||[]).length
-      ?r.steps.map((s,si)=>`<div class="step-mini"><span class="step-mini-num">${si+1}</span><span style="font-size:12px;color:var(--text)">${s}</span></div>`).join('')
+      ?r.steps.map((s,si)=>`<div class="step-mini"><span class="step-mini-num">${si+1}</span><span style="font-size:12px">${s}</span></div>`).join('')
       :'<span style="font-size:12px;color:var(--text3)">Keine Schritte.</span>';
     return`<div class="day-card ${d.active?'':'off'}">
       <div class="day-card-top" onclick="toggleDay(${i})">
         <div class="day-lbl">${d.day}${!d.active?'<span style="font-size:10px;background:var(--bg3);padding:1px 6px;border-radius:99px">ausgeblendet</span>':''}</div>
         ${d.active?`<div class="day-recipe-name">${r.name}</div>
-        <div class="day-meta">${r.time?r.time+' min · ':''}${r.auf}</div>
-        <div class="row" style="gap:4px;flex-wrap:wrap">
-          <span class="tag tag-${r.cat}">${r.cat}</span>
-          <span style="font-size:11px;color:var(--text3);margin-left:auto">${isOpen?'▲':'▼'}</span>
-        </div>`:'<div style="font-size:13px;color:var(--text3)">—</div>'}
+          <div class="day-meta">${r.time?r.time+' min · ':''}${r.auf}</div>
+          <div class="row" style="gap:4px;flex-wrap:wrap">
+            <span class="tag tag-${r.cat}">${r.cat}</span>
+            <span style="font-size:11px;color:var(--text3);margin-left:auto">${isOpen?'▲':'▼'}</span>
+          </div>`:'<div style="font-size:13px;color:var(--text3)">—</div>'}
       </div>
-      <div class="day-actions">
+      ${!readonly&&d.active?`<div class="day-actions">
         <button class="icon-btn" onclick="toggleDayActive(${i},event)">${d.active?'👁':'👁‍🗨'}</button>
-        ${d.active?`<button class="icon-btn" onclick="rerollDay(${i},event)" title="Neu ziehen">↺</button>
+        <button class="icon-btn" onclick="rerollDay(${i},event)" title="Neu ziehen">↺</button>
         <div class="portions-row" style="margin-left:auto">
           <span style="font-size:11px;color:var(--text3)">Port.</span>
-          <input type="number" value="${d.portions||D.weekPlan.portions}" min="1" max="20" onclick="event.stopPropagation()" onchange="setPortions(${i},+this.value)" style="width:50px" />
-        </div>`:''}
-      </div>
+          <input type="number" value="${d.portions||plan.portions}" min="1" max="20" onclick="event.stopPropagation()" onchange="setPortions(${i},+this.value)" style="width:50px" />
+        </div>
+      </div>`:''}
       ${d.active&&isOpen?`<div class="day-detail open">
-        <div style="font-size:11px;color:var(--text3);margin-bottom:4px">Zutaten (${d.portions||D.weekPlan.portions} Port.)</div>
+        <div style="font-size:11px;color:var(--text3);margin-bottom:4px">Zutaten (${d.portions||plan.portions} Port.)</div>
         <div style="display:flex;flex-wrap:wrap;gap:3px;margin-bottom:10px">${ingsHTML}</div>
         <div class="divider"></div>
         <div style="font-size:11px;color:var(--text3);margin-bottom:6px;margin-top:8px">Zubereitung</div>
         ${stepsHTML}
         ${srcHTML(r.src)?`<div class="divider"></div><div style="margin-top:8px">${srcHTML(r.src)}</div>`:''}
-        <div class="divider"></div>
-        <div style="font-size:11px;color:var(--text3);margin-bottom:4px;margin-top:8px">Notiz</div>
-        <textarea class="day-note-input" placeholder="Notiz…" onclick="event.stopPropagation()" onchange="setNote(${i},this.value)">${d.note||''}</textarea>
+        ${!readonly?`<div class="divider"></div>
+          <div style="font-size:11px;color:var(--text3);margin-bottom:4px;margin-top:8px">Notiz</div>
+          <textarea class="day-note-input" placeholder="Notiz…" onclick="event.stopPropagation()" onchange="setNote(${i},this.value)">${d.note||''}</textarea>`
+        :d.note?`<div class="divider"></div><div style="font-size:12px;color:var(--text2);margin-top:8px">📝 ${d.note}</div>`:''}
       </div>`:''}
-    </div>`}).join('')+'</div>';
+    </div>`;
+  }).join('')+'</div>';
 }
-function toggleDay(i){expandedDays.has(i)?expandedDays.delete(i):expandedDays.add(i);renderWeek()}
-async function toggleDayActive(i,e){e.stopPropagation();D.weekPlan.days[i].active=!D.weekPlan.days[i].active;await save();renderWeek()}
+
+function renderWeek(){
+  const banner=document.getElementById('archive-banner');
+  const btnGen=document.getElementById('btn-generieren');
+  const btnBack=document.getElementById('btn-zurueck');
+
+  if(viewingArchive){
+    // Show archived week (read-only)
+    document.getElementById('week-title').textContent=viewingArchive.kw||'Archivwoche';
+    banner.style.display='flex';
+    document.getElementById('archive-banner-kw').textContent=viewingArchive.kw||'';
+    btnGen.style.display='none';
+    btnBack.style.display='';
+    renderWeekPlan(viewingArchive, true);
+  } else {
+    // Show current week
+    document.getElementById('week-title').textContent=D.weekPlan.kw||'Wochenplan';
+    banner.style.display='none';
+    btnGen.style.display='';
+    btnBack.style.display='none';
+    if(!D.weekPlan.days||!D.weekPlan.days.length){
+      document.getElementById('week-view').innerHTML='<div class="empty">Noch keine Woche generiert.</div>';
+    } else {
+      renderWeekPlan(D.weekPlan, false);
+    }
+  }
+}
+
+function toggleDay(i){expandedDays.has(i)?expandedDays.delete(i):expandedDays.add(i);renderWeek();}
+
+async function toggleDayActive(i,e){
+  e.stopPropagation();
+  D.weekPlan.days[i].active=!D.weekPlan.days[i].active;
+  await saveWeekNow();renderWeek();
+}
 async function rerollDay(i,e){
   e.stopPropagation();
   const pool=getPool();
@@ -730,10 +754,10 @@ async function rerollDay(i,e){
   const src=avail.length?avail:pool.filter(r=>r.id!==D.weekPlan.days[i].recipeId);
   if(!src.length)return;
   D.weekPlan.days[i].recipeId=src[Math.floor(Math.random()*src.length)].id;
-  await save();renderWeek();
+  await saveWeekNow();renderWeek();
 }
-async function setPortions(i,v){D.weekPlan.days[i].portions=v;await save()}
-async function setNote(i,v){D.weekPlan.days[i].note=v;await save()}
+async function setPortions(i,v){D.weekPlan.days[i].portions=v;await saveWeekNow();}
+async function setNote(i,v){D.weekPlan.days[i].note=v;await saveWeekNow();}
 
 // ── Shopping ──────────────────────────────────────────────────────────────────
 function setShopView(v){
@@ -742,14 +766,16 @@ function setShopView(v){
   document.getElementById('s-by-ing').classList.toggle('on',v==='ing');
   renderShop();
 }
+function getActivePlan(){return viewingArchive||D.weekPlan;}
 function renderShop(){
   const el=document.getElementById('shop-view');
-  if(!D.weekPlan.days||!D.weekPlan.days.some(d=>d.active&&d.recipeId)){el.innerHTML='<div class="empty">Keine aktiven Tage.</div>';return}
-  const activeDays=D.weekPlan.days.filter(d=>d.active&&d.recipeId);
+  const plan=getActivePlan();
+  if(!plan.days||!plan.days.some(d=>d.active&&d.recipeId)){el.innerHTML='<div class="empty">Keine aktiven Tage.</div>';return;}
+  const activeDays=plan.days.filter(d=>d.active&&d.recipeId);
   if(shopView==='recipe'){
     el.innerHTML=activeDays.map(d=>{
       const r=D.recipes.find(r=>r.id===d.recipeId);if(!r||!r.ings||!r.ings.length)return'';
-      const factor=(d.portions||D.weekPlan.portions||2)/(r.portions||2);
+      const factor=(d.portions||plan.portions||2)/(r.portions||2);
       return`<div class="card shop-group">
         <div class="shop-group-title">${r.name} <span style="font-weight:400;color:var(--text3)">${d.day}</span></div>
         ${r.ings.map((ing,i)=>`<div class="shop-item">
@@ -762,7 +788,7 @@ function renderShop(){
     const agg={};
     activeDays.forEach(d=>{
       const r=D.recipes.find(r=>r.id===d.recipeId);if(!r||!r.ings)return;
-      const factor=(d.portions||D.weekPlan.portions||2)/(r.portions||2);
+      const factor=(d.portions||plan.portions||2)/(r.portions||2);
       r.ings.forEach(ing=>{
         const key=ing.n.toLowerCase().trim()+':'+ing.u;
         if(!agg[key])agg[key]={n:ing.n,u:ing.u,m:0,recipes:[]};
@@ -771,7 +797,7 @@ function renderShop(){
       });
     });
     const items=Object.values(agg).sort((a,b)=>a.n.localeCompare(b.n));
-    if(!items.length){el.innerHTML='<div class="empty">Keine Zutaten hinterlegt.</div>';return}
+    if(!items.length){el.innerHTML='<div class="empty">Keine Zutaten hinterlegt.</div>';return;}
     el.innerHTML='<div class="card">'+items.map((it,i)=>{
       const m=Number.isInteger(it.m)?it.m:Math.round(it.m*10)/10;
       return`<div class="shop-item">
@@ -789,25 +815,35 @@ function renderShop(){
 // ── Archive ───────────────────────────────────────────────────────────────────
 function renderArchiv(){
   const el=document.getElementById('archiv-view');
-  if(!D.archive.length){el.innerHTML='<div class="empty">Noch keine archivierten Wochen.</div>';return}
+  if(!D.archive.length){el.innerHTML='<div class="empty">Noch keine archivierten Wochen.</div>';return;}
   el.innerHTML='<div class="card">'+[...D.archive].reverse().map((w,i)=>{
-    const names=(w.days||[]).filter(d=>d.active&&d.recipeId).map(d=>{const r=D.recipes.find(r=>r.id===d.recipeId);return r?r.name:''}).filter(Boolean).join(', ');
+    const names=(w.days||[]).filter(d=>d.active&&d.recipeId)
+      .map(d=>{const r=D.recipes.find(r=>r.id===d.recipeId);return r?r.name:'';})
+      .filter(Boolean).join(', ');
     return`<div class="archive-item">
-      <span class="archive-kw">${w.kw}</span>
+      <span class="archive-kw">${w.kw||'—'}</span>
       <span class="archive-recipes">${names||'—'}</span>
+      <button class="btn btn-sm" onclick="viewArchiveWeek(${D.archive.length-1-i})">Ansehen</button>
     </div>`;
   }).join('')+'</div>';
 }
 
-// ── PDF Export ────────────────────────────────────────────────────────────────
+function viewArchiveWeek(idx){
+  viewingArchive=D.archive[idx];
+  expandedDays.clear();
+  showTab('woche');
+  renderWeek();
+}
+
+// ── PDF ───────────────────────────────────────────────────────────────────────
 function exportPDF(){
-  const w=D.weekPlan;
-  if(!w.days||!w.days.length){toast('Keine Woche zum Exportieren.');return}
-  const activeDays=w.days.filter(d=>d.active&&d.recipeId);
+  const plan=getActivePlan();
+  if(!plan.days||!plan.days.length){toast('Keine Woche zum Exportieren.');return;}
+  const activeDays=plan.days.filter(d=>d.active&&d.recipeId);
   const agg={};
   activeDays.forEach(d=>{
     const r=D.recipes.find(r=>r.id===d.recipeId);if(!r||!r.ings)return;
-    const factor=(d.portions||w.portions||2)/(r.portions||2);
+    const factor=(d.portions||plan.portions||2)/(r.portions||2);
     r.ings.forEach(ing=>{
       const key=ing.n.toLowerCase().trim()+':'+ing.u;
       if(!agg[key])agg[key]={n:ing.n,u:ing.u,m:0,recipes:[]};
@@ -820,27 +856,24 @@ function exportPDF(){
   const AC={einfach:'#27500A',mittel:'#633806',schwer:'#712B13'};
   const recipePages=activeDays.map(d=>{
     const r=D.recipes.find(r=>r.id===d.recipeId);if(!r)return'';
-    const factor=(d.portions||w.portions||2)/(r.portions||2);
-    const ingsHTML=(r.ings||[]).map(ing=>`<li>${fmtIng(ing,factor)}</li>`).join('');
-    const stepsHTML=(r.steps||[]).map((s,i)=>`<div class="step"><span class="snum">${i+1}</span>${s}</div>`).join('');
-    const srcLine=r.src&&r.src.val?(r.src.type==='url'?`<a href="${r.src.val}">${r.src.val}</a>`:`📖 ${r.src.val}${r.src.seite?', S.'+r.src.seite:''}`):'';
+    const factor=(d.portions||plan.portions||2)/(r.portions||2);
     return`<div class="page">
       <div class="day-badge">${d.day}</div><h2>${r.name}</h2>
       <div class="meta-row">
         <span class="tag" style="background:${CC[r.cat]||'#888'}22;color:${CC[r.cat]||'#888'}">${r.cat}</span>
         <span class="tag" style="background:${AC[r.auf]||'#888'}22;color:${AC[r.auf]||'#888'}">${r.auf}</span>
-        ${r.time?`<span class="chip">⏱ ${r.time} min`:''}
-        <span class="chip">👤 ${d.portions||w.portions} Portionen</span>
+        ${r.time?`<span class="chip">⏱ ${r.time} min</span>`:''}
+        <span class="chip">👤 ${d.portions||plan.portions} Portionen</span>
       </div>
       <div class="two-col">
-        <div><h3>Zutaten</h3><ul>${ingsHTML||'<li>—</li>'}</ul></div>
-        <div><h3>Zubereitung</h3>${stepsHTML||'<p>—</p>'}</div>
+        <div><h3>Zutaten</h3><ul>${(r.ings||[]).map(ing=>`<li>${fmtIng(ing,factor)}</li>`).join('')||'<li>—</li>'}</ul></div>
+        <div><h3>Zubereitung</h3>${(r.steps||[]).map((s,i)=>`<div class="step"><span class="snum">${i+1}</span>${s}</div>`).join('')||'<p>—</p>'}</div>
       </div>
-      ${srcLine?`<div class="src-line">${srcLine}</div>`:''}
+      ${r.src&&r.src.val?`<div class="src-line">${r.src.type==='url'?`<a href="${r.src.val}">${r.src.val}</a>`:`📖 ${r.src.val}${r.src.seite?', S.'+r.src.seite:''}`}</div>`:''}
       ${d.note?`<div class="note">📝 ${d.note}</div>`:''}
     </div>`;
   }).join('');
-  const html=`<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><title>${w.kw}</title>
+  const html=`<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><title>${plan.kw}</title>
   <style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:-apple-system,sans-serif;font-size:12pt;color:#1a1a18}
   .page{padding:2cm;min-height:100vh;page-break-after:always}.page:last-child{page-break-after:avoid}
   h1{font-size:22pt;font-weight:500;margin-bottom:6px}h2{font-size:17pt;font-weight:500;margin-bottom:10px}
@@ -863,8 +896,8 @@ function exportPDF(){
   .shop-qty-p{color:#888;font-size:10pt}.shop-recipes{font-size:8.5pt;color:#aaa;margin-left:4px}
   @media print{.page{padding:1.5cm}}</style></head><body>
   <div class="page">
-    <h1>${w.kw}</h1><div class="subtitle">Wochenplan — ${activeDays.length} Tage</div>
-    <div class="week-grid">${w.days.map(d=>{
+    <h1>${plan.kw}</h1><div class="subtitle">Wochenplan — ${activeDays.length} Tage</div>
+    <div class="week-grid">${plan.days.map(d=>{
       if(!d.active||!d.recipeId)return`<div class="day-box" style="background:#fafafa"><div class="day-name">${d.day}</div><div style="color:#ccc">—</div></div>`;
       const r=D.recipes.find(r=>r.id===d.recipeId);if(!r)return'';
       return`<div class="day-box"><div class="day-name">${d.day}</div><div class="day-recipe">${r.name}</div>
@@ -874,21 +907,20 @@ function exportPDF(){
     }).join('')}</div>
   </div>
   ${recipePages}
-  <div class="page"><h1>Einkaufsliste</h1><div class="subtitle">${w.kw} — aggregiert</div>
+  <div class="page"><h1>Einkaufsliste</h1><div class="subtitle">${plan.kw} — aggregiert</div>
     <div class="shop-grid">${shopItems.map(it=>{const m=Number.isInteger(it.m)?it.m:Math.round(it.m*10)/10;
-      return`<div class="shop-item-p"><span>${it.n}<span class="shop-recipes">${it.recipes.join(' · ')}</span></span><span class="shop-qty-p">${m} ${it.u}</span></div>`}).join('')}
+      return`<div class="shop-item-p"><span>${it.n}<span class="shop-recipes">${it.recipes.join(' · ')}</span></span><span class="shop-qty-p">${m} ${it.u}</span></div>`;}).join('')}
     </div>
   </div></body></html>`;
   const blob=new Blob([html],{type:'text/html'});
   const url=URL.createObjectURL(blob);
   const pw=window.open(url,'_blank');
-  if(pw){pw.onload=()=>{setTimeout(()=>{pw.print();URL.revokeObjectURL(url)},300)}}
+  if(pw){pw.onload=()=>{setTimeout(()=>{pw.print();URL.revokeObjectURL(url);},300);}}
 }
 
 // ── Init ──────────────────────────────────────────────────────────────────────
-document.getElementById('new-name').addEventListener('keydown',e=>{if(e.key==='Enter')addRecipe()});
+document.getElementById('new-name').addEventListener('keydown',e=>{if(e.key==='Enter')addRecipe();});
 
-// Try restoring session from localStorage
 (async()=>{
   try{
     const saved=localStorage.getItem('wp_session');
