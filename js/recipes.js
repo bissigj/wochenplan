@@ -279,7 +279,8 @@ export async function saveQE() {
   const ings = ingLines.map(parseIngredientLine).filter(Boolean);
   const steps = splitSteps(stepsText);
   const time = parseInt(document.getElementById('qe-time').value) || null;
-  D.recipes.push({ id: D.nextId++, name, cat: document.getElementById('qe-cat').value, auf: document.getElementById('qe-auf').value, time, portions: 2, ings, steps, src: null });
+  const portions = parseInt(document.getElementById('qe-portions').value) || 2;
+  D.recipes.push({ id: D.nextId++, name, cat: document.getElementById('qe-cat').value, auf: document.getElementById('qe-auf').value, time, portions, ings, steps, src: null });
   closeQE();
   await saveRecipesDebounced();
   renderRFilters();
