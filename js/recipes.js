@@ -262,13 +262,22 @@ export function parseIngredientLine(line) {
   return {m: 1, u: '', n: line};
 }
 
+function splitSteps(text) {
+  if (!text.trim()) return [];
+  const numbered = text.split(/^\s*\d+[.)]\s+/m).filter(s => s.trim());
+  if (numbered.length > 1) return numbered.map(s => s.trim());
+  const lines = text.split('\n').filter(s => s.trim());
+  if (lines.length > 1) return lines.map(s => s.trim());
+  return [text.trim()];
+}
+
 export async function saveQE() {
   const name = document.getElementById('qe-name').value.trim();
   if (!name) { document.getElementById('qe-name').focus(); return; }
   const ingLines = document.getElementById('qe-ings').value.split('\n').filter(l => l.trim());
   const stepsText = document.getElementById('qe-steps').value.trim();
   const ings = ingLines.map(parseIngredientLine).filter(Boolean);
-  const steps = stepsText ? [stepsText] : [];
+  const steps = splitSteps(stepsText);
   const time = parseInt(document.getElementById('qe-time').value) || null;
   D.recipes.push({ id: D.nextId++, name, cat: document.getElementById('qe-cat').value, auf: document.getElementById('qe-auf').value, time, portions: 2, ings, steps, src: null });
   closeQE();
