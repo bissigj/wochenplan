@@ -62,27 +62,10 @@
       <div class="search-wrap">
         <input type="text" id="recipe-search" class="search-input" placeholder="Rezepte suchen…" oninput="filterRecipes(this.value)" />
       </div>
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-        <p class="label" style="margin:0">Neues Rezept</p>
-        <button class="btn btn-sm" onclick="openQE()">+ Schnellerfassung</button>
-      </div>
-      <div class="card">
-        <div class="row">
-          <input type="text" id="new-name" placeholder="Rezeptname…" style="flex:2;min-width:130px" />
-          <select id="new-cat" style="flex:1;min-width:100px">
-            <option value="pasta">Pasta</option><option value="curry">Curry</option>
-            <option value="suppe">Suppe</option><option value="salat">Salat</option>
-            <option value="auflauf">Auflauf</option><option value="frühstück">Frühstück</option>
-            <option value="sonstiges">Sonstiges</option>
-          </select>
-          <select id="new-auf" style="flex:1;min-width:90px">
-            <option value="einfach">Einfach</option>
-            <option value="mittel">Mittel</option>
-            <option value="schwer">Schwer</option>
-          </select>
-          <button class="btn btn-p" onclick="addRecipe()">+ Hinzufügen</button>
-        </div>
-      </div>
+<div style="display:flex;align-items:center;justify-content:flex-end;margin-bottom:6px">
+  <button class="btn btn-p btn-sm" onclick="openQE()">+ Rezept hinzufügen</button>
+</div>
+      
       <div class="row" style="margin:1rem 0 .5rem">
         <span class="label" style="margin:0">Filter</span>
         <span class="badge" id="r-count">0</span>
