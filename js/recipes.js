@@ -257,18 +257,41 @@ export function parseIngredientLine(line) {
   line = line.trim();
   if (!line) return null;
   try {
-    const r = parseIngredient(line, 'en');
-    console.log('Library result:', line, r);  // ← temporär
-    if (r && r.ingredient) {
+    const r = parseIngredient(line, 'en', {
+      additionalUOMs: {
+        dl:     { short: 'dl',     plural: 'dl',      versions: ['dl'] },
+        cl:     { short: 'cl',     plural: 'cl',      versions: ['cl'] },
+        EL:     { short: 'EL',     plural: 'EL',      versions: ['el', 'EL'] },
+        TL:     { short: 'TL',     plural: 'TL',      versions: ['tl', 'TL'] },
+        Prise:  { short: 'Prise',  plural: 'Prisen',  versions: ['prise', 'prisen'] },
+        Bund:   { short: 'Bund',   plural: 'Bund',    versions: ['bund'] },
+        Dose:   { short: 'Dose',   plural: 'Dosen',   versions: ['dose', 'dosen'] },
+        Pck:    { short: 'Pck.',   plural: 'Pck.',    versions: ['pck', 'pck.', 'päckchen'] },
+        Stück:  { short: 'Stück',  plural: 'Stück',   versions: ['stück', 'stk', 'stk.'] },
+        Becher:   { short: 'Becher',  plural: 'Becher',   versions: ['becher'] },
+        Glas:     { short: 'Glas',    plural: 'Gläser',   versions: ['glas', 'gläser'] },
+        Zweig:    { short: 'Zweig',   plural: 'Zweige',   versions: ['zweig', 'zweige'] },
+        Blatt:    { short: 'Blatt',   plural: 'Blätter',  versions: ['blatt', 'blätter'] },
+        Zehe:     { short: 'Zehe',    plural: 'Zehen',    versions: ['zehe', 'zehen'] },
+        Scheibe:  { short: 'Scheibe', plural: 'Scheiben', versions: ['scheibe', 'scheiben'] },
+        Handvoll: { short: 'Handvoll',plural: 'Handvoll', versions: ['handvoll'] },
+        Messerspitze: { short: 'Msp.', plural: 'Msp.',   versions: ['msp', 'msp.', 'messerspitze'] },
+        Würfel:   { short: 'Würfel',  plural: 'Würfel',   versions: ['würfel'] },
+        Knolle:   { short: 'Knolle',  plural: 'Knollen',  versions: ['knolle', 'knollen'] },
+        Kopf:     { short: 'Kopf',    plural: 'Köpfe',    versions: ['kopf', 'köpfe'] },
+        Stange:   { short: 'Stange',  plural: 'Stangen',  versions: ['stange', 'stangen'] },
+        Tasse:    { short: 'Tasse',   plural: 'Tassen',   versions: ['tasse', 'tassen'] },
+        Pkg:      { short: 'Pkg.',    plural: 'Pkg.',      versions: ['pkg', 'pkg.', 'packung', 'packungen'] },
+      }
+    });
+    if (r && r.ingredient && r.unitText) {
       return {
         m: r.quantity || 1,
-        u: r.unitText || '',
+        u: r.unitText,
         n: r.ingredient.trim()
       };
     }
-  } catch(e) {
-    console.log('Library error:', e);  // ← temporär
-  }
+  } catch(e) {}
   return parseIngredientLineFallback(line);
 }
 
