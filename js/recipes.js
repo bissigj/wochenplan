@@ -258,14 +258,17 @@ export function parseIngredientLine(line) {
   if (!line) return null;
   try {
     const r = parseIngredient(line, 'en');
+    console.log('Library result:', line, r);  // ← temporär
     if (r && r.ingredient) {
       return {
         m: r.quantity || 1,
-        u: r.unitText || 'Stück',
+        u: r.unitText || '',
         n: r.ingredient.trim()
       };
     }
-  } catch(e) {}
+  } catch(e) {
+    console.log('Library error:', e);  // ← temporär
+  }
   return parseIngredientLineFallback(line);
 }
 
