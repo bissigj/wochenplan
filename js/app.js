@@ -67,9 +67,6 @@ window.filterRecipes = (q) => {
 };
 
 // ── Init ──────────────────────────────────────────────────────────────────────
-document.getElementById('new-name').addEventListener('keydown', e => {
-  if (e.key === 'Enter') addRecipe();
-});
 
 (async () => {
   const restored = await tryRestoreSession();
