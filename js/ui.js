@@ -29,8 +29,9 @@ export function kw(d) {
 }
 
 export function fmtIng(ing, factor = 1) {
-  const m = ing.m * factor;
-  return `${Number.isInteger(m) ? m : m.toFixed(1)} ${ing.u} ${ing.n}`;
+  const m = ing.m && ing.m > 0 ? ing.m * factor : null;
+  const mStr = m === null ? '' : (Number.isInteger(m) ? m : m.toFixed(1));
+  return `${mStr} ${ing.u} ${ing.n}`.trim();
 }
 
 export function srcHTML(src) {
