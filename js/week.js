@@ -149,13 +149,15 @@ function renderWeekPlan(plan, readonly = false) {
             <span style="font-size:11px;color:var(--text3);margin-left:auto">${isOpen ? '▲' : '▼'}</span>
           </div>` : '<div style="font-size:13px;color:var(--text3)">—</div>'}
       </div>
-      ${!readonly && d.active ? `<div class="day-actions">
+      ${!readonly ? `<div class="day-actions">
         <button class="icon-btn" onclick="toggleDayActive(${i},event)">👁</button>
+        ${d.active ? `
         <button class="icon-btn" onclick="rerollDay(${i},event)">↺</button>
         <div class="portions-row">
           <span style="font-size:11px;color:var(--text3)">Port.</span>
           <input type="number" value="${d.portions || plan.portions}" min="1" max="20" onclick="event.stopPropagation()" onchange="setPortions(${i},+this.value)" />
         </div>
+      </div>` : ''}
       </div>` : ''}
       ${d.active && isOpen ? `<div class="day-detail open">
         <div style="font-size:11px;color:var(--text3);margin-bottom:4px">Zutaten (${d.portions || plan.portions} Port.)</div>
