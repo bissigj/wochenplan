@@ -71,7 +71,7 @@ export function renderRecipes(searchQuery = '') {
               </select></div>
           </div>
           <div class="section-title">Zutaten (für ${r.portions || 2} Port.)</div>
-          <div class="ing-chips">${(r.ings || []).map((ing, i) => `<span class="ing-chip">${fmtIng(ing)}<button class="xbtn" onclick="delIng(${r.id},${i})">×</button></span>`).join('')}</div>
+          <div class="ing-list">${(r.ings || []).map((ing, i) => `<div class="ing-row"><span class="ing-amt">${fmtIng(ing)}</span><button class="xbtn" onclick="delIng(${r.id},${i})">×</button></div>`).join('')}</div>
           <div class="row" style="gap:6px">
             <input type="number" id="im-${r.id}" placeholder="Menge" min="0.1" step="0.1" style="width:70px" />
             <select id="iu-${r.id}" style="width:80px">${EINHEITEN.map(u => `<option>${u}</option>`).join('')}</select>
