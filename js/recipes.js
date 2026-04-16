@@ -222,34 +222,78 @@ export function parseIngredientLine(line) {
   line = line.trim();
   if (!line) return null;
 
-  // Brüche ersetzen
+  // --- 1. Normalisierung ---
   const FRACTIONS = { '¼': 0.25, '½': 0.5, '¾': 0.75, '⅓': 0.333, '⅔': 0.667, '⅛': 0.125 };
   for (const [sym, val] of Object.entries(FRACTIONS)) {
-    line = line.replace(new RegExp('(\\d+)\\s*' + sym), (_, n) => String(parseFloat(n) + val));
-    line = line.replace(sym, String(val));
+    line = line.replace(new RegExp('(\\d+)\\s*' + sym, 'g'), (_, n) => String(parseFloat(n) + val));
+    line = line.replace(new RegExp(sym, 'g'), String(val));
   }
 
-  const UNITS = ['kg', 'g', 'mg', 'l', 'dl', 'cl', 'ml', 'EL', 'TL', 'Prise', 'Bund', 'Dose', 'Pck\\.', 'Stück'];
-  const up = UNITS.join('|');
+  // "125g" -> "125 g"
+  line = line.replace(/(\d)([a-zA-Z]+)/g, '$1 $2');
 
-  // Multiplikation: "2 x 400g Tomaten" oder "2x125g Mozzarella"
-  const mx1 = new RegExp('^([0-9.]+)\\s*[xX×]\\s*([0-9.]+)\\s*(' + up + ')s?\\.?\\s+(.+)$', 'i');
-  const mx2 = new RegExp('^([0-9.]+)\\s*[xX×]\\s*([0-9.]+)(' + up + ')s?\\.?\\s+(.+)$', 'i');
-  for (const re of [mx1, mx2]) {
-    const m = line.match(re);
-    if (m) return { m: Math.round(parseFloat(m[1]) * parseFloat(m[2]) * 100) / 100, u: m[3].replace('.', ''), n: m[4].trim() };
+  // "2x" -> "2 x"
+  line = line.replace(/(\d)\s*[xX×]\s*/g, '$1 x ');
+
+  const UNITS = [
+    'kg', 'g', 'mg',
+    'l', 'dl', 'cl', 'ml',
+    'EL', 'TL',
+    'Prise', 'Bund', 'Dose', 'Pck\\.', 'Stück'
+  ];
+  const unitRegex = new RegExp(`^(${UNITS.join('|')})\\b`, 'i');
+
+  // --- 2. Multiplikation ---
+  let m = line.match(/^([0-9.]+)\s*x\s+(.+)$/i);
+  if (m) {
+    const factor = parseFloat(m[1]);
+    let rest = m[2].trim();
+
+    // zweite Zahl + optionale Einheit
+    let m2 = rest.match(/^([0-9.]+)\s*([a-zA-Z]+)?\s+(.+)$/);
+    if (m2) {
+      const base = parseFloat(m2[1]);
+      const unit = m2[2] || 'Stück';
+      const name = m2[3].trim();
+
+      return {
+        m: Math.round(factor * base * 100) / 100,
+        u: normalizeUnit(unit),
+        n: name
+      };
+    }
   }
 
-  // Standard: Zahl + Einheit + Name
-  const std = new RegExp('^([0-9.]+)\\s*(' + up + ')s?\\.?\\s+(.+)$', 'i');
-  const sm = line.match(std);
-  if (sm) return { m: parseFloat(sm[1]), u: sm[2].replace('.', ''), n: sm[3].trim() };
+  // --- 3. Standard: Zahl + Einheit ---
+  m = line.match(/^([0-9.]+)\s+([a-zA-Z.]+)\s+(.+)$/);
+  if (m) {
+    const amount = parseFloat(m[1]);
+    const unit = m[2];
+    const name = m[3].trim();
 
-  // Nur Zahl + Name: "2 Eier"
-  const nm = line.match(/^([0-9.]+)\s+(.+)$/);
-  if (nm) return { m: parseFloat(nm[1]), u: 'Stück', n: nm[2].trim() };
+    if (isKnownUnit(unit, UNITS)) {
+      return { m: amount, u: normalizeUnit(unit), n: name };
+    }
+  }
 
+  // --- 4. Zahl + Name ---
+  m = line.match(/^([0-9.]+)\s+(.+)$/);
+  if (m) {
+    return { m: parseFloat(m[1]), u: 'Stück', n: m[2].trim() };
+  }
+
+  // --- 5. Fallback ---
   return { m: 1, u: 'Stück', n: line };
+}
+
+
+// Helpers
+function isKnownUnit(u, list) {
+  return list.some(x => new RegExp(`^${x}$`, 'i').test(u));
+}
+
+function normalizeUnit(u) {
+  return u.replace('.', '');
 }
 
 export async function saveQE() {
