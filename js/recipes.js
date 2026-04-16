@@ -253,7 +253,7 @@ export function parseIngredientLine(line) {
     });
     if (r && r.ingredient) {
       return {
-        m: r.quantity || '',
+        m: r.quantity > 0 ? r.quantity : 0,
         u: r.unitText || '',
         n: r.ingredient.trim()
       };
