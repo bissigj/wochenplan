@@ -156,7 +156,6 @@ function renderWeekPlan(plan, readonly = false) {
         <div class="portions-row">
           <span style="font-size:11px;color:var(--text3)">Port.</span>
           <input type="number" value="${d.portions || plan.portions}" min="1" max="20" onclick="event.stopPropagation()" onchange="setPortions(${i},+this.value)" />
-        </div>
       </div>` : ''}
       </div>` : ''}
       ${d.active && isOpen ? `<div class="day-detail open">
