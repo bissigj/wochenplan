@@ -229,7 +229,7 @@ export function parseIngredientLine(line) {
     line = line.replace(sym, String(val));
   }
 
-  const UNITS = ['kg', 'g', 'ml', 'l', 'EL', 'TL', 'Prise', 'Bund', 'Dose', 'Pck\\.', 'Stück'];
+  const UNITS = ['kg', 'g', 'mg', 'l', 'dl', 'cl', 'ml', 'EL', 'TL', 'Prise', 'Bund', 'Dose', 'Pck\\.', 'Stück'];
   const up = UNITS.join('|');
 
   // Multiplikation: "2 x 400g Tomaten" oder "2x125g Mozzarella"
