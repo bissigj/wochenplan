@@ -4,7 +4,7 @@ export const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 export const DAYS = ['Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag','Sonntag'];
 export const CATS = ['pasta','curry','suppe','salat','auflauf','frühstück','sonstiges'];
 export const AUFWAND = ['einfach','mittel','schwer'];
-export const EINHEITEN = ['Stück','g','kg','ml','l','EL','TL','Prise','Bund','Dose','Pck.'];
+export const EINHEITEN = ['Stück','g','kg','dl','cl','ml','l','EL','TL','Prise','Bund','Dose','Pck.'];
 
 export const DEFAULTS = [
   {id:1,name:'Spaghetti Pomodoro',cat:'pasta',auf:'einfach',time:25,portions:2,
