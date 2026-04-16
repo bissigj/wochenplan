@@ -255,3 +255,9 @@ body{padding:0;margin:0}
 .nav-item.active{color:var(--meadow)}
 .nav-icon{width:22px;height:22px;flex-shrink:0}
 .nav-label{font-size:10px;font-weight:500}
+
+
+.ing-list{display:flex;flex-direction:column;gap:2px;margin-bottom:8px}
+.ing-row{display:flex;align-items:center;justify-content:space-between;padding:5px 8px;background:var(--bg2);border-radius:var(--rs);font-size:13px;color:var(--text)}
+.ing-row:hover{background:var(--bg3)}
+.ing-amt{flex:1}
