@@ -709,50 +709,31 @@ function parseIngredientLine(line){
   line=line.trim();
   if(!line)return null;
 
-  // Normalize unicode fractions
-  line=line.replace(/1⁄4|¼/g,'0.25').replace(/1⁄2|½/g,'0.5')
-           .replace(/3⁄4|¾/g,'0.75').replace(/1⁄3|⅓/g,'0.33')
-           .replace(/2⁄3|⅔/g,'0.67');
+  // Brüche ersetzen
+  const FRACTIONS={'¼':0.25,'½':0.5,'¾':0.75,'⅓':0.333,'⅔':0.667,'⅛':0.125};
+  for(const[sym,val] of Object.entries(FRACTIONS)){
+    line=line.replace(new RegExp('(\\d+)\\s*'+sym),(_,n)=>String(parseFloat(n)+val));
+    line=line.replace(sym,String(val));
+  }
 
-  // Strip filler: "a/an" after number, "of" anywhere
-  line=line.replace(/^(\d[^\s]*\s+)an?\s+/i,'$1').replace(/\bof\s+/gi,'');
+  // Multiplikation: "2 x 400g Tomaten" oder "2x125g Mozzarella" → multipliziert
+  const UNITS=['kg','g','ml','l','EL','TL','Prise','Bund','Dose','Pck\\.','Stück'];
+  const up=UNITS.join('|');
+  const mx1=new RegExp('^([0-9.]+)\\s*[xX×]\\s*([0-9.]+)\\s*('+up+')s?\\.?\\s+(.+)$','i');
+  const mx2=new RegExp('^([0-9.]+)\\s*[xX×]\\s*([0-9.]+)('+up+')s?\\.?\\s+(.+)$','i');
+  for(const re of[mx1,mx2]){
+    const m=line.match(re);
+    if(m) return{m:Math.round(parseFloat(m[1])*parseFloat(m[2])*100)/100,u:m[3].replace('.',''),n:m[4].trim()};
+  }
 
-  // Handle "N x AMOUNT UNIT name" → keep N, skip the x+amount+unit
-  const xM=line.match(/^([0-9]+[.,]?[0-9]*)\s*[×x]\s*(?:[0-9]+[.,]?[0-9]*\s*(?:g|kg|ml|l|grams?|kilograms?)\.?\s+)?(.+)$/i);
-  if(xM) line=xM[1]+' '+xM[2];
+  // Zahl + Einheit + Name: "500g Mehl" oder "400 ml Wasser"
+  const std=new RegExp('^([0-9.]+)\\s*('+up+')s?\\.?\\s+(.+)$','i');
+  const sm=line.match(std);
+  if(sm) return{m:parseFloat(sm[1]),u:sm[2].replace('.',''),n:sm[3].trim()};
 
-  const UNIT_MAP={
-    'teaspoons':'TL','teaspoon':'TL','tsp':'TL',
-    'tablespoons':'EL','tablespoon':'EL','tbsp':'EL',
-    'grams':'g','gram':'g','kilograms':'kg','kilogram':'kg',
-    'milliliters':'ml','milliliter':'ml','millilitres':'ml','millilitre':'ml',
-    'liters':'l','liter':'l','litres':'l','litre':'l',
-    'cups':'cup','cup':'cup',
-    'bunch':'Bund','bunches':'Bund',
-    'can':'Dose','cans':'Dose','tin':'Dose','tins':'Dose',
-    'pack':'Pck.','packs':'Pck.','packet':'Pck.',
-    'pinch':'Prise','pinches':'Prise',
-    'piece':'Stück','pieces':'Stück',
-    'cloves':'Stück','clove':'Stück',
-    'kg':'kg','g':'g','ml':'ml','l':'l',
-    'EL':'EL','TL':'TL','Prise':'Prise','Bund':'Bund',
-    'Dose':'Dose','Pck.':'Pck.','Stück':'Stück'
-  };
-
-  // Static regex — no dynamic construction avoids any escaping issues
-  const UNIT_RE=/^([0-9]+[.,]?[0-9]*)\s*(teaspoons?|tablespoons?|tbsp|tsp|grams?|kilograms?|millilitres?|milliliters?|litres?|liters?|cups?|bunche?s?|cans?|tins?|packs?|packets?|pinche?s?|pieces?|cloves?|kg|ml|EL|TL|Prise|Bund|Dose|Pck\.|Stück|g|l)\.?\s+(.+)$/i;
-  const UNIT_RE2=/^([0-9]+[.,]?[0-9]*)(kg|g|ml|l)\.?\s*(.+)$/i;
-
-  function mapUnit(u){return UNIT_MAP[u.toLowerCase()]||UNIT_MAP[u]||u;}
-
-  let m=line.match(UNIT_RE);
-  if(m)return{m:parseFloat(m[1].replace(',','.')),u:mapUnit(m[2]),n:m[3].trim()};
-
-  m=line.match(UNIT_RE2);
-  if(m)return{m:parseFloat(m[1].replace(',','.')),u:mapUnit(m[2]),n:m[3].trim()};
-
-  m=line.match(/^([0-9]+[.,]?[0-9]*)\s+(.+)$/);
-  if(m)return{m:parseFloat(m[1].replace(',','.')),u:'Stück',n:m[2].trim()};
+  // Nur Zahl + Name: "2 Eier"
+  const nm=line.match(/^([0-9.]+)\s+(.+)$/);
+  if(nm) return{m:parseFloat(nm[1]),u:'Stück',n:nm[2].trim()};
 
   return{m:1,u:'Stück',n:line};
 }
