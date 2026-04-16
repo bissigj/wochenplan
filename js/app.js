@@ -1,0 +1,66 @@
+import { showTab, toast } from './ui.js';
+import { doLogin, doRegister, doLogout, showLogin, showRegister, tryRestoreSession } from './auth.js';
+import { renderRFilters, renderRecipes, toggleRF, toggleER, addRecipe, delR, addIng, delIng, addStep, delStep, updR, setSrcType, updSrc, openQE, closeQE, saveQE } from './recipes.js';
+import { renderWeek, openDrawModal, closeDrawModal, toggleDrawPill, setTimePill, drawWeek, backToCurrent, toggleDay, toggleDayActive, rerollDay, setPortions, setNote } from './week.js';
+import { renderShop, setShopView } from './shopping.js';
+import { renderArchiv, viewArchiveWeek } from './archive.js';
+import { exportPDF } from './pdf.js';
+
+// ── Global functions (needed for onclick="" in HTML) ──────────────────────────
+window.doLogin           = doLogin;
+window.doRegister        = doRegister;
+window.doLogout          = doLogout;
+window.showLogin         = showLogin;
+window.showRegister      = showRegister;
+window.showTab           = (t) => {
+  showTab(t);
+  if (t === 'einkauf') renderShop();
+  if (t === 'archiv') renderArchiv();
+};
+window.toggleRF          = toggleRF;
+window.toggleER          = toggleER;
+window.addRecipe         = addRecipe;
+window.delR              = delR;
+window.addIng            = addIng;
+window.delIng            = delIng;
+window.addStep           = addStep;
+window.delStep           = delStep;
+window.updR              = updR;
+window.setSrcType        = setSrcType;
+window.updSrc            = updSrc;
+window.openQE            = openQE;
+window.closeQE           = closeQE;
+window.saveQE            = saveQE;
+window.openDrawModal     = openDrawModal;
+window.closeDrawModal    = closeDrawModal;
+window.toggleDrawPill    = toggleDrawPill;
+window.setTimePill       = setTimePill;
+window.drawWeek          = drawWeek;
+window.backToCurrent     = backToCurrent;
+window.toggleDay         = toggleDay;
+window.toggleDayActive   = toggleDayActive;
+window.rerollDay         = rerollDay;
+window.setPortions       = setPortions;
+window.setNote           = setNote;
+window.setShopView       = setShopView;
+window.viewArchiveWeek   = viewArchiveWeek;
+window.exportPDF         = exportPDF;
+
+// ── renderAll (used by auth after login) ─────────────────────────────────────
+export function renderAll() {
+  renderRFilters();
+  renderRecipes();
+  renderWeek();
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+document.getElementById('new-name').addEventListener('keydown', e => {
+  if (e.key === 'Enter') addRecipe();
+});
+
+(async () => {
+  const restored = await tryRestoreSession();
+  if (!restored) {
+    document.getElementById('login-screen').style.display = 'flex';
+  }
+})();

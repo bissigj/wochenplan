@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Wochenplan">
+<title>Wochenplan</title>
+<link rel="stylesheet" href="css/app.css">
+<script src="https://unpkg.com/sortablejs@1.15.2/Sortable.min.js"></script>
+</head>
+<body>
+
+<!-- Login -->
+<div class="login-wrap" id="login-screen" style="display:none">
+  <div class="login-box">
+    <h2>Wochenplan</h2>
+    <p>Melde dich an um loszulegen.</p>
+    <div class="login-field"><label>E-Mail</label><input type="email" id="l-email" placeholder="name@beispiel.ch" /></div>
+    <div class="login-field"><label>Passwort</label><input type="password" id="l-pw" placeholder="Passwort" onkeydown="if(event.key==='Enter')doLogin()" /></div>
+    <div class="login-err" id="l-err"></div>
+    <button class="btn btn-p btn-full" style="margin-top:4px" onclick="doLogin()">Anmelden</button>
+    <div class="login-switch">Noch kein Konto? <a onclick="showRegister()">Registrieren</a></div>
+  </div>
+</div>
+
+<!-- Register -->
+<div class="login-wrap" id="register-screen" style="display:none">
+  <div class="login-box">
+    <h2>Registrieren</h2>
+    <p>Erstelle ein Konto für den Wochenplan.</p>
+    <div class="login-field"><label>E-Mail</label><input type="email" id="r-email" placeholder="name@beispiel.ch" /></div>
+    <div class="login-field"><label>Passwort</label><input type="password" id="r-pw" placeholder="Mindestens 6 Zeichen" onkeydown="if(event.key==='Enter')doRegister()" /></div>
+    <div class="login-err" id="r-err"></div>
+    <button class="btn btn-p btn-full" style="margin-top:4px" onclick="doRegister()">Konto erstellen</button>
+    <div class="login-switch">Bereits registriert? <a onclick="showLogin()">Anmelden</a></div>
+  </div>
+</div>
+
+<!-- Main App -->
+<div id="main-screen" style="display:none">
+  <div class="app">
+    <div class="header">
+      <h1>Wochenplan</h1>
+      <div class="sync-bar">
+        <span class="dot" id="sync-dot"></span>
+        <span id="sync-label">Verbinden…</span>
+        <button class="btn btn-sm" onclick="doLogout()">Abmelden</button>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" onclick="showTab('rezepte')">Rezepte</button>
+      <button class="tab" onclick="showTab('woche')">Woche</button>
+      <button class="tab" onclick="showTab('einkauf')">Einkauf</button>
+      <button class="tab" onclick="showTab('archiv')">Archiv</button>
+    </div>
+
+    <!-- REZEPTE -->
+    <div id="tab-rezepte">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <p class="label" style="margin:0">Neues Rezept</p>
+        <button class="btn btn-sm" onclick="openQE()">+ Schnellerfassung</button>
+      </div>
+      <div class="card">
+        <div class="row">
+          <input type="text" id="new-name" placeholder="Rezeptname…" style="flex:2;min-width:130px" />
+          <select id="new-cat" style="flex:1;min-width:100px">
+            <option value="pasta">Pasta</option><option value="curry">Curry</option>
+            <option value="suppe">Suppe</option><option value="salat">Salat</option>
+            <option value="auflauf">Auflauf</option><option value="frühstück">Frühstück</option>
+            <option value="sonstiges">Sonstiges</option>
+          </select>
+          <select id="new-auf" style="flex:1;min-width:90px">
+            <option value="einfach">Einfach</option>
+            <option value="mittel">Mittel</option>
+            <option value="schwer">Schwer</option>
+          </select>
+          <button class="btn btn-p" onclick="addRecipe()">+ Hinzufügen</button>
+        </div>
+      </div>
+      <div class="row" style="margin:1rem 0 .5rem">
+        <span class="label" style="margin:0">Filter</span>
+        <span class="badge" id="r-count">0</span>
+        <div class="pills" id="r-filters" style="margin-left:4px"></div>
+      </div>
+      <div id="r-list"></div>
+    </div>
+
+    <!-- WOCHE -->
+    <div id="tab-woche" style="display:none">
+      <div class="week-header">
+        <span class="week-title" id="week-title">Wochenplan</span>
+        <button class="btn btn-sm" id="btn-generieren" onclick="openDrawModal()">🎲 Neu generieren</button>
+        <button class="btn btn-sm" id="btn-zurueck" onclick="backToCurrent()" style="display:none">← Aktuelle Woche</button>
+        <button class="btn btn-sm" onclick="exportPDF()">↓ PDF</button>
+      </div>
+      <div id="archive-banner" class="archive-banner" style="display:none">
+        <span>📁 Archivansicht</span>
+        <span id="archive-banner-kw" style="color:var(--text2)"></span>
+      </div>
+      <div id="week-view"><div class="empty">Noch keine Woche generiert.</div></div>
+    </div>
+
+    <!-- EINKAUF -->
+    <div id="tab-einkauf" style="display:none">
+      <div class="row" style="margin-bottom:1rem">
+        <div class="pills">
+          <button class="pill on" id="s-by-recipe" onclick="setShopView('recipe')">Nach Rezept</button>
+          <button class="pill" id="s-by-ing" onclick="setShopView('ing')">Nach Zutat</button>
+        </div>
+      </div>
+      <div id="shop-view"><div class="empty">Erst eine Woche generieren.</div></div>
+    </div>
+
+    <!-- ARCHIV -->
+    <div id="tab-archiv" style="display:none">
+      <div id="archiv-view"><div class="empty">Noch keine archivierten Wochen.</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- Draw Modal -->
+<div class="modal-wrap" id="draw-modal" style="display:none">
+  <div class="modal">
+    <h3>🎲 Woche generieren</h3>
+    <p class="label" style="margin-bottom:6px">Schwierigkeit</p>
+    <div class="pills" id="draw-diff-pills" style="margin-bottom:1rem">
+      <button class="pill on" data-v="einfach" onclick="toggleDrawPill(this)">einfach</button>
+      <button class="pill on" data-v="mittel" onclick="toggleDrawPill(this)">mittel</button>
+      <button class="pill on" data-v="schwer" onclick="toggleDrawPill(this)">schwer</button>
+    </div>
+    <p class="label" style="margin-bottom:6px">Max. Kochzeit</p>
+    <div class="pills" id="draw-time-pills" style="margin-bottom:1rem">
+      <button class="pill on" data-v="0" onclick="setTimePill(this)">Beliebig</button>
+      <button class="pill" data-v="30" onclick="setTimePill(this)">≤ 30 min</button>
+      <button class="pill" data-v="60" onclick="setTimePill(this)">≤ 60 min</button>
+      <button class="pill" data-v="90" onclick="setTimePill(this)">≤ 90 min</button>
+    </div>
+    <p class="label" style="margin-bottom:6px">Standardportionen</p>
+    <input type="number" id="draw-portions" value="2" min="1" max="20" style="width:80px;margin-bottom:1rem" />
+    <div id="draw-pool-info" style="font-size:12px;color:var(--text3);margin-bottom:.5rem"></div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeDrawModal()">Abbrechen</button>
+      <button class="btn btn-p" onclick="drawWeek()">Generieren</button>
+    </div>
+  </div>
+</div>
+
+<!-- Quick Entry Modal -->
+<div class="modal-wrap" id="qe-modal" style="display:none">
+  <div class="modal" style="max-width:520px">
+    <h3>Rezept erfassen</h3>
+    <div class="qe-grid">
+      <div style="grid-column:1/-1">
+        <span class="label">Rezeptname</span>
+        <input type="text" id="qe-name" placeholder="z.B. Spaghetti Pomodoro" />
+      </div>
+      <div>
+        <span class="label">Kategorie</span>
+        <select id="qe-cat" style="width:100%">
+          <option value="pasta">Pasta</option><option value="curry">Curry</option>
+          <option value="suppe">Suppe</option><option value="salat">Salat</option>
+          <option value="auflauf">Auflauf</option><option value="frühstück">Frühstück</option>
+          <option value="sonstiges">Sonstiges</option>
+        </select>
+      </div>
+      <div style="display:flex;gap:8px">
+        <div style="flex:1">
+          <span class="label">Aufwand</span>
+          <select id="qe-auf" style="width:100%">
+            <option value="einfach">Einfach</option>
+            <option value="mittel">Mittel</option>
+            <option value="schwer">Schwer</option>
+          </select>
+        </div>
+        <div style="width:70px">
+          <span class="label">Zeit (min)</span>
+          <input type="number" id="qe-time" placeholder="30" min="1" max="300" />
+        </div>
+      </div>
+      <div>
+        <span class="label">Zutaten</span>
+        <textarea class="qe-textarea" id="qe-ings" placeholder="500g Mehl&#10;2 Eier&#10;3 EL Olivenöl"></textarea>
+        <div class="qe-hint">Eine Zutat pro Zeile · Menge und Einheit voranstellen</div>
+      </div>
+      <div>
+        <span class="label">Zubereitung</span>
+        <textarea class="qe-textarea" id="qe-steps" placeholder="Mehl sieben, Eier aufschlagen..."></textarea>
+        <div class="qe-hint">Freitext – wird als ganzer Schritt gespeichert</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeQE()">Abbrechen</button>
+      <button class="btn btn-p" onclick="saveQE()">Rezept hinzufügen</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module" src="js/app.js"></script>
+</body>
+</html>
