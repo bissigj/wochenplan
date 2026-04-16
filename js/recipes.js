@@ -20,7 +20,7 @@ export function toggleRF(f) {
   renderRecipes();
 }
 
-export function renderRecipes() {
+export function renderRecipes(searchQuery = '') {
   const el = document.getElementById('r-list');
   let vis = D.recipes;
   if (rFilters.size) {
@@ -29,6 +29,14 @@ export function renderRecipes() {
       const af = [...rFilters].filter(f => AUFWAND.includes(f));
       return (cf.length === 0 || cf.includes(r.cat)) && (af.length === 0 || af.includes(r.auf));
     });
+  }
+  if (searchQuery) {
+    const q = searchQuery.toLowerCase();
+    vis = vis.filter(r =>
+      r.name.toLowerCase().includes(q) ||
+      r.cat.toLowerCase().includes(q) ||
+      (r.ings || []).some(ing => ing.n.toLowerCase().includes(q))
+    );
   }
   if (!vis.length) { el.innerHTML = '<div class="empty">Keine Rezepte gefunden.</div>'; return; }
   el.innerHTML = vis.map(r => {

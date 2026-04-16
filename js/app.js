@@ -12,10 +12,18 @@ window.doRegister        = doRegister;
 window.doLogout          = doLogout;
 window.showLogin         = showLogin;
 window.showRegister      = showRegister;
-window.showTab           = (t) => {
+const PAGE_TITLES = { rezepte: 'Rezepte', woche: 'Wochenplan', einkauf: 'Einkauf', archiv: 'Archiv' };
+window.showTab = (t) => {
   showTab(t);
   if (t === 'einkauf') renderShop();
   if (t === 'archiv') renderArchiv();
+  // Update bottom nav active state
+  document.querySelectorAll('.nav-item').forEach(el => {
+    el.classList.toggle('active', el.id === 'nav-' + t);
+  });
+  // Update page title
+  const titleEl = document.getElementById('page-title');
+  if (titleEl) titleEl.textContent = PAGE_TITLES[t] || 'Wochenplan';
 };
 window.toggleRF          = toggleRF;
 window.toggleER          = toggleER;
@@ -52,6 +60,11 @@ export function renderAll() {
   renderRecipes();
   renderWeek();
 }
+
+// ── Search ───────────────────────────────────────────────────────────────────
+window.filterRecipes = (q) => {
+  renderRecipes(q.toLowerCase().trim());
+};
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 document.getElementById('new-name').addEventListener('keydown', e => {

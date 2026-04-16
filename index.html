@@ -40,25 +40,27 @@
 
 <!-- Main App -->
 <div id="main-screen" style="display:none">
-  <div class="app">
-    <div class="header">
-      <h1>Wochenplan</h1>
+
+  <!-- Fixed Header -->
+  <div class="app-header">
+    <div class="app-header-inner">
+      <span class="app-title" id="page-title">Rezepte</span>
       <div class="sync-bar">
         <span class="dot" id="sync-dot"></span>
         <span id="sync-label">Verbinden…</span>
         <button class="btn btn-sm" onclick="doLogout()">Abmelden</button>
       </div>
     </div>
+  </div>
 
-    <div class="tabs">
-      <button class="tab active" onclick="showTab('rezepte')">Rezepte</button>
-      <button class="tab" onclick="showTab('woche')">Woche</button>
-      <button class="tab" onclick="showTab('einkauf')">Einkauf</button>
-      <button class="tab" onclick="showTab('archiv')">Archiv</button>
-    </div>
+  <!-- Scrollable content -->
+  <div class="app-content">
 
     <!-- REZEPTE -->
-    <div id="tab-rezepte">
+    <div id="tab-rezepte" class="tab-pane">
+      <div class="search-wrap">
+        <input type="text" id="recipe-search" class="search-input" placeholder="Rezepte suchen…" oninput="filterRecipes(this.value)" />
+      </div>
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
         <p class="label" style="margin:0">Neues Rezept</p>
         <button class="btn btn-sm" onclick="openQE()">+ Schnellerfassung</button>
@@ -89,7 +91,7 @@
     </div>
 
     <!-- WOCHE -->
-    <div id="tab-woche" style="display:none">
+    <div id="tab-woche" class="tab-pane" style="display:none">
       <div class="week-header">
         <span class="week-title" id="week-title">Wochenplan</span>
         <button class="btn btn-sm" id="btn-generieren" onclick="openDrawModal()">Neu generieren</button>
@@ -104,7 +106,7 @@
     </div>
 
     <!-- EINKAUF -->
-    <div id="tab-einkauf" style="display:none">
+    <div id="tab-einkauf" class="tab-pane" style="display:none">
       <div class="row" style="margin-bottom:1rem">
         <div class="pills">
           <button class="pill on" id="s-by-recipe" onclick="setShopView('recipe')">Nach Rezept</button>
@@ -115,10 +117,32 @@
     </div>
 
     <!-- ARCHIV -->
-    <div id="tab-archiv" style="display:none">
+    <div id="tab-archiv" class="tab-pane" style="display:none">
       <div id="archiv-view"><div class="empty">Noch keine archivierten Wochen.</div></div>
     </div>
+
   </div>
+
+  <!-- Bottom Navigation -->
+  <nav class="bottom-nav">
+    <button class="nav-item active" id="nav-rezepte" onclick="showTab('rezepte')">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/></svg>
+      <span class="nav-label">Rezepte</span>
+    </button>
+    <button class="nav-item" id="nav-woche" onclick="showTab('woche')">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      <span class="nav-label">Woche</span>
+    </button>
+    <button class="nav-item" id="nav-einkauf" onclick="showTab('einkauf')">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+      <span class="nav-label">Einkauf</span>
+    </button>
+    <button class="nav-item" id="nav-archiv" onclick="showTab('archiv')">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+      <span class="nav-label">Archiv</span>
+    </button>
+  </nav>
+
 </div>
 
 <!-- Draw Modal -->
