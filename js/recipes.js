@@ -219,39 +219,6 @@ export function closeQE() {
   document.getElementById('qe-modal').style.display = 'none';
 }
 
-function parseIngredientLineFallback(line) {
-  line = line.trim();
-  if (!line) return null;
-
-  // Brüche ersetzen
-  const FRACTIONS = { '¼': 0.25, '½': 0.5, '¾': 0.75, '⅓': 0.333, '⅔': 0.667, '⅛': 0.125 };
-  for (const [sym, val] of Object.entries(FRACTIONS)) {
-    line = line.replace(new RegExp('(\\d+)\\s*' + sym), (_, n) => String(parseFloat(n) + val));
-    line = line.replace(sym, String(val));
-  }
-
-  const UNITS = ['kg', 'g', 'ml', 'dl', 'cl', 'l', 'EL', 'TL', 'Prise', 'Bund', 'Dose', 'Pck\\.', 'Stück'];
-  const up = UNITS.join('|');
-
-  // Multiplikation: "2 x 400g Tomaten" oder "2x125g Mozzarella"
-  const mx1 = new RegExp('^([0-9.]+)\\s*[xX×]\\s*([0-9.]+)\\s*(' + up + ')s?\\.?\\s+(.+)$', 'i');
-  const mx2 = new RegExp('^([0-9.]+)\\s*[xX×]\\s*([0-9.]+)(' + up + ')s?\\.?\\s+(.+)$', 'i');
-  for (const re of [mx1, mx2]) {
-    const m = line.match(re);
-    if (m) return { m: Math.round(parseFloat(m[1]) * parseFloat(m[2]) * 100) / 100, u: m[3].replace('.', ''), n: m[4].trim() };
-  }
-
-  // Standard: Zahl + Einheit + Name
-  const std = new RegExp('^([0-9.]+)\\s*(' + up + ')s?\\.?\\s+(.+)$', 'i');
-  const sm = line.match(std);
-  if (sm) return { m: parseFloat(sm[1]), u: sm[2].replace('.', ''), n: sm[3].trim() };
-
-  // Nur Zahl + Name: "2 Eier"
-  const nm = line.match(/^([0-9.]+)\s+(.+)$/);
-  if (nm) return { m: parseFloat(nm[1]), u: 'Stück', n: nm[2].trim() };
-
-  return { m: 1, u: 'Stück', n: line };
-}
 
 export function parseIngredientLine(line) {
   line = line.trim();
@@ -284,15 +251,15 @@ export function parseIngredientLine(line) {
         Pkg:      { short: 'Pkg.',    plural: 'Pkg.',      versions: ['pkg', 'pkg.', 'packung', 'packungen'] },
       }
     });
-    if (r && r.ingredient && r.unitText) {
+    if (r && r.ingredient) {
       return {
         m: r.quantity || 1,
-        u: r.unitText,
+        u: r.unitText || '',
         n: r.ingredient.trim()
       };
     }
   } catch(e) {}
-  return parseIngredientLineFallback(line);
+  return {m: 1, u: '', n: line};
 }
 
 export async function saveQE() {
