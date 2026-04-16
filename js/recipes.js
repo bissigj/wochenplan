@@ -257,7 +257,7 @@ export function parseIngredientLine(line) {
   line = line.trim();
   if (!line) return null;
   try {
-    const r = parseIngredient(line, 'de');
+    const r = parseIngredient(line, 'en');
     if (r && r.ingredient) {
       return {
         m: r.quantity || 1,
