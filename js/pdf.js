@@ -68,7 +68,11 @@ export function exportPDF() {
     /* Page */
     .page{padding:2cm 2cm 1.5cm;min-height:100vh;page-break-after:always;position:relative}
     .page:last-child{page-break-after:avoid}
-    @media print{.page{padding:1.5cm 1.5cm 1cm}}
+    @media print{
+     .page{padding:1.5cm 1.5cm 1cm}
+     @page{margin:0}
+     body{margin:1.5cm}
+    }
 
     /* Cover page */
     .cover-accent{height:4px;background:#598234;border-radius:2px;margin-bottom:2cm}
