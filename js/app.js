@@ -53,7 +53,8 @@ window.setNote           = setNote;
 window.setShopView       = setShopView;
 window.viewArchiveWeek   = viewArchiveWeek;
 window.exportPDF         = exportPDF;
-window.exportRecipePDF = exportRecipePDF;
+window.exportRecipePDF   = exportRecipePDF;
+window.setSortOrder      = setSortOrder;
 
 // ── renderAll (used by auth after login) ─────────────────────────────────────
 export function renderAll() {
