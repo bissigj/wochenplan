@@ -15,6 +15,11 @@ export function renderRFilters() {
   ).join('');
 }
 
+function rerender() {
+  const q = document.getElementById('recipe-search')?.value || '';
+  renderRecipes(q);
+}
+
 export function toggleRF(f) {
   rFilters.has(f) ? rFilters.delete(f) : rFilters.add(f);
   renderRFilters();
