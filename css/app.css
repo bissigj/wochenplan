@@ -81,6 +81,18 @@ textarea{resize:vertical;min-height:60px}
 .tag-mittel, .pill.tag-mittel{background:var(--c-mittel-bg);color:var(--c-mittel);border-color:var(--c-mittel)}
 .tag-schwer, .pill.tag-schwer{background:var(--c-schwer-bg);color:var(--c-schwer);border-color:var(--c-schwer)}
 
+/* Filter-Pills: inaktiv = nur Umriss, aktiv = gefüllt */
+.pill.tag-pasta{background:transparent}.pill.tag-pasta.on{background:var(--c-pasta-bg)}
+.pill.tag-curry{background:transparent}.pill.tag-curry.on{background:var(--c-curry-bg)}
+.pill.tag-suppe{background:transparent}.pill.tag-suppe.on{background:var(--c-suppe-bg)}
+.pill.tag-salat{background:transparent}.pill.tag-salat.on{background:var(--c-salat-bg)}
+.pill.tag-auflauf{background:transparent}.pill.tag-auflauf.on{background:var(--c-auflauf-bg)}
+.pill.tag-frühstück{background:transparent}.pill.tag-frühstück.on{background:var(--c-frühstück-bg)}
+.pill.tag-sonstiges{background:transparent}.pill.tag-sonstiges.on{background:var(--c-sonstiges-bg)}
+.pill.tag-einfach{background:transparent}.pill.tag-einfach.on{background:var(--c-einfach-bg)}
+.pill.tag-mittel{background:transparent}.pill.tag-mittel.on{background:var(--c-mittel-bg)}
+.pill.tag-schwer{background:transparent}.pill.tag-schwer.on{background:var(--c-schwer-bg)}
+
 /* Layout helpers */
 .row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .label{font-size:11px;color:var(--text2);display:block;margin-bottom:4px}
