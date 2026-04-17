@@ -150,12 +150,31 @@ export async function addRecipe() {
 }
 
 export async function delR(id) {
+  const deleted = D.recipes.find(r => r.id === id);
+  const deletedDays = (D.weekPlan.days || []).filter(d => d.recipeId === id);
   D.recipes = D.recipes.filter(r => r.id !== id);
   D.weekPlan.days = (D.weekPlan.days || []).filter(d => d.recipeId !== id);
   await saveRecipesDebounced();
   renderRFilters();
   rerender();
   renderWeek();
+  // Undo Toast
+  let undone = false;
+  const toastEl = document.getElementById('toast');
+  toastEl.innerHTML = `"${deleted.name}" gelöscht. <span style="text-decoration:underline;cursor:pointer" onclick="undoDelR()">Rückgängig</span>`;
+  toastEl.classList.add('show');
+  window._undoDelR = async () => {
+    if (undone) return;
+    undone = true;
+    D.recipes.push(deleted);
+    deletedDays.forEach(d => D.weekPlan.days.push(d));
+    await saveRecipesDebounced();
+    renderRFilters();
+    rerender();
+    renderWeek();
+    toast('"' + deleted.name + '" wiederhergestellt');
+  };
+  setTimeout(() => { toastEl.classList.remove('show'); window._undoDelR = null; }, 5000);
 }
 
 export async function addIng(id) {
