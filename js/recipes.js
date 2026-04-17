@@ -29,6 +29,11 @@ export function toggleRF(f) {
   renderRecipes();
 }
 
+export function setSortOrder(v) {
+  sortOrder = v;
+  rerender();
+}
+
 export function renderRecipes(searchQuery = '') {
   const el = document.getElementById('r-list');
   let vis = D.recipes;
@@ -47,6 +52,10 @@ export function renderRecipes(searchQuery = '') {
       (r.ings || []).some(ing => ing.n.toLowerCase().includes(q))
     );
   }
+  if (sortOrder === 'name') vis.sort((a, b) => a.name.localeCompare(b.name));
+  else if (sortOrder === 'cat') vis.sort((a, b) => a.cat.localeCompare(b.cat) || a.name.localeCompare(b.name));
+  else if (sortOrder === 'time') vis.sort((a, b) => (a.time || 999) - (b.time || 999));
+  
   if (!vis.length) { el.innerHTML = '<div class="empty">Keine Rezepte gefunden.</div>'; return; }
   el.innerHTML = vis.map(r => {
     const isOpen = expandedR === r.id;
