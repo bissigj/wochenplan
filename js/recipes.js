@@ -11,7 +11,7 @@ export let rFilters = new Set();
 export function renderRFilters() {
   document.getElementById('r-count').textContent = D.recipes.length + ' Rezepte';
   document.getElementById('r-filters').innerHTML = [...CATS, ...AUFWAND].map(f =>
-    `<button class="pill ${rFilters.has(f) ? 'on' : ''}" onclick="toggleRF('${f}')">${f}</button>`
+    `<button class="pill tag-${f} ${rFilters.has(f) ? 'on' : ''}" onclick="toggleRF('${f}')">${f}</button>`
   ).join('');
 }
 
