@@ -170,3 +170,68 @@ export function exportPDF() {
   const pw = window.open(url, '_blank');
   if (pw) { pw.onload = () => { setTimeout(() => { pw.print(); URL.revokeObjectURL(url); }, 300); }; }
 }
+
+export function exportRecipePDF(id) {
+  const r = D.recipes.find(r => r.id === id);
+  if (!r) return;
+  const CC = { pasta:'#854F0B',curry:'#993C1D',suppe:'#0F6E56',salat:'#3B6D11',auflauf:'#534AB7','frühstück':'#993556',sonstiges:'#5F5E5A' };
+  const AC = { einfach:'#27500A',mittel:'#633806',schwer:'#712B13' };
+  const ingsHTML = (r.ings || []).map(ing => {
+    const m = ing.m > 0 ? (Number.isInteger(ing.m) ? ing.m : ing.m.toFixed(1)) : '';
+    const qty = [m, ing.u].filter(Boolean).join(' ');
+    return `<div class="ing-item"><span class="ing-name">${ing.n}</span><span class="ing-qty">${qty}</span></div>`;
+  }).join('') || '<div class="ing-item"><span class="ing-name">—</span></div>';
+  const srcLine = r.src && r.src.val
+    ? (r.src.type === 'url' ? `<a href="${r.src.val}">${r.src.val}</a>` : `📖 ${r.src.val}${r.src.seite ? ', S. ' + r.src.seite : ''}`)
+    : '';
+  const html = `<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><title>${r.name}</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:-apple-system,"Helvetica Neue",Arial,sans-serif;font-size:11pt;color:#1a1a1a;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .page{padding:2cm}
+    .accent{height:4px;background:#598234;border-radius:2px;margin-bottom:1.5cm}
+    .recipe-header{border-left:4px solid #598234;padding-left:14px;margin-bottom:18px}
+    .recipe-name{font-size:22pt;font-weight:700;color:#1a1a1a;letter-spacing:-0.5px;line-height:1.1;margin-bottom:10px}
+    .meta-row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+    .tag{font-size:8.5pt;padding:2px 9px;border-radius:99px;display:inline-block;font-weight:500}
+    .chip{font-size:8.5pt;color:#666;padding:2px 0}
+    .two-col{display:grid;grid-template-columns:1fr 1.5fr;gap:28px;margin-top:22px}
+    .col-title{font-size:8pt;font-weight:700;color:#598234;text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;padding-bottom:6px;border-bottom:1.5px solid #598234}
+    .ing-item{display:flex;justify-content:space-between;align-items:baseline;padding:5px 0;border-bottom:.5px solid #f0f0f0;font-size:10pt}
+    .ing-name{color:#1a1a1a}.ing-qty{color:#666;font-size:9.5pt;white-space:nowrap;padding-left:12px}
+    .step{display:flex;gap:10px;align-items:flex-start;margin-bottom:10px}
+    .snum{width:20px;height:20px;border-radius:50%;background:#598234;color:#fff;font-size:8pt;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+    .step-text{font-size:10pt;line-height:1.6}
+    .src-line{font-size:8.5pt;color:#888;margin-top:16px;padding-top:10px;border-top:.5px solid #eee}
+    .src-line a{color:#598234}
+    @media print{@page{margin:0}body{margin:1.5cm}}
+  </style></head><body>
+  <div class="page">
+    <div class="accent"></div>
+    <div class="recipe-header">
+      <div class="recipe-name">${r.name}</div>
+      <div class="meta-row">
+        <span class="tag" style="background:${CC[r.cat]||'#888'}18;color:${CC[r.cat]||'#888'}">${r.cat}</span>
+        <span class="tag" style="background:${AC[r.auf]||'#888'}18;color:${AC[r.auf]||'#888'}">${r.auf}</span>
+        ${r.time ? `<span class="chip">· ${r.time} min</span>` : ''}
+        <span class="chip">· ${r.portions || 2} Portionen</span>
+      </div>
+    </div>
+    <div class="two-col">
+      <div>
+        <div class="col-title">Zutaten</div>
+        ${ingsHTML}
+      </div>
+      <div>
+        <div class="col-title">Zubereitung</div>
+        ${(r.steps || []).map((s, i) => `<div class="step"><span class="snum">${i+1}</span><span class="step-text">${s}</span></div>`).join('') || '<p>—</p>'}
+      </div>
+    </div>
+    ${srcLine ? `<div class="src-line">${srcLine}</div>` : ''}
+  </div>
+  </body></html>`;
+  const blob = new Blob([html], { type: 'text/html' });
+  const url = URL.createObjectURL(blob);
+  const pw = window.open(url, '_blank');
+  if (pw) { pw.onload = () => { setTimeout(() => { pw.print(); URL.revokeObjectURL(url); }, 300); }; }
+}
