@@ -7,6 +7,7 @@ import { renderWeek } from './week.js';
 
 export let expandedR = null;
 export let rFilters = new Set();
+export let sortOrder = 'name'; // 'name' | 'cat' | 'time'
 
 window.undoDelR = () => { if (window._undoDelR) window._undoDelR(); };
 
