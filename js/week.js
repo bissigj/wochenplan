@@ -134,7 +134,7 @@ function renderWeekPlan(plan, readonly = false) {
     const isWeekend = i >= 5;
     const factor = (d.portions || plan.portions || 2) / (r.portions || 2);
     const ingsHTML = (r.ings || []).length
-      ? r.ings.map(ing => `<span style="font-size:12px;padding:2px 7px;background:var(--bg2);border-radius:99px;border:0.5px solid var(--bd);color:var(--text2);display:inline-block;margin:2px">${fmtIng(ing, factor)}</span>`).join('')
+      ? r.ings.map((ing, i) => `<div class="ing-row">${fmtIng(ing, factor)}</div>`).join('')
       : '<span style="font-size:12px;color:var(--text3)">Keine Zutaten.</span>';
     const stepsHTML = (r.steps || []).length
       ? r.steps.map((s, si) => `<div class="step-mini"><span class="step-mini-num">${si + 1}</span><span style="font-size:12px">${s}</span></div>`).join('')
@@ -160,7 +160,7 @@ function renderWeekPlan(plan, readonly = false) {
       </div>` : ''}
       ${d.active && isOpen ? `<div class="day-detail open">
         <div style="font-size:11px;color:var(--text3);margin-bottom:4px">Zutaten (${d.portions || plan.portions} Port.)</div>
-        <div style="display:flex;flex-wrap:wrap;gap:3px;margin-bottom:10px">${ingsHTML}</div>
+        <div class="ing-list" style="margin-bottom:10px">${ingsHTML}</div>
         <div class="divider"></div>
         <div style="font-size:11px;color:var(--text3);margin-bottom:6px;margin-top:8px">Zubereitung</div>
         ${stepsHTML}
