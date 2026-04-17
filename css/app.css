@@ -70,16 +70,16 @@ textarea{resize:vertical;min-height:60px}
 
 /* Tags */
 .tag{font-size:11px;padding:2px 8px;border-radius:99px;white-space:nowrap}
-pill.tag-pasta{background:var(--c-pasta-bg);color:var(--c-pasta)}
-pill.tag-curry{background:var(--c-curry-bg);color:var(--c-curry)}
-pill.tag-suppe{background:var(--c-suppe-bg);color:var(--c-suppe)}
-pill.tag-salat{background:var(--c-salat-bg);color:var(--c-salat)}
-pill.tag-auflauf{background:var(--c-auflauf-bg);color:var(--c-auflauf)}
-pill.tag-frühstück{background:var(--c-frühstück-bg);color:var(--c-frühstück)}
-pill.tag-sonstiges{background:var(--c-sonstiges-bg);color:var(--c-sonstiges)}
-pill.tag-einfach{background:var(--c-einfach-bg);color:var(--c-einfach)}
-pill.tag-mittel{background:var(--c-mittel-bg);color:var(--c-mittel)}
-pill.tag-schwer{background:var(--c-schwer-bg);color:var(--c-schwer)}
+.tag-pasta, .pill.tag-pasta{background:var(--c-pasta-bg);color:var(--c-pasta);border-color:var(--c-pasta)}
+.tag-curry, .pill.tag-curry{background:var(--c-curry-bg);color:var(--c-curry);border-color:var(--c-curry)}
+.tag-suppe, .pill.tag-suppe{background:var(--c-suppe-bg);color:var(--c-suppe);border-color:var(--c-suppe)}
+.tag-salat, .pill.tag-salat{background:var(--c-salat-bg);color:var(--c-salat);border-color:var(--c-salat)}
+.tag-auflauf, .pill.tag-auflauf{background:var(--c-auflauf-bg);color:var(--c-auflauf);border-color:var(--c-auflauf)}
+.tag-frühstück, .pill.tag-frühstück{background:var(--c-frühstück-bg);color:var(--c-frühstück);border-color:var(--c-frühstück)}
+.tag-sonstiges, .pill.tag-sonstiges{background:var(--c-sonstiges-bg);color:var(--c-sonstiges);border-color:var(--c-sonstiges)}
+.tag-einfach, .pill.tag-einfach{background:var(--c-einfach-bg);color:var(--c-einfach);border-color:var(--c-einfach)}
+.tag-mittel, .pill.tag-mittel{background:var(--c-mittel-bg);color:var(--c-mittel);border-color:var(--c-mittel)}
+.tag-schwer, .pill.tag-schwer{background:var(--c-schwer-bg);color:var(--c-schwer);border-color:var(--c-schwer)}
 
 /* Layout helpers */
 .row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
