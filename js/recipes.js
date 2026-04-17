@@ -109,7 +109,7 @@ export function renderRecipes(searchQuery = '') {
 
 export function toggleER(id) {
   expandedR = expandedR === id ? null : id;
-  renderRecipes();
+  rerender();
   initSortable();
 }
 
@@ -145,7 +145,7 @@ export async function addRecipe() {
   document.getElementById('new-name').value = '';
   await saveRecipesDebounced();
   renderRFilters();
-  renderRecipes();
+  rerender();
 }
 
 export async function delR(id) {
@@ -153,7 +153,7 @@ export async function delR(id) {
   D.weekPlan.days = (D.weekPlan.days || []).filter(d => d.recipeId !== id);
   await saveRecipesDebounced();
   renderRFilters();
-  renderRecipes();
+  rerender();
   renderWeek();
 }
 
@@ -166,13 +166,13 @@ export async function addIng(id) {
   document.getElementById('im-' + id).value = '';
   document.getElementById('in-' + id).value = '';
   await saveRecipesDebounced();
-  renderRecipes();
+  rerender();
 }
 
 export async function delIng(id, i) {
   D.recipes.find(r => r.id === id).ings.splice(i, 1);
   await saveRecipesDebounced();
-  renderRecipes();
+  rerender();
 }
 
 export async function addStep(id) {
@@ -182,13 +182,13 @@ export async function addStep(id) {
   D.recipes.find(r => r.id === id).steps.push(v);
   inp.value = '';
   await saveRecipesDebounced();
-  renderRecipes();
+  rerender();
 }
 
 export async function delStep(id, i) {
   D.recipes.find(r => r.id === id).steps.splice(i, 1);
   await saveRecipesDebounced();
-  renderRecipes();
+  rerender();
 }
 
 export async function updR(id, key, val) {
@@ -199,7 +199,7 @@ export async function updR(id, key, val) {
 export async function setSrcType(id, type) {
   D.recipes.find(r => r.id === id).src = { type, val: '', seite: '' };
   await saveRecipesDebounced();
-  renderRecipes();
+  rerender();
 }
 
 export async function updSrc(id, key, val) {
@@ -207,7 +207,7 @@ export async function updSrc(id, key, val) {
   if (!r.src) r.src = { type: 'url', val: '', seite: '' };
   r.src[key] = val;
   await saveRecipesDebounced();
-  renderRecipes();
+  rerender();
 }
 
 // ── Quick Entry ───────────────────────────────────────────────────────────────
@@ -289,6 +289,6 @@ export async function saveQE() {
   closeQE();
   await saveRecipesDebounced();
   renderRFilters();
-  renderRecipes();
+  rerender();
   toast('Rezept hinzugefügt');
 }
