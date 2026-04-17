@@ -8,6 +8,8 @@ import { renderWeek } from './week.js';
 export let expandedR = null;
 export let rFilters = new Set();
 
+window.undoDelR = () => { if (window._undoDelR) window._undoDelR(); };
+
 export function renderRFilters() {
   document.getElementById('r-count').textContent = D.recipes.length + ' Rezepte';
   document.getElementById('r-filters').innerHTML = [...CATS, ...AUFWAND].map(f =>
