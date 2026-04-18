@@ -67,7 +67,7 @@ export function renderRecipes(searchQuery = '') {
         <span class="tag tag-${r.cat}">${r.cat}</span>
         <span class="tag tag-${r.auf}">${r.auf}</span>
         <button class="expand-btn" onclick="toggleER(${r.id})">${isOpen ? '▲' : '▼'}</button>
-        <button class="btn btn-sm" onclick="exportRecipePDF(${r.id})">↓ PDF</button>
+
         <button class="btn btn-d btn-sm" onclick="delR(${r.id})">×</button>
       </div>
       ${isOpen ? `<div class="recipe-detail">
@@ -126,6 +126,9 @@ export function renderRecipes(searchQuery = '') {
             </label>
             ${r.img ? `<button class="btn btn-d btn-sm" onclick="removeRecipeImage(${r.id})">Foto entfernen</button>` : ''}
           </div>
+        </div>
+        <div class="row" style="margin-top:12px">
+        <button class="btn btn-sm" onclick="exportRecipePDF(${r.id})">↓ PDF exportieren</button>
         </div>
       </div></div>` : ''}
     </div>`;
