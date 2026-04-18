@@ -280,7 +280,7 @@ body{padding:0;margin:0}
 
 /* Recipe images */
 .recipe-img{
-  width:calc(100% + 2.5rem);height:180px;
+  width:calc(100% + 2.5rem);height:220px;
   background-size:cover;background-position:center;
   border-radius:var(--r) var(--r) 0 0;
   margin:-1rem -1.25rem 1rem;
