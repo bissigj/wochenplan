@@ -4,6 +4,23 @@ import { viewingArchive } from './week.js';
 
 export let shopView = 'recipe';
 
+// ── Shared aggregation ────────────────────────────────────────────────────────
+export function aggregateIngredients(plan) {
+  const agg = {};
+  (plan.days || []).filter(d => d.active && d.recipeId).forEach(d => {
+    const r = D.recipes.find(r => r.id === d.recipeId);
+    if (!r || !r.ings) return;
+    const factor = (d.portions || plan.portions || 2) / (r.portions || 2);
+    r.ings.forEach(ing => {
+      const key = ing.n.toLowerCase().trim() + ':' + ing.u;
+      if (!agg[key]) agg[key] = { n: ing.n, u: ing.u, m: 0, recipes: [] };
+      agg[key].m += ing.m * factor;
+      if (!agg[key].recipes.includes(r.name)) agg[key].recipes.push(r.name);
+    });
+  });
+  return Object.values(agg).sort((a, b) => a.n.localeCompare(b.n));
+}
+
 export function getActivePlan() {
   return viewingArchive || D.weekPlan;
 }
@@ -38,19 +55,7 @@ export function renderShop() {
       </div>`;
     }).join('') || '<div class="empty">Keine Zutaten hinterlegt.</div>';
   } else {
-    const agg = {};
-    activeDays.forEach(d => {
-      const r = D.recipes.find(r => r.id === d.recipeId);
-      if (!r || !r.ings) return;
-      const factor = (d.portions || plan.portions || 2) / (r.portions || 2);
-      r.ings.forEach(ing => {
-        const key = ing.n.toLowerCase().trim() + ':' + ing.u;
-        if (!agg[key]) agg[key] = { n: ing.n, u: ing.u, m: 0, recipes: [] };
-        agg[key].m += ing.m * factor;
-        if (!agg[key].recipes.includes(r.name)) agg[key].recipes.push(r.name);
-      });
-    });
-    const items = Object.values(agg).sort((a, b) => a.n.localeCompare(b.n));
+    const items = aggregateIngredients(plan);
     if (!items.length) { el.innerHTML = '<div class="empty">Keine Zutaten hinterlegt.</div>'; return; }
     el.innerHTML = '<div class="card">' + items.map((it, i) => {
       const m = Number.isInteger(it.m) ? it.m : Math.round(it.m * 10) / 10;

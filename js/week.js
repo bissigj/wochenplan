@@ -13,12 +13,24 @@ export let drawDiff = new Set(['auf_einfach', 'auf_mittel', 'auf_schwer']);
 export let drawMaxTime = 0;
 
 // ── Draw Modal ────────────────────────────────────────────────────────────────
+// Time filter options – change here to add/remove options
+const TIME_OPTIONS = [
+  { label: 'Beliebig', v: 0 },
+  { label: '≤ 30 min', v: 30 },
+  { label: '≤ 60 min', v: 60 },
+  { label: '≤ 90 min', v: 90 },
+];
+
 export function openDrawModal() {
-  // Dynamisch aus Settings
-  const pillsEl = document.getElementById('draw-diff-pills');
-  pillsEl.innerHTML = D.settings.aufwand.map(a =>
-    `<button class="pill ${drawDiff.has(a.id) ? 'on' : ''} tag-${a.id}" 
+  // Aufwand-Pills – dynamisch aus Settings
+  document.getElementById('draw-diff-pills').innerHTML = D.settings.aufwand.map(a =>
+    `<button class="pill ${drawDiff.has(a.id) ? 'on' : ''} tag-${a.id}"
       data-v="${a.id}" onclick="toggleDrawPill(this)">${a.label}</button>`
+  ).join('');
+  // Zeit-Pills – aus TIME_OPTIONS
+  document.getElementById('draw-time-pills').innerHTML = TIME_OPTIONS.map(o =>
+    `<button class="pill ${drawMaxTime === o.v ? 'on' : ''}"
+      data-v="${o.v}" onclick="setTimePill(this)">${o.label}</button>`
   ).join('');
   updatePoolInfo();
   document.getElementById('draw-modal').style.display = 'flex';

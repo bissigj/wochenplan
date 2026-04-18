@@ -1,6 +1,6 @@
 import { D, getCatLabel, getAufLabel } from './data.js';
 import { fmtIng, toast } from './ui.js';
-import { getActivePlan } from './shopping.js';
+import { getActivePlan, aggregateIngredients } from './shopping.js';
 
 // ── PDF Design Tokens ─────────────────────────────────────────────────────────
 // Change these to restyle all PDF exports at once
@@ -31,19 +31,7 @@ export function exportShopPDF() {
     toast('Keine aktive Woche.');
     return;
   }
-  const agg = {};
-  plan.days.filter(d => d.active && d.recipeId).forEach(d => {
-    const r = D.recipes.find(r => r.id === d.recipeId);
-    if (!r || !r.ings) return;
-    const factor = (d.portions || plan.portions || 2) / (r.portions || 2);
-    r.ings.forEach(ing => {
-      const key = ing.n.toLowerCase().trim() + ':' + ing.u;
-      if (!agg[key]) agg[key] = { n: ing.n, u: ing.u, m: 0, recipes: [] };
-      agg[key].m += ing.m * factor;
-      if (!agg[key].recipes.includes(r.name)) agg[key].recipes.push(r.name);
-    });
-  });
-  const items = Object.values(agg).sort((a, b) => a.n.localeCompare(b.n));
+  const items = aggregateIngredients(plan);
   const html = `<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><title>Einkaufsliste</title>
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
@@ -85,19 +73,7 @@ export function exportPDF() {
   const plan = getActivePlan();
   if (!plan.days || !plan.days.length) { toast('Keine Woche zum Exportieren.'); return; }
   const activeDays = plan.days.filter(d => d.active && d.recipeId);
-  const agg = {};
-  activeDays.forEach(d => {
-    const r = D.recipes.find(r => r.id === d.recipeId);
-    if (!r || !r.ings) return;
-    const factor = (d.portions || plan.portions || 2) / (r.portions || 2);
-    r.ings.forEach(ing => {
-      const key = ing.n.toLowerCase().trim() + ':' + ing.u;
-      if (!agg[key]) agg[key] = { n: ing.n, u: ing.u, m: 0, recipes: [] };
-      agg[key].m += ing.m * factor;
-      if (!agg[key].recipes.includes(r.name)) agg[key].recipes.push(r.name);
-    });
-  });
-  const shopItems = Object.values(agg).sort((a, b) => a.n.localeCompare(b.n));
+  const shopItems = aggregateIngredients(plan);
 
 
   const recipePages = activeDays.map(d => {
