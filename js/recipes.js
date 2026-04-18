@@ -61,7 +61,6 @@ export function renderRecipes(searchQuery = '') {
   el.innerHTML = vis.map(r => {
     const isOpen = expandedR === r.id;
     return `<div class="card">
-      ${r.img ? `<div class="recipe-img" style="background-image:url('${r.img}')"></div>` : ''}
       <div class="recipe-row">
         <span class="recipe-name-col">${r.name}</span>
         <span class="recipe-meta">${r.time ? r.time + ' min' : ''}</span>
@@ -71,7 +70,9 @@ export function renderRecipes(searchQuery = '') {
         <button class="btn btn-sm" onclick="exportRecipePDF(${r.id})">↓ PDF</button>
         <button class="btn btn-d btn-sm" onclick="delR(${r.id})">×</button>
       </div>
-      ${isOpen ? `<div class="recipe-detail"><div class="detail-grid">
+      ${isOpen ? `<div class="recipe-detail">
+      ${r.img ? `<div class="recipe-img" style="background-image:url('${r.img}');margin-bottom:1rem"></div>` : ''}
+      <div class="detail-grid">
         <div>
           <div class="section-title">Eckdaten</div>
           <div class="row" style="gap:8px;margin-bottom:10px">
