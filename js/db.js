@@ -38,18 +38,52 @@ export async function sbUpdate(table, id, body) {
   return r.json();
 }
 
+// Resize image to max 1200px wide, 16:9 crop, JPEG 0.85
+export async function resizeImage(file, maxWidth = 1200, quality = 0.85) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const objectUrl = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+      const scale = Math.min(1, maxWidth / img.width);
+      const w = Math.round(img.width * scale);
+      const h = Math.round(img.height * scale);
+      const canvas = document.createElement('canvas');
+      canvas.width = w;
+      canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      canvas.toBlob(blob => {
+        if (!blob) { reject(new Error('Canvas toBlob failed')); return; }
+        resolve(new File([blob], 'rezept.jpg', { type: 'image/jpeg' }));
+      }, 'image/jpeg', quality);
+    };
+    img.onerror = reject;
+    img.src = objectUrl;
+  });
+}
+
 export async function sbUploadImage(file) {
-  const ext = file.name.split('.').pop().toLowerCase();
-  const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+  // Resize before upload
+  let uploadFile = file;
+  try { uploadFile = await resizeImage(file); } catch(e) { console.warn('Resize failed, using original', e); }
+
+  // Get fresh token from localStorage
+  let auth = H['Authorization'];
+  try {
+    const s = JSON.parse(localStorage.getItem('wp_session'));
+    if (s && s.access_token) auth = 'Bearer ' + s.access_token;
+  } catch(e) {}
+
+  const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.jpg`;
   const r = await fetch(`${SUPA_URL}/storage/v1/object/rezeptbilder/${path}`, {
     method: 'POST',
     headers: {
       'apikey': SUPA_KEY,
-      'Authorization': H['Authorization'],
-      'Content-Type': file.type,
+      'Authorization': auth,
+      'Content-Type': 'image/jpeg',
       'x-upsert': 'true'
     },
-    body: file
+    body: uploadFile
   });
   if (!r.ok) { console.error('Upload failed', r.status, await r.text()); return null; }
   return `${SUPA_URL}/storage/v1/object/public/rezeptbilder/${path}`;
