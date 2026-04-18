@@ -112,7 +112,7 @@ export function renderWeek() {
     btnBack.style.display = '';
     renderWeekPlan(viewingArchive, true);
   } else {
-    document.getElementById('week-title').textContent = D.weekPlan.kw || 'Wochenplan';
+    document.getElementById('week-title').textContent = 'Wochenplan';
     banner.style.display = 'none';
     btnGen.style.display = '';
     btnBack.style.display = 'none';
