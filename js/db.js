@@ -37,3 +37,20 @@ export async function sbUpdate(table, id, body) {
   if (!r.ok) { console.error('sbUpdate', table, r.status, await r.text()); return []; }
   return r.json();
 }
+
+export async function sbUploadImage(file) {
+  const ext = file.name.split('.').pop().toLowerCase();
+  const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+  const r = await fetch(`${SUPA_URL}/storage/v1/object/rezeptbilder/${path}`, {
+    method: 'POST',
+    headers: {
+      'apikey': SUPA_KEY,
+      'Authorization': H['Authorization'],
+      'Content-Type': file.type,
+      'x-upsert': 'true'
+    },
+    body: file
+  });
+  if (!r.ok) { console.error('Upload failed', r.status, await r.text()); return null; }
+  return `${SUPA_URL}/storage/v1/object/public/rezeptbilder/${path}`;
+}

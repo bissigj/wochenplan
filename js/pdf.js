@@ -35,6 +35,7 @@ export function exportPDF() {
       return `<div class="ing-item"><span class="ing-name">${ing.n}</span><span class="ing-qty">${qty}</span></div>`;
     }).join('') || '<div class="ing-item"><span class="ing-name">—</span></div>';
     return `<div class="page">
+      ${r.img ? `<div style="width:100%;height:200px;background-image:url('${r.img}');background-size:cover;background-position:center;border-radius:8px;margin-bottom:20px"></div>` : ''}
       <div class="recipe-header">
         <div class="recipe-day">${d.day}</div>
         <div class="recipe-name">${r.name}</div>
@@ -133,7 +134,8 @@ export function exportPDF() {
       if (!d.active || !d.recipeId) return `<div class="day-box"><div class="day-name">${d.day}</div><div class="day-inactive">—</div></div>`;
       const r = D.recipes.find(r => r.id === d.recipeId);
       if (!r) return '';
-      return `<div class="day-box active">
+      return `<div class="day-box active" style="${r.img ? 'padding:0;overflow:hidden' : ''}">
+        ${r.img ? `<div style="width:100%;height:80px;background-image:url('${r.img}');background-size:cover;background-position:center"></div><div style="padding:10px 14px">` : ''}
         <div class="day-name">${d.day}</div>
         <div class="day-recipe">${r.name}</div>
         <div class="day-tags">
@@ -141,6 +143,7 @@ export function exportPDF() {
           <span class="tag" style="background:${AC[r.auf]||'#888'}18;color:${AC[r.auf]||'#888'}">${r.auf}</span>
         </div>
         ${d.note ? `<div class="day-note">${d.note}</div>` : ''}
+        ${r.img ? '</div>' : ''}
       </div>`;
     }).join('')}</div>
   </div>

@@ -140,6 +140,7 @@ function renderWeekPlan(plan, readonly = false) {
       ? r.steps.map((s, si) => `<div class="step-mini"><span class="step-mini-num">${si + 1}</span><span style="font-size:12px">${s}</span></div>`).join('')
       : '<span style="font-size:12px;color:var(--text3)">Keine Schritte.</span>';
     return `<div class="day-card ${d.active ? '' : 'off'} ${isWeekend ? 'day-card-weekend' : ''}">
+      ${r.img && d.active ? `<div class="day-card-img" style="background-image:url('${r.img}')"></div>` : ''}
       <div class="day-card-top" onclick="toggleDay(${i})">
         <div class="day-lbl ${isWeekend ? 'day-lbl-weekend' : ''}">${d.day}${!d.active ? '<span style="font-size:10px;background:var(--bg3);padding:1px 6px;border-radius:99px;margin-left:4px">ausgeblendet</span>' : ''}</div>
         ${d.active ? `<div class="day-recipe-name">${r.name}</div>

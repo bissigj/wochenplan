@@ -1,6 +1,7 @@
 import { D } from './data.js';
 import { parseIngredient } from 'https://esm.sh/@jlucaspains/sharp-recipe-parser@1.3.6';
 import { saveRecipesDebounced, saveWeekNow } from './data.js';
+import { sbUploadImage } from './db.js';
 import { CATS, AUFWAND, EINHEITEN } from './config.js';
 import { fmtIng, srcHTML, toast } from './ui.js';
 import { renderWeek } from './week.js';
@@ -60,6 +61,7 @@ export function renderRecipes(searchQuery = '') {
   el.innerHTML = vis.map(r => {
     const isOpen = expandedR === r.id;
     return `<div class="card">
+      ${r.img ? `<div class="recipe-img" style="background-image:url('${r.img}')"></div>` : ''}
       <div class="recipe-row">
         <span class="recipe-name-col">${r.name}</span>
         <span class="recipe-meta">${r.time ? r.time + ' min' : ''}</span>
@@ -114,6 +116,14 @@ export function renderRecipes(searchQuery = '') {
             : `<input type="text" value="${r.src?.val || ''}" placeholder="Kochbuchname" style="margin-bottom:6px" onchange="updSrc(${r.id},'val',this.value)" />
                <input type="text" value="${r.src?.seite || ''}" placeholder="Seite (optional)" onchange="updSrc(${r.id},'seite',this.value)" />`}
           <div style="margin-top:6px">${srcHTML(r.src)}</div>
+          <div class="section-title" style="margin-top:12px">Foto</div>
+          ${r.img ? `<div style="margin-bottom:8px"><img src="${r.img}" style="width:100%;max-height:180px;object-fit:cover;border-radius:var(--rs)" /></div>` : ''}
+          <div class="img-upload-wrap">
+            <label class="btn btn-sm" style="cursor:pointer">
+              <span class="img-upload-label">${r.img ? 'Foto ersetzen' : 'Foto hochladen'}</span>
+              <input type="file" accept="image/*" style="display:none" onchange="uploadRecipeImage(${r.id},this)" />
+            </label>
+          </div>
         </div>
       </div></div>` : ''}
     </div>`;
@@ -226,6 +236,21 @@ export async function delStep(id, i) {
 export async function updR(id, key, val) {
   D.recipes.find(r => r.id === id)[key] = val;
   await saveRecipesDebounced();
+}
+
+export async function uploadRecipeImage(id, input) {
+  const file = input.files[0];
+  if (!file) return;
+  const label = input.parentElement.querySelector('.img-upload-label');
+  if (label) label.textContent = 'Wird hochgeladen…';
+  const url = await sbUploadImage(file);
+  if (url) {
+    D.recipes.find(r => r.id === id).img = url;
+    await saveRecipesDebounced();
+    rerender();
+  } else {
+    if (label) label.textContent = 'Fehler beim Hochladen';
+  }
 }
 
 export async function setSrcType(id, type) {
