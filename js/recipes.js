@@ -185,6 +185,8 @@ export async function addRecipe() {
 export async function delR(id) {
   const deleted = D.recipes.find(r => r.id === id);
   const deletedDays = (D.weekPlan.days || []).filter(d => d.recipeId === id);
+  // Delete image from storage if exists
+  if (deleted && deleted.img) await sbDeleteImage(deleted.img);
   D.recipes = D.recipes.filter(r => r.id !== id);
   D.weekPlan.days = (D.weekPlan.days || []).filter(d => d.recipeId !== id);
   await saveRecipesDebounced();
