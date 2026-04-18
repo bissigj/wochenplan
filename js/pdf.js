@@ -35,7 +35,7 @@ export function exportPDF() {
       return `<div class="ing-item"><span class="ing-name">${ing.n}</span><span class="ing-qty">${qty}</span></div>`;
     }).join('') || '<div class="ing-item"><span class="ing-name">—</span></div>';
     return `<div class="page">
-      ${r.img ? `<div style="width:100%;height:160px;background-image:url('${r.img}');background-size:cover;background-position:center top;border-radius:8px;margin-bottom:18px"></div>` : ''}
+      ${r.img ? `<div style="width:100%;height:220px;background-image:url('${r.img}');background-size:cover;background-position:center top;border-radius:8px;margin-bottom:18px"></div>` : ''}
       <div class="recipe-header">
         <div class="recipe-day">${d.day}</div>
         <div class="recipe-name">${r.name}</div>
@@ -135,7 +135,7 @@ export function exportPDF() {
       const r = D.recipes.find(r => r.id === d.recipeId);
       if (!r) return '';
       return `<div class="day-box active" style="${r.img ? 'padding:0;overflow:hidden' : ''}">
-        ${r.img ? `<div style="width:100%;height:80px;background-image:url('${r.img}');background-size:cover;background-position:center"></div><div style="padding:10px 14px">` : ''}
+        ${r.img ? `<div style="width:100%;height:120px;background-image:url('${r.img}');background-size:cover;background-position:center"></div><div style="padding:10px 14px">` : ''}
         <div class="day-name">${d.day}</div>
         <div class="day-recipe">${r.name}</div>
         <div class="day-tags">
