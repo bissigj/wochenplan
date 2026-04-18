@@ -76,10 +76,10 @@ export function exportPDF() {
     });
   });
   const shopItems = Object.values(agg).sort((a, b) => a.n.localeCompare(b.n));
-  const CC = { pasta: '#854F0B', curry: '#993C1D', suppe: '#0F6E56', salat: '#3B6D11', auflauf: '#534AB7', 'frühstück': '#993556', sonstiges: '#5F5E5A' };
-  const AC = { einfach: '#27500A', mittel: '#633806', schwer: '#712B13' };
-  const catColor = (id) => CC[getCatLabel(id)] || '#888';
-  const aufColor = (id) => AC[getAufLabel(id)] || '#888';
+  const catColor = (id) => { const c = D.settings.cats.find(c => c.id === id); return c ? c.color : '#888'; };
+  const aufColor = (id) => { const a = D.settings.aufwand.find(a => a.id === id); return a ? a.color : '#888'; };
+  const catBg    = (id) => { const c = D.settings.cats.find(c => c.id === id); return c ? c.bg : '#eee'; };
+  const aufBg    = (id) => { const a = D.settings.aufwand.find(a => a.id === id); return a ? a.bg : '#eee'; };
 
   const recipePages = activeDays.map(d => {
     const r = D.recipes.find(r => r.id === d.recipeId);
@@ -99,8 +99,8 @@ export function exportPDF() {
         <div class="recipe-day">${d.day}</div>
         <div class="recipe-name">${r.name}</div>
         <div class="meta-row">
-          <span class="tag" style="background:${catColor(r.cat)}18;color:${catColor(r.cat)}">${getCatLabel(r.cat)}</span>
-          <span class="tag" style="background:${aufColor(r.auf)}18;color:${aufColor(r.auf)}">${getAufLabel(r.auf)}</span>
+          <span class="tag" style="background:${catBg(r.cat)};color:${catColor(r.cat)}">${getCatLabel(r.cat)}</span>
+          <span class="tag" style="background:${aufBg(r.auf)};color:${aufColor(r.auf)}">${getAufLabel(r.auf)}</span>
           ${r.time ? `<span class="chip">· ${r.time} min</span>` : ''}
           <span class="chip">· ${d.portions || plan.portions} Portionen</span>
         </div>
@@ -202,8 +202,8 @@ export function exportPDF() {
         <div class="day-name">${d.day}</div>
         <div class="day-recipe">${r.name}</div>
         <div class="day-tags">
-          <span class="tag" style="background:${catColor(r.cat)}18;color:${catColor(r.cat)}">${getCatLabel(r.cat)}</span>
-          <span class="tag" style="background:${aufColor(r.auf)}18;color:${aufColor(r.auf)}">${getAufLabel(r.auf)}</span>
+          <span class="tag" style="background:${catBg(r.cat)};color:${catColor(r.cat)}">${getCatLabel(r.cat)}</span>
+          <span class="tag" style="background:${aufBg(r.auf)};color:${aufColor(r.auf)}">${getAufLabel(r.auf)}</span>
         </div>
         ${d.note ? `<div class="day-note">${d.note}</div>` : ''}
         ${r.img ? '</div>' : ''}
@@ -240,10 +240,10 @@ export function exportPDF() {
 export function exportRecipePDF(id) {
   const r = D.recipes.find(r => r.id === id);
   if (!r) return;
-  const CC = { pasta:'#854F0B',curry:'#993C1D',suppe:'#0F6E56',salat:'#3B6D11',auflauf:'#534AB7','frühstück':'#993556',sonstiges:'#5F5E5A' };
-  const AC = { einfach:'#27500A',mittel:'#633806',schwer:'#712B13' };
-  const catColor = (id) => CC[getCatLabel(id)] || '#888';
-  const aufColor = (id) => AC[getAufLabel(id)] || '#888';
+  const catColor = (id) => { const c = D.settings.cats.find(c => c.id === id); return c ? c.color : '#888'; };
+  const aufColor = (id) => { const a = D.settings.aufwand.find(a => a.id === id); return a ? a.color : '#888'; };
+  const catBg    = (id) => { const c = D.settings.cats.find(c => c.id === id); return c ? c.bg : '#eee'; };
+  const aufBg    = (id) => { const a = D.settings.aufwand.find(a => a.id === id); return a ? a.bg : '#eee'; };
   const ingsHTML = (r.ings || []).map(ing => {
     const m = ing.m > 0 ? (Number.isInteger(ing.m) ? ing.m : ing.m.toFixed(1)) : '';
     const qty = [m, ing.u].filter(Boolean).join(' ');
@@ -281,8 +281,8 @@ export function exportRecipePDF(id) {
     <div class="recipe-header">
       <div class="recipe-name">${r.name}</div>
       <div class="meta-row">
-        <span class="tag" style="background:${catColor(r.cat)}18;color:${catColor(r.cat)}">${getCatLabel(r.cat)}</span>
-        <span class="tag" style="background:${aufColor(r.auf)}18;color:${aufColor(r.auf)}">${getAufLabel(r.auf)}</span>
+        <span class="tag" style="background:${catBg(r.cat)};color:${catColor(r.cat)}">${getCatLabel(r.cat)}</span>
+        <span class="tag" style="background:${aufBg(r.auf)};color:${aufColor(r.auf)}">${getAufLabel(r.auf)}</span>
         ${r.time ? `<span class="chip">· ${r.time} min</span>` : ''}
         <span class="chip">· ${r.portions || 2} Portionen</span>
       </div>
