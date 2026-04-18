@@ -117,12 +117,13 @@ export function renderRecipes(searchQuery = '') {
                <input type="text" value="${r.src?.seite || ''}" placeholder="Seite (optional)" onchange="updSrc(${r.id},'seite',this.value)" />`}
           <div style="margin-top:6px">${srcHTML(r.src)}</div>
           <div class="section-title" style="margin-top:12px">Foto</div>
-          ${r.img ? `<div style="margin-bottom:8px"><img src="${r.img}" style="width:100%;max-height:180px;object-fit:cover;border-radius:var(--rs)" /></div>` : ''}
+          <div id="img-preview-${r.id}" style="width:100%;height:140px;background-size:cover;background-position:center;border-radius:var(--rs);margin-bottom:8px;${r.img ? `background-image:url('${r.img}')` : 'display:none'}"></div>
           <div class="img-upload-wrap">
             <label class="btn btn-sm" style="cursor:pointer">
-              <span class="img-upload-label">${r.img ? 'Foto ersetzen' : 'Foto hochladen'}</span>
-              <input type="file" accept="image/*" style="display:none" onchange="uploadRecipeImage(${r.id},this)" />
+              <span class="img-upload-label">${r.img ? 'Foto ersetzen' : '+ Foto hochladen'}</span>
+              <input type="file" accept="image/*,image/heic" style="display:none" onchange="uploadRecipeImage(${r.id},this)" />
             </label>
+            ${r.img ? `<button class="btn btn-d btn-sm" onclick="removeRecipeImage(${r.id})">Foto entfernen</button>` : ''}
           </div>
         </div>
       </div></div>` : ''}
@@ -134,6 +135,12 @@ export function toggleER(id) {
   expandedR = expandedR === id ? null : id;
   rerender();
   initSortable();
+}
+
+export async function removeRecipeImage(id) {
+  D.recipes.find(r => r.id === id).img = null;
+  await saveRecipesDebounced();
+  rerender();
 }
 
 function initSortable() {
@@ -241,15 +248,35 @@ export async function updR(id, key, val) {
 export async function uploadRecipeImage(id, input) {
   const file = input.files[0];
   if (!file) return;
+
+  // Validate file type
+  if (!file.type.startsWith('image/')) {
+    toast('Nur Bilder erlaubt (JPG, PNG, HEIC)');
+    return;
+  }
+
+  // Show preview immediately
+  const previewUrl = URL.createObjectURL(file);
+  const previewEl = document.getElementById('img-preview-' + id);
+  if (previewEl) {
+    previewEl.style.backgroundImage = `url('${previewUrl}')`;
+    previewEl.style.display = 'block';
+  }
+
   const label = input.parentElement.querySelector('.img-upload-label');
   if (label) label.textContent = 'Wird hochgeladen…';
+
   const url = await sbUploadImage(file);
+  URL.revokeObjectURL(previewUrl);
+
   if (url) {
     D.recipes.find(r => r.id === id).img = url;
     await saveRecipesDebounced();
     rerender();
+    toast('Bild gespeichert');
   } else {
     if (label) label.textContent = 'Fehler beim Hochladen';
+    if (previewEl) previewEl.style.display = 'none';
   }
 }
 

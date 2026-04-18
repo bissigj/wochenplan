@@ -35,7 +35,7 @@ export function exportPDF() {
       return `<div class="ing-item"><span class="ing-name">${ing.n}</span><span class="ing-qty">${qty}</span></div>`;
     }).join('') || '<div class="ing-item"><span class="ing-name">—</span></div>';
     return `<div class="page">
-      ${r.img ? `<div style="width:100%;height:200px;background-image:url('${r.img}');background-size:cover;background-position:center;border-radius:8px;margin-bottom:20px"></div>` : ''}
+      ${r.img ? `<div style="width:100%;height:160px;background-image:url('${r.img}');background-size:cover;background-position:center top;border-radius:8px;margin-bottom:18px"></div>` : ''}
       <div class="recipe-header">
         <div class="recipe-day">${d.day}</div>
         <div class="recipe-name">${r.name}</div>

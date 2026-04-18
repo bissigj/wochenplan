@@ -1,6 +1,6 @@
 import { showTab, toast } from './ui.js';
 import { doLogin, doRegister, doLogout, showLogin, showRegister, tryRestoreSession } from './auth.js';
-import { renderRFilters, renderRecipes, toggleRF, toggleER, addRecipe, delR, addIng, delIng, addStep, delStep, updR, setSrcType, updSrc, openQE, closeQE, saveQE, setSortOrder, uploadRecipeImage } from './recipes.js';
+import { renderRFilters, renderRecipes, toggleRF, toggleER, addRecipe, delR, addIng, delIng, addStep, delStep, updR, setSrcType, updSrc, openQE, closeQE, saveQE, setSortOrder, uploadRecipeImage, removeRecipeImage } from './recipes.js';
 import { renderWeek, openDrawModal, closeDrawModal, toggleDrawPill, setTimePill, drawWeek, backToCurrent, toggleDay, toggleDayActive, rerollDay, setPortions, setNote } from './week.js';
 import { renderShop, setShopView } from './shopping.js';
 import { renderArchiv, viewArchiveWeek } from './archive.js';
@@ -55,7 +55,8 @@ window.viewArchiveWeek   = viewArchiveWeek;
 window.exportPDF         = exportPDF;
 window.exportRecipePDF   = exportRecipePDF;
 window.setSortOrder      = setSortOrder;
-window.uploadRecipeImage = uploadRecipeImage;
+window.uploadRecipeImage  = uploadRecipeImage;
+window.removeRecipeImage  = removeRecipeImage;
 
 // ── renderAll (used by auth after login) ─────────────────────────────────────
 export function renderAll() {
