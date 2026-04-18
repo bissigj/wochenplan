@@ -66,8 +66,6 @@ export function renderRecipes(searchQuery = '') {
         <span class="recipe-meta">${r.time ? r.time + ' min' : ''}</span>
         <span class="tag tag-${r.cat}">${r.cat}</span>
         <span class="tag tag-${r.auf}">${r.auf}</span>
-        <button class="expand-btn" onclick="toggleER(${r.id})">${isOpen ? '▲' : '▼'}</button>
-
         <button class="btn btn-d btn-sm" onclick="event.stopPropagation();delR(${r.id})" style="margin-left:8px;border-left:1px solid var(--bd2);padding-left:12px">×</button>
       </div>
       ${isOpen ? `<div class="recipe-detail">
