@@ -1,14 +1,15 @@
 import { D } from './data.js';
 import { saveWeekNow, saveRecipesDebounced } from './data.js';
 import { sbInsert } from './db.js';
-import { DAYS, AUFWAND } from './config.js';
+import { DAYS } from './config.js';
+import { getCatLabel, getAufLabel } from './data.js';
 import { kw, fmtIng, srcHTML, toast, showTab } from './ui.js';
 import { renderShop } from './shopping.js';
 
 export let expandedDays = new Set();
 export let viewingArchive = null;
 export function setViewingArchive(w) { viewingArchive = w; }
-export let drawDiff = new Set(['einfach', 'mittel', 'schwer']);
+export let drawDiff = new Set(['auf_einfach', 'auf_mittel', 'auf_schwer']);
 export let drawMaxTime = 0;
 
 // ── Draw Modal ────────────────────────────────────────────────────────────────
@@ -144,9 +145,9 @@ function renderWeekPlan(plan, readonly = false) {
       <div class="day-card-top" onclick="toggleDay(${i})">
         <div class="day-lbl ${isWeekend ? 'day-lbl-weekend' : ''}">${d.day}${!d.active ? '<span style="font-size:10px;background:var(--bg3);padding:1px 6px;border-radius:99px;margin-left:4px">ausgeblendet</span>' : ''}</div>
         ${d.active ? `<div class="day-recipe-name">${r.name}</div>
-          <div class="day-meta">${r.time ? r.time + ' min · ' : ''}${r.auf}</div>
+          <div class="day-meta">${r.time ? r.time + ' min · ' : ''}${getAufLabel(r.auf)}</div>
           <div class="row" style="gap:4px;flex-wrap:wrap">
-            <span class="tag tag-${r.cat}">${r.cat}</span>
+            <span class="tag tag-${getCatLabel(r.cat)}">${getCatLabel(r.cat)}</span>
             <span style="font-size:11px;color:var(--text3);margin-left:auto">${isOpen ? '▲' : '▼'}</span>
           </div>` : '<div style="font-size:13px;color:var(--text3)">—</div>'}
       </div>

@@ -13,11 +13,9 @@ export function toast(msg) {
 }
 
 export function showTab(t) {
-  ['rezepte', 'woche', 'einkauf', 'archiv'].forEach(id => {
-    document.getElementById('tab-' + id).style.display = id === t ? '' : 'none';
-  });
-  document.querySelectorAll('.tab').forEach((el, i) => {
-    el.classList.toggle('active', ['rezepte', 'woche', 'einkauf', 'archiv'][i] === t);
+  ['rezepte', 'woche', 'einkauf', 'archiv', 'einstellungen'].forEach(id => {
+    const el = document.getElementById('tab-' + id);
+    if (el) el.style.display = id === t ? '' : 'none';
   });
 }
 

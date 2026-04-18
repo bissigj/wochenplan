@@ -296,3 +296,9 @@ body{padding:0;margin:0}
   background-position:center;
 }
 .img-upload-wrap{margin-top:4px}
+
+/* Settings */
+.settings-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:0.5px solid var(--bd)}
+.settings-row:last-child{border-bottom:none}
+.settings-input{flex:1;padding:5px 8px;font-size:13px;border:0.5px solid var(--bd2);border-radius:var(--rs);background:var(--bg);color:var(--text);font-family:inherit}
+.settings-input:focus{outline:none;border-color:var(--meadow)}

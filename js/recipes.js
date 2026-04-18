@@ -1,8 +1,8 @@
-import { D } from './data.js';
+import { D, getCatLabel, getAufLabel } from './data.js';
 import { parseIngredient } from 'https://esm.sh/@jlucaspains/sharp-recipe-parser@1.3.6';
 import { saveRecipesDebounced, saveWeekNow } from './data.js';
 import { sbUploadImage, sbDeleteImage } from './db.js';
-import { CATS, AUFWAND, EINHEITEN } from './config.js';
+import { EINHEITEN } from './config.js';
 import { fmtIng, srcHTML, toast } from './ui.js';
 import { renderWeek } from './week.js';
 
@@ -14,8 +14,12 @@ window.undoDelR = () => { if (window._undoDelR) window._undoDelR(); };
 
 export function renderRFilters() {
   document.getElementById('r-count').textContent = D.recipes.length + ' Rezepte';
-  document.getElementById('r-filters').innerHTML = [...CATS, ...AUFWAND].map(f =>
-    `<button class="pill tag-${f} ${rFilters.has(f) ? 'on' : ''}" onclick="toggleRF('${f}')">${f}</button>`
+  const allFilters = [
+    ...D.settings.cats.map(c => ({ id: c.id, label: c.label, type: 'cat' })),
+    ...D.settings.aufwand.map(a => ({ id: a.id, label: a.label, type: 'auf' }))
+  ];
+  document.getElementById('r-filters').innerHTML = allFilters.map(f =>
+    `<button class="pill tag-${f.label} ${rFilters.has(f.id) ? 'on' : ''}" onclick="toggleRF('${f.id}')">${f.label}</button>`
   ).join('');
 }
 
@@ -39,9 +43,11 @@ export function renderRecipes(searchQuery = '') {
   const el = document.getElementById('r-list');
   let vis = D.recipes;
   if (rFilters.size) {
+    const catIds = D.settings.cats.map(c => c.id);
+    const aufIds = D.settings.aufwand.map(a => a.id);
     vis = D.recipes.filter(r => {
-      const cf = [...rFilters].filter(f => CATS.includes(f));
-      const af = [...rFilters].filter(f => AUFWAND.includes(f));
+      const cf = [...rFilters].filter(f => catIds.includes(f));
+      const af = [...rFilters].filter(f => aufIds.includes(f));
       return (cf.length === 0 || cf.includes(r.cat)) && (af.length === 0 || af.includes(r.auf));
     });
   }
@@ -64,8 +70,8 @@ export function renderRecipes(searchQuery = '') {
       <div class="recipe-row" onclick="toggleER(${r.id})" style="cursor:pointer">
         <span class="recipe-name-col">${r.name}</span>
         <span class="recipe-meta">${r.time ? r.time + ' min' : ''}</span>
-        <span class="tag tag-${r.cat}">${r.cat}</span>
-        <span class="tag tag-${r.auf}">${r.auf}</span>
+        <span class="tag tag-${getCatLabel(r.cat)}">${getCatLabel(r.cat)}</span>
+        <span class="tag tag-${getAufLabel(r.auf)}">${getAufLabel(r.auf)}</span>
         <button class="btn btn-d btn-sm" onclick="event.stopPropagation();delR(${r.id})" style="margin-left:8px;border-left:1px solid var(--bd2);padding-left:12px">×</button>
       </div>
       ${isOpen ? `<div class="recipe-detail">
@@ -82,11 +88,11 @@ export function renderRecipes(searchQuery = '') {
           <div class="row" style="gap:8px;margin-bottom:10px">
             <div style="flex:1"><span class="label">Kategorie</span>
               <select class="inline-select" style="width:100%" onchange="updR(${r.id},'cat',this.value)">
-                ${CATS.map(c => `<option value="${c}" ${r.cat === c ? 'selected' : ''}>${c}</option>`).join('')}
+                ${D.settings.cats.map(c => `<option value="${c.id}" ${r.cat === c.id ? 'selected' : ''}>${c.label}</option>`).join('')}
               </select></div>
             <div style="flex:1"><span class="label">Aufwand</span>
               <select class="inline-select" style="width:100%" onchange="updR(${r.id},'auf',this.value)">
-                ${AUFWAND.map(a => `<option value="${a}" ${r.auf === a ? 'selected' : ''}>${a}</option>`).join('')}
+                ${D.settings.aufwand.map(a => `<option value="${a.id}" ${r.auf === a.id ? 'selected' : ''}>${a.label}</option>`).join('')}
               </select></div>
           </div>
           <div class="section-title">Zutaten (für ${r.portions || 2} Port.)</div>

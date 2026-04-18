@@ -2,8 +2,23 @@ export const SUPA_URL = 'https://qbodqcxhmlkqvmdxstrn.supabase.co';
 export const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFib2RxY3hobWxrcXZtZHhzdHJuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYwODM3NTIsImV4cCI6MjA5MTY1OTc1Mn0.Xh5vyf0A2fieS5weyho-kHBwL5Red64L40D2axTEBNY';
 
 export const DAYS = ['Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag','Sonntag'];
-export const CATS = ['pasta','curry','suppe','salat','auflauf','frühstück','sonstiges'];
-export const AUFWAND = ['einfach','mittel','schwer'];
+// Default settings – used only on first load if no settings in DB
+export const DEFAULT_SETTINGS = {
+  cats: [
+    { id: 'cat_pasta',      label: 'pasta' },
+    { id: 'cat_curry',      label: 'curry' },
+    { id: 'cat_suppe',      label: 'suppe' },
+    { id: 'cat_salat',      label: 'salat' },
+    { id: 'cat_auflauf',    label: 'auflauf' },
+    { id: 'cat_fruehstueck',label: 'frühstück' },
+    { id: 'cat_sonstiges',  label: 'sonstiges' },
+  ],
+  aufwand: [
+    { id: 'auf_einfach', label: 'einfach' },
+    { id: 'auf_mittel',  label: 'mittel' },
+    { id: 'auf_schwer',  label: 'schwer' },
+  ]
+};
 export const EINHEITEN = ['Stück','g','kg','dl','cl','ml','l','EL','TL','Prise','Bund','Dose','Pck.'];
 
 export const DEFAULTS = [
