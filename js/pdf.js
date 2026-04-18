@@ -127,8 +127,8 @@ export function exportPDF() {
   <!-- Cover -->
   <div class="page">
     <div class="cover-accent"></div>
-    <div class="cover-kw">${plan.kw}</div>
-    <div class="cover-sub">Wochenplan · ${activeDays.length} Tage</div>
+    <div class="cover-kw">Wochenplan</div>
+    <div class="cover-sub">${activeDays.length} Tage</div>
     <div class="week-grid">${plan.days.map(d => {
       if (!d.active || !d.recipeId) return `<div class="day-box"><div class="day-name">${d.day}</div><div class="day-inactive">—</div></div>`;
       const r = D.recipes.find(r => r.id === d.recipeId);
@@ -152,7 +152,7 @@ export function exportPDF() {
   <div class="page">
     <div class="cover-accent"></div>
     <div class="shop-title">Einkaufsliste</div>
-    <div class="shop-sub">${plan.kw} · aggregiert</div>
+    <div class="shop-sub">aggregiert</div>
     <div class="shop-grid">${shopItems.map(it => {
       const m = it.m > 0 ? (Number.isInteger(it.m) ? it.m : Math.round(it.m * 10) / 10) : '';
       const qty = m ? `${m} ${it.u}`.trim() : it.u || '';
