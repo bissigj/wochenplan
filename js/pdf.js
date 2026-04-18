@@ -2,6 +2,28 @@ import { D, getCatLabel, getAufLabel } from './data.js';
 import { fmtIng, toast } from './ui.js';
 import { getActivePlan } from './shopping.js';
 
+// ── PDF Design Tokens ─────────────────────────────────────────────────────────
+// Change these to restyle all PDF exports at once
+const PDF = {
+  brand:    '#598234',   // Meadow – accent bars, step numbers, col titles, links
+  moss:     '#AEBD38',   // Moss – note border
+  text:     '#1a1a1a',   // Main text
+  muted:    '#888',      // Subtitles, chip text, source text
+  subtle:   '#666',      // Secondary text, quantities
+  faint:    '#aaa',      // Recipe attribution in shopping list
+  line:     '#f0f0f0',   // Divider lines
+  noteBg:   '#f8f9f4',   // Note background
+  coverBg:  '#fafafa',   // Inactive day box background
+  activeBg: '#f8f9f4',   // Active day box background
+  font:     '-apple-system,"Helvetica Neue",Arial,sans-serif',
+};
+
+// ── Shared color helpers ──────────────────────────────────────────────────────
+const catColor = (id) => { const c = D.settings.cats.find(c => c.id === id); return c ? c.color : PDF.muted; };
+const aufColor = (id) => { const a = D.settings.aufwand.find(a => a.id === id); return a ? a.color : PDF.muted; };
+const catBg    = (id) => { const c = D.settings.cats.find(c => c.id === id); return c ? c.bg : PDF.line; };
+const aufBg    = (id) => { const a = D.settings.aufwand.find(a => a.id === id); return a ? a.bg : PDF.line; };
+
 
 export function exportShopPDF() {
   const plan = getActivePlan();
@@ -25,17 +47,17 @@ export function exportShopPDF() {
   const html = `<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><title>Einkaufsliste</title>
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:-apple-system,"Helvetica Neue",Arial,sans-serif;font-size:11pt;color:#1a1a1a;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    body{font-family:${PDF.font};font-size:11pt;color:${PDF.text};-webkit-print-color-adjust:exact;print-color-adjust:exact}
     .page{padding:2cm}
-    .accent{height:4px;background:#598234;border-radius:2px;margin-bottom:1.5cm}
-    .title{font-size:24pt;font-weight:700;color:#1a1a1a;letter-spacing:-0.5px;margin-bottom:4px}
-    .sub{font-size:10pt;color:#888;margin-bottom:1cm}
-    .col-title{font-size:8pt;font-weight:700;color:#598234;text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;padding-bottom:6px;border-bottom:1.5px solid #598234}
+    .accent{height:4px;background:${PDF.brand};border-radius:2px;margin-bottom:1.5cm}
+    .title{font-size:24pt;font-weight:700;color:${PDF.text};letter-spacing:-0.5px;margin-bottom:4px}
+    .sub{font-size:10pt;color:${PDF.muted};margin-bottom:1cm}
+    .col-title{font-size:8pt;font-weight:700;color:${PDF.brand};text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;padding-bottom:6px;border-bottom:1.5px solid ${PDF.brand}}
     .grid{columns:2;gap:20px}
-    .item{display:flex;justify-content:space-between;align-items:baseline;padding:6px 0;border-bottom:.5px solid #f0f0f0;font-size:10.5pt;break-inside:avoid}
-    .item-name{color:#1a1a1a}
-    .item-recipes{font-size:8pt;color:#aaa;margin-left:5px}
-    .item-qty{color:#598234;font-weight:600;font-size:9.5pt;white-space:nowrap;padding-left:10px}
+    .item{display:flex;justify-content:space-between;align-items:baseline;padding:6px 0;border-bottom:.5px solid ${PDF.line};font-size:10.5pt;break-inside:avoid}
+    .item-name{color:${PDF.text}}
+    .item-recipes{font-size:8pt;color:${PDF.faint};margin-left:5px}
+    .item-qty{color:${PDF.brand};font-weight:600;font-size:9.5pt;white-space:nowrap;padding-left:10px}
     @media print{@page{margin:0}body{margin:1.5cm}}
   </style></head><body>
   <div class="page">
@@ -76,10 +98,7 @@ export function exportPDF() {
     });
   });
   const shopItems = Object.values(agg).sort((a, b) => a.n.localeCompare(b.n));
-  const catColor = (id) => { const c = D.settings.cats.find(c => c.id === id); return c ? c.color : '#888'; };
-  const aufColor = (id) => { const a = D.settings.aufwand.find(a => a.id === id); return a ? a.color : '#888'; };
-  const catBg    = (id) => { const c = D.settings.cats.find(c => c.id === id); return c ? c.bg : '#eee'; };
-  const aufBg    = (id) => { const a = D.settings.aufwand.find(a => a.id === id); return a ? a.bg : '#eee'; };
+
 
   const recipePages = activeDays.map(d => {
     const r = D.recipes.find(r => r.id === d.recipeId);
@@ -123,7 +142,7 @@ export function exportPDF() {
   const html = `<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><title>${plan.kw}</title>
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:-apple-system,"Helvetica Neue",Arial,sans-serif;font-size:11pt;color:#1a1a1a;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    body{font-family:${PDF.font};font-size:11pt;color:${PDF.text};background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 
     /* Page */
     .page{padding:2cm 2cm 1.5cm;min-height:100vh;page-break-after:always;position:relative}
@@ -135,57 +154,57 @@ export function exportPDF() {
     }
 
     /* Cover page */
-    .cover-accent{height:4px;background:#598234;border-radius:2px;margin-bottom:2cm}
-    .cover-kw{font-size:28pt;font-weight:700;color:#1a1a1a;letter-spacing:-1px;margin-bottom:4px}
-    .cover-sub{font-size:11pt;color:#888;margin-bottom:1.5cm}
+    .cover-accent{height:4px;background:${PDF.brand};border-radius:2px;margin-bottom:2cm}
+    .cover-kw{font-size:28pt;font-weight:700;color:${PDF.text};letter-spacing:-1px;margin-bottom:4px}
+    .cover-sub{font-size:11pt;color:${PDF.muted};margin-bottom:1.5cm}
     .week-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:1cm}
-    .day-box{border-radius:8px;padding:12px 14px;border-left:3px solid #e0e0e0;background:#fafafa}
-    .day-box.active{background:#f8f9f4;border-left-color:#598234}
+    .day-box{border-radius:8px;padding:12px 14px;border-left:3px solid #e0e0e0;background:${PDF.coverBg}}
+    .day-box.active{background:${PDF.noteBg};border-left-color:${PDF.brand}}
     .day-name{font-size:8pt;font-weight:600;color:#999;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px}
-    .day-recipe{font-size:11pt;font-weight:600;color:#1a1a1a;margin-bottom:6px;line-height:1.3}
+    .day-recipe{font-size:11pt;font-weight:600;color:${PDF.text};margin-bottom:6px;line-height:1.3}
     .day-tags{display:flex;gap:5px;flex-wrap:wrap}
-    .day-note{font-size:8.5pt;color:#666;margin-top:5px;font-style:italic}
+    .day-note{font-size:8.5pt;color:${PDF.subtle};margin-top:5px;font-style:italic}
     .day-inactive{color:#ccc;font-size:10pt}
 
     /* Recipe pages */
-    .recipe-header{border-left:4px solid #598234;padding-left:14px;margin-bottom:18px}
-    .recipe-day{font-size:8pt;font-weight:700;color:#598234;text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px}
-    .recipe-name{font-size:22pt;font-weight:700;color:#1a1a1a;letter-spacing:-0.5px;line-height:1.1;margin-bottom:10px}
+    .recipe-header{border-left:4px solid ${PDF.brand};padding-left:14px;margin-bottom:18px}
+    .recipe-day{font-size:8pt;font-weight:700;color:${PDF.brand};text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px}
+    .recipe-name{font-size:22pt;font-weight:700;color:${PDF.text};letter-spacing:-0.5px;line-height:1.1;margin-bottom:10px}
     .meta-row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
     .tag{font-size:8.5pt;padding:2px 9px;border-radius:99px;display:inline-block;font-weight:500}
-    .chip{font-size:8.5pt;color:#666;padding:2px 0}
+    .chip{font-size:8.5pt;color:${PDF.subtle};padding:2px 0}
 
     /* Two column layout */
     .two-col{display:grid;grid-template-columns:1fr 1.5fr;gap:28px;margin-top:22px}
-    .col-title{font-size:8pt;font-weight:700;color:#598234;text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;padding-bottom:6px;border-bottom:1.5px solid #598234}
+    .col-title{font-size:8pt;font-weight:700;color:${PDF.brand};text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;padding-bottom:6px;border-bottom:1.5px solid ${PDF.brand}}
 
     /* Ingredients */
-    .ing-item{display:flex;justify-content:space-between;align-items:baseline;padding:5px 0;border-bottom:.5px solid #f0f0f0;font-size:10pt}
-    .ing-name{color:#1a1a1a}
-    .ing-qty{color:#666;font-size:9.5pt;text-align:right;padding-left:12px;white-space:nowrap}
+    .ing-item{display:flex;justify-content:space-between;align-items:baseline;padding:5px 0;border-bottom:.5px solid ${PDF.line};font-size:10pt}
+    .ing-name{color:${PDF.text}}
+    .ing-qty{color:${PDF.subtle};font-size:9.5pt;text-align:right;padding-left:12px;white-space:nowrap}
 
     /* Steps */
     .step{display:flex;gap:10px;align-items:flex-start;margin-bottom:10px}
-    .snum{width:20px;height:20px;border-radius:50%;background:#598234;color:#fff;font-size:8pt;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
-    .step-text{font-size:10pt;line-height:1.6;color:#1a1a1a}
+    .snum{width:20px;height:20px;border-radius:50%;background:${PDF.brand};color:#fff;font-size:8pt;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+    .step-text{font-size:10pt;line-height:1.6;color:${PDF.text}}
 
     /* Source + note */
-    .src-line{font-size:8.5pt;color:#888;margin-top:16px;padding-top:10px;border-top:.5px solid #eee}
-    .src-line a{color:#598234}
-    .note{font-size:9pt;color:#555;background:#f8f9f4;border-left:3px solid #AEBD38;padding:8px 12px;margin-top:12px;border-radius:0 6px 6px 0}
+    .src-line{font-size:8.5pt;color:${PDF.muted};margin-top:16px;padding-top:10px;border-top:.5px solid ${PDF.line}}
+    .src-line a{color:${PDF.brand}}
+    .note{font-size:9pt;color:#555;background:${PDF.noteBg};border-left:3px solid ${PDF.moss};padding:8px 12px;margin-top:12px;border-radius:0 6px 6px 0}
 
     /* Images */
     .recipe-img-full{width:100%;aspect-ratio:16/7;background-size:cover;background-position:center;border-radius:8px;margin-bottom:18px}
     .cover-img{width:100%;aspect-ratio:16/7;background-size:cover;background-position:center}
 
     /* Shopping list */
-    .shop-title{font-size:22pt;font-weight:700;color:#1a1a1a;letter-spacing:-0.5px;margin-bottom:4px}
-    .shop-sub{font-size:10pt;color:#888;margin-bottom:1cm}
+    .shop-title{font-size:22pt;font-weight:700;color:${PDF.text};letter-spacing:-0.5px;margin-bottom:4px}
+    .shop-sub{font-size:10pt;color:${PDF.muted};margin-bottom:1cm}
     .shop-grid{columns:2;gap:20px}
-    .shop-item-p{display:flex;justify-content:space-between;align-items:baseline;padding:5px 0;border-bottom:.5px solid #f0f0f0;font-size:10pt;break-inside:avoid}
-    .shop-name{color:#1a1a1a}
-    .shop-recipes{font-size:8pt;color:#aaa;margin-left:5px}
-    .shop-qty{color:#598234;font-weight:600;font-size:9.5pt;white-space:nowrap;padding-left:10px}
+    .shop-item-p{display:flex;justify-content:space-between;align-items:baseline;padding:5px 0;border-bottom:.5px solid ${PDF.line};font-size:10pt;break-inside:avoid}
+    .shop-name{color:${PDF.text}}
+    .shop-recipes{font-size:8pt;color:${PDF.faint};margin-left:5px}
+    .shop-qty{color:${PDF.brand};font-weight:600;font-size:9.5pt;white-space:nowrap;padding-left:10px}
   </style></head><body>
 
   <!-- Cover -->
@@ -240,10 +259,7 @@ export function exportPDF() {
 export function exportRecipePDF(id) {
   const r = D.recipes.find(r => r.id === id);
   if (!r) return;
-  const catColor = (id) => { const c = D.settings.cats.find(c => c.id === id); return c ? c.color : '#888'; };
-  const aufColor = (id) => { const a = D.settings.aufwand.find(a => a.id === id); return a ? a.color : '#888'; };
-  const catBg    = (id) => { const c = D.settings.cats.find(c => c.id === id); return c ? c.bg : '#eee'; };
-  const aufBg    = (id) => { const a = D.settings.aufwand.find(a => a.id === id); return a ? a.bg : '#eee'; };
+
   const ingsHTML = (r.ings || []).map(ing => {
     const m = ing.m > 0 ? (Number.isInteger(ing.m) ? ing.m : ing.m.toFixed(1)) : '';
     const qty = [m, ing.u].filter(Boolean).join(' ');
@@ -255,23 +271,23 @@ export function exportRecipePDF(id) {
   const html = `<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><title>${r.name}</title>
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:-apple-system,"Helvetica Neue",Arial,sans-serif;font-size:11pt;color:#1a1a1a;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    body{font-family:${PDF.font};font-size:11pt;color:${PDF.text};-webkit-print-color-adjust:exact;print-color-adjust:exact}
     .page{padding:2cm}
-    .accent{height:4px;background:#598234;border-radius:2px;margin-bottom:1.5cm}
-    .recipe-header{border-left:4px solid #598234;padding-left:14px;margin-bottom:18px}
-    .recipe-name{font-size:22pt;font-weight:700;color:#1a1a1a;letter-spacing:-0.5px;line-height:1.1;margin-bottom:10px}
+    .accent{height:4px;background:${PDF.brand};border-radius:2px;margin-bottom:1.5cm}
+    .recipe-header{border-left:4px solid ${PDF.brand};padding-left:14px;margin-bottom:18px}
+    .recipe-name{font-size:22pt;font-weight:700;color:${PDF.text};letter-spacing:-0.5px;line-height:1.1;margin-bottom:10px}
     .meta-row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
     .tag{font-size:8.5pt;padding:2px 9px;border-radius:99px;display:inline-block;font-weight:500}
-    .chip{font-size:8.5pt;color:#666;padding:2px 0}
+    .chip{font-size:8.5pt;color:${PDF.subtle};padding:2px 0}
     .two-col{display:grid;grid-template-columns:1fr 1.5fr;gap:28px;margin-top:22px}
-    .col-title{font-size:8pt;font-weight:700;color:#598234;text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;padding-bottom:6px;border-bottom:1.5px solid #598234}
-    .ing-item{display:flex;justify-content:space-between;align-items:baseline;padding:5px 0;border-bottom:.5px solid #f0f0f0;font-size:10pt}
-    .ing-name{color:#1a1a1a}.ing-qty{color:#666;font-size:9.5pt;white-space:nowrap;padding-left:12px}
+    .col-title{font-size:8pt;font-weight:700;color:${PDF.brand};text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;padding-bottom:6px;border-bottom:1.5px solid ${PDF.brand}}
+    .ing-item{display:flex;justify-content:space-between;align-items:baseline;padding:5px 0;border-bottom:.5px solid ${PDF.line};font-size:10pt}
+    .ing-name{color:${PDF.text}}.ing-qty{color:${PDF.subtle};font-size:9.5pt;white-space:nowrap;padding-left:12px}
     .step{display:flex;gap:10px;align-items:flex-start;margin-bottom:10px}
-    .snum{width:20px;height:20px;border-radius:50%;background:#598234;color:#fff;font-size:8pt;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+    .snum{width:20px;height:20px;border-radius:50%;background:${PDF.brand};color:#fff;font-size:8pt;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
     .step-text{font-size:10pt;line-height:1.6}
-    .src-line{font-size:8.5pt;color:#888;margin-top:16px;padding-top:10px;border-top:.5px solid #eee}
-    .src-line a{color:#598234}
+    .src-line{font-size:8.5pt;color:${PDF.muted};margin-top:16px;padding-top:10px;border-top:.5px solid ${PDF.line}}
+    .src-line a{color:${PDF.brand}}
     .recipe-img-full{width:100%;aspect-ratio:16/7;background-size:cover;background-position:center;border-radius:8px;margin-bottom:18px}
     @media print{@page{margin:0}body{margin:1.5cm}}
   </style></head><body>
