@@ -14,6 +14,12 @@ export let drawMaxTime = 0;
 
 // ── Draw Modal ────────────────────────────────────────────────────────────────
 export function openDrawModal() {
+  // Dynamisch aus Settings
+  const pillsEl = document.getElementById('draw-diff-pills');
+  pillsEl.innerHTML = D.settings.aufwand.map(a =>
+    `<button class="pill ${drawDiff.has(a.id) ? 'on' : ''} tag-${a.id}" 
+      data-v="${a.id}" onclick="toggleDrawPill(this)">${a.label}</button>`
+  ).join('');
   updatePoolInfo();
   document.getElementById('draw-modal').style.display = 'flex';
 }
