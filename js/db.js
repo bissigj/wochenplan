@@ -80,8 +80,7 @@ export async function sbUploadImage(file) {
     headers: {
       'apikey': SUPA_KEY,
       'Authorization': auth,
-      'Content-Type': 'image/jpeg',
-      'x-upsert': 'true'
+      'Content-Type': 'image/jpeg'
     },
     body: uploadFile
   });
