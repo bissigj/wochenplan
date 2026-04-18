@@ -147,7 +147,7 @@ function renderWeekPlan(plan, readonly = false) {
         ${d.active ? `<div class="day-recipe-name">${r.name}</div>
           <div class="day-meta">${r.time ? r.time + ' min · ' : ''}${getAufLabel(r.auf)}</div>
           <div class="row" style="gap:4px;flex-wrap:wrap">
-            <span class="tag tag-${getCatLabel(r.cat)}">${getCatLabel(r.cat)}</span>
+            <span class="tag tag-${r.cat}">${getCatLabel(r.cat)}</span>
             <span style="font-size:11px;color:var(--text3);margin-left:auto">${isOpen ? '▲' : '▼'}</span>
           </div>` : '<div style="font-size:13px;color:var(--text3)">—</div>'}
       </div>

@@ -5,18 +5,18 @@ export const DAYS = ['Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Sams
 // Default settings – used only on first load if no settings in DB
 export const DEFAULT_SETTINGS = {
   cats: [
-    { id: 'cat_pasta',      label: 'pasta' },
-    { id: 'cat_curry',      label: 'curry' },
-    { id: 'cat_suppe',      label: 'suppe' },
-    { id: 'cat_salat',      label: 'salat' },
-    { id: 'cat_auflauf',    label: 'auflauf' },
-    { id: 'cat_fruehstueck',label: 'frühstück' },
-    { id: 'cat_sonstiges',  label: 'sonstiges' },
+    { id: 'cat_pasta',       label: 'pasta',      color: '#8a6830', bg: '#f5f0e8' },
+    { id: 'cat_curry',       label: 'curry',      color: '#8a4028', bg: '#faeee8' },
+    { id: 'cat_suppe',       label: 'suppe',      color: '#68829E', bg: '#e8f0f5' },
+    { id: 'cat_salat',       label: 'salat',      color: '#598234', bg: '#eef3e0' },
+    { id: 'cat_auflauf',     label: 'auflauf',    color: '#534AB7', bg: '#eeecf8' },
+    { id: 'cat_fruehstueck', label: 'frühstück',  color: '#7a4a8a', bg: '#f5eef8' },
+    { id: 'cat_sonstiges',   label: 'sonstiges',  color: '#68686a', bg: '#f0f0ee' },
   ],
   aufwand: [
-    { id: 'auf_einfach', label: 'einfach' },
-    { id: 'auf_mittel',  label: 'mittel' },
-    { id: 'auf_schwer',  label: 'schwer' },
+    { id: 'auf_einfach', label: 'einfach', color: '#598234', bg: '#eef5e8' },
+    { id: 'auf_mittel',  label: 'mittel',  color: '#6a7a20', bg: '#f0f4e0' },
+    { id: 'auf_schwer',  label: 'schwer',  color: '#8a3838', bg: '#f5eeee' },
   ]
 };
 export const EINHEITEN = ['Stück','g','kg','dl','cl','ml','l','EL','TL','Prise','Bund','Dose','Pck.'];

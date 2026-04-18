@@ -1,5 +1,5 @@
 import { D } from './data.js';
-import { saveSettingsNow } from './data.js';
+import { saveSettingsNow, applyTagStyles } from './data.js';
 import { toast } from './ui.js';
 import { renderRFilters, renderRecipes } from './recipes.js';
 import { renderWeek } from './week.js';
@@ -17,14 +17,19 @@ export function renderSettings() {
       <div class="section-title" style="margin-top:0">Kategorien</div>
       <div id="cats-list">
         ${cats.map(c => `
-          <div class="settings-row" id="cat-row-${c.id}">
+          <div class="settings-row">
+            <input type="color" value="${c.color}" class="settings-color"
+              onchange="updateCatColor('${c.id}', this.value)" title="Textfarbe" />
+            <input type="color" value="${c.bg}" class="settings-color settings-color-bg"
+              onchange="updateCatBg('${c.id}', this.value)" title="Hintergrundfarbe" />
             <input type="text" value="${c.label}" class="settings-input"
               onchange="updateCat('${c.id}', this.value)" />
+            <span class="tag tag-${c.id}" style="flex-shrink:0">${c.label}</span>
             <button class="btn btn-d btn-sm" onclick="deleteCat('${c.id}')">×</button>
           </div>`).join('')}
       </div>
       <div class="row" style="gap:6px;margin-top:8px">
-        <input type="text" id="new-cat-input" placeholder="Neue Kategorie…" style="flex:1" 
+        <input type="text" id="new-cat-input" placeholder="Neue Kategorie…" style="flex:1"
           onkeydown="if(event.key==='Enter')addCat()" />
         <button class="btn btn-sm" onclick="addCat()">+</button>
       </div>
@@ -34,9 +39,14 @@ export function renderSettings() {
       <div class="section-title" style="margin-top:0">Aufwand</div>
       <div id="auf-list">
         ${auf.map(a => `
-          <div class="settings-row" id="auf-row-${a.id}">
+          <div class="settings-row">
+            <input type="color" value="${a.color}" class="settings-color"
+              onchange="updateAufColor('${a.id}', this.value)" title="Textfarbe" />
+            <input type="color" value="${a.bg}" class="settings-color settings-color-bg"
+              onchange="updateAufBg('${a.id}', this.value)" title="Hintergrundfarbe" />
             <input type="text" value="${a.label}" class="settings-input"
               onchange="updateAuf('${a.id}', this.value)" />
+            <span class="tag tag-${a.id}" style="flex-shrink:0">${a.label}</span>
             <button class="btn btn-d btn-sm" onclick="deleteAuf('${a.id}')">×</button>
           </div>`).join('')}
       </div>
@@ -49,6 +59,21 @@ export function renderSettings() {
   `;
 }
 
+// ── Default color palette for new entries ─────────────────────────────────────
+const PALETTE = [
+  { color: '#1a6b4a', bg: '#e0f0e8' },
+  { color: '#6b4a1a', bg: '#f0e8e0' },
+  { color: '#1a4a6b', bg: '#e0e8f0' },
+  { color: '#6b1a4a', bg: '#f0e0e8' },
+  { color: '#4a6b1a', bg: '#e8f0e0' },
+  { color: '#4a1a6b', bg: '#e8e0f0' },
+  { color: '#6b6b1a', bg: '#f0f0e0' },
+];
+
+function nextColor(arr) {
+  return PALETTE[arr.length % PALETTE.length];
+}
+
 // ── Category CRUD ─────────────────────────────────────────────────────────────
 export async function addCat() {
   const input = document.getElementById('new-cat-input');
@@ -56,31 +81,52 @@ export async function addCat() {
   if (!label) return;
   if (D.settings.cats.find(c => c.label === label)) { toast('Kategorie existiert bereits'); return; }
   const id = 'cat_' + Date.now();
-  D.settings.cats.push({ id, label });
+  const { color, bg } = nextColor(D.settings.cats);
+  D.settings.cats.push({ id, label, color, bg });
   input.value = '';
   await saveSettingsNow();
+  applyTagStyles();
   renderSettings();
   renderRFilters();
-  toast(`Kategorie "${label}" hinzugefügt`);
+  toast(`"${label}" hinzugefügt`);
 }
 
 export async function updateCat(id, newLabel) {
   newLabel = newLabel.trim().toLowerCase();
   if (!newLabel) return;
   const cat = D.settings.cats.find(c => c.id === id);
-  if (cat) { cat.label = newLabel; }
+  if (cat) cat.label = newLabel;
   await saveSettingsNow();
+  applyTagStyles();
   renderRFilters();
   renderRecipes();
+  renderSettings();
+}
+
+export async function updateCatColor(id, color) {
+  const cat = D.settings.cats.find(c => c.id === id);
+  if (cat) cat.color = color;
+  await saveSettingsNow();
+  applyTagStyles();
+  renderSettings();
+}
+
+export async function updateCatBg(id, bg) {
+  const cat = D.settings.cats.find(c => c.id === id);
+  if (cat) cat.bg = bg;
+  await saveSettingsNow();
+  applyTagStyles();
+  renderSettings();
 }
 
 export async function deleteCat(id) {
   const cat = D.settings.cats.find(c => c.id === id);
   if (!cat) return;
   const inUse = D.recipes.some(r => r.cat === id);
-  if (inUse && !confirm(`Kategorie "${cat.label}" wird von Rezepten verwendet. Trotzdem löschen?`)) return;
+  if (inUse && !confirm(`"${cat.label}" wird von Rezepten verwendet. Trotzdem löschen?`)) return;
   D.settings.cats = D.settings.cats.filter(c => c.id !== id);
   await saveSettingsNow();
+  applyTagStyles();
   renderSettings();
   renderRFilters();
   renderRecipes();
@@ -93,29 +139,52 @@ export async function addAuf() {
   if (!label) return;
   if (D.settings.aufwand.find(a => a.label === label)) { toast('Aufwand existiert bereits'); return; }
   const id = 'auf_' + Date.now();
-  D.settings.aufwand.push({ id, label });
+  const { color, bg } = nextColor(D.settings.aufwand);
+  D.settings.aufwand.push({ id, label, color, bg });
   input.value = '';
   await saveSettingsNow();
+  applyTagStyles();
   renderSettings();
-  toast(`Aufwand "${label}" hinzugefügt`);
+  toast(`"${label}" hinzugefügt`);
 }
 
 export async function updateAuf(id, newLabel) {
   newLabel = newLabel.trim().toLowerCase();
   if (!newLabel) return;
   const auf = D.settings.aufwand.find(a => a.id === id);
-  if (auf) { auf.label = newLabel; }
+  if (auf) auf.label = newLabel;
   await saveSettingsNow();
+  applyTagStyles();
   renderWeek();
   renderRecipes();
+  renderSettings();
+}
+
+export async function updateAufColor(id, color) {
+  const auf = D.settings.aufwand.find(a => a.id === id);
+  if (auf) auf.color = color;
+  await saveSettingsNow();
+  applyTagStyles();
+  renderSettings();
+}
+
+export async function updateAufBg(id, bg) {
+  const auf = D.settings.aufwand.find(a => a.id === id);
+  if (auf) auf.bg = bg;
+  await saveSettingsNow();
+  applyTagStyles();
+  renderSettings();
 }
 
 export async function deleteAuf(id) {
   const auf = D.settings.aufwand.find(a => a.id === id);
   if (!auf) return;
   const inUse = D.recipes.some(r => r.auf === id);
-  if (inUse && !confirm(`Aufwand "${auf.label}" wird von Rezepten verwendet. Trotzdem löschen?`)) return;
+  if (inUse && !confirm(`"${auf.label}" wird von Rezepten verwendet. Trotzdem löschen?`)) return;
   D.settings.aufwand = D.settings.aufwand.filter(a => a.id !== id);
   await saveSettingsNow();
+  applyTagStyles();
   renderSettings();
+  renderRFilters();
+  renderRecipes();
 }

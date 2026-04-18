@@ -1,4 +1,4 @@
-import { D, getCatLabel, getAufLabel } from './data.js';
+import { D, getCatLabel, getAufLabel, applyTagStyles } from './data.js';
 import { parseIngredient } from 'https://esm.sh/@jlucaspains/sharp-recipe-parser@1.3.6';
 import { saveRecipesDebounced, saveWeekNow } from './data.js';
 import { sbUploadImage, sbDeleteImage } from './db.js';
@@ -19,7 +19,7 @@ export function renderRFilters() {
     ...D.settings.aufwand.map(a => ({ id: a.id, label: a.label, type: 'auf' }))
   ];
   document.getElementById('r-filters').innerHTML = allFilters.map(f =>
-    `<button class="pill tag-${f.label} ${rFilters.has(f.id) ? 'on' : ''}" onclick="toggleRF('${f.id}')">${f.label}</button>`
+    `<button class="pill tag-${f.id} ${rFilters.has(f.id) ? 'on' : ''}" onclick="toggleRF('${f.id}')">${f.label}</button>`
   ).join('');
 }
 
@@ -70,8 +70,8 @@ export function renderRecipes(searchQuery = '') {
       <div class="recipe-row" onclick="toggleER(${r.id})" style="cursor:pointer">
         <span class="recipe-name-col">${r.name}</span>
         <span class="recipe-meta">${r.time ? r.time + ' min' : ''}</span>
-        <span class="tag tag-${getCatLabel(r.cat)}">${getCatLabel(r.cat)}</span>
-        <span class="tag tag-${getAufLabel(r.auf)}">${getAufLabel(r.auf)}</span>
+        <span class="tag tag-${r.cat}">${getCatLabel(r.cat)}</span>
+        <span class="tag tag-${r.auf}">${getAufLabel(r.auf)}</span>
         <button class="btn btn-d btn-sm" onclick="event.stopPropagation();delR(${r.id})" style="margin-left:8px;border-left:1px solid var(--bd2);padding-left:12px">×</button>
       </div>
       ${isOpen ? `<div class="recipe-detail">

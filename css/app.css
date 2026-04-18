@@ -70,28 +70,7 @@ textarea{resize:vertical;min-height:60px}
 
 /* Tags */
 .tag{font-size:11px;padding:2px 8px;border-radius:99px;white-space:nowrap}
-.tag-pasta, .pill.tag-pasta{background:var(--c-pasta-bg);color:var(--c-pasta);border-color:var(--c-pasta)}
-.tag-curry, .pill.tag-curry{background:var(--c-curry-bg);color:var(--c-curry);border-color:var(--c-curry)}
-.tag-suppe, .pill.tag-suppe{background:var(--c-suppe-bg);color:var(--c-suppe);border-color:var(--c-suppe)}
-.tag-salat, .pill.tag-salat{background:var(--c-salat-bg);color:var(--c-salat);border-color:var(--c-salat)}
-.tag-auflauf, .pill.tag-auflauf{background:var(--c-auflauf-bg);color:var(--c-auflauf);border-color:var(--c-auflauf)}
-.tag-frühstück, .pill.tag-frühstück{background:var(--c-frühstück-bg);color:var(--c-frühstück);border-color:var(--c-frühstück)}
-.tag-sonstiges, .pill.tag-sonstiges{background:var(--c-sonstiges-bg);color:var(--c-sonstiges);border-color:var(--c-sonstiges)}
-.tag-einfach, .pill.tag-einfach{background:var(--c-einfach-bg);color:var(--c-einfach);border-color:var(--c-einfach)}
-.tag-mittel, .pill.tag-mittel{background:var(--c-mittel-bg);color:var(--c-mittel);border-color:var(--c-mittel)}
-.tag-schwer, .pill.tag-schwer{background:var(--c-schwer-bg);color:var(--c-schwer);border-color:var(--c-schwer)}
-
-/* Filter-Pills: inaktiv = nur Umriss, aktiv = gefüllt */
-.pill.tag-pasta{background:transparent}.pill.tag-pasta.on{background:var(--c-pasta-bg)}
-.pill.tag-curry{background:transparent}.pill.tag-curry.on{background:var(--c-curry-bg)}
-.pill.tag-suppe{background:transparent}.pill.tag-suppe.on{background:var(--c-suppe-bg)}
-.pill.tag-salat{background:transparent}.pill.tag-salat.on{background:var(--c-salat-bg)}
-.pill.tag-auflauf{background:transparent}.pill.tag-auflauf.on{background:var(--c-auflauf-bg)}
-.pill.tag-frühstück{background:transparent}.pill.tag-frühstück.on{background:var(--c-frühstück-bg)}
-.pill.tag-sonstiges{background:transparent}.pill.tag-sonstiges.on{background:var(--c-sonstiges-bg)}
-.pill.tag-einfach{background:transparent}.pill.tag-einfach.on{background:var(--c-einfach-bg)}
-.pill.tag-mittel{background:transparent}.pill.tag-mittel.on{background:var(--c-mittel-bg)}
-.pill.tag-schwer{background:transparent}.pill.tag-schwer.on{background:var(--c-schwer-bg)}
+/* Tag colors are now dynamically injected by applyTagStyles() */
 
 /* Layout helpers */
 .row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
@@ -302,3 +281,11 @@ body{padding:0;margin:0}
 .settings-row:last-child{border-bottom:none}
 .settings-input{flex:1;padding:5px 8px;font-size:13px;border:0.5px solid var(--bd2);border-radius:var(--rs);background:var(--bg);color:var(--text);font-family:inherit}
 .settings-input:focus{outline:none;border-color:var(--meadow)}
+
+/* Settings color pickers */
+.settings-color{
+  width:32px;height:32px;padding:2px;
+  border:0.5px solid var(--bd2);border-radius:var(--rs);
+  cursor:pointer;background:var(--bg);flex-shrink:0;
+}
+.settings-color-bg{opacity:0.7}

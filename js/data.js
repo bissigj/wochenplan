@@ -133,3 +133,27 @@ export function getAufLabel(id) {
   const found = D.settings.aufwand.find(a => a.id === id);
   return found ? found.label : id;
 }
+
+// ── Dynamic tag styles ────────────────────────────────────────────────────────
+export function applyTagStyles() {
+  let css = '';
+  // Category tags
+  D.settings.cats.forEach(c => {
+    css += `.tag-${c.id}{background:${c.bg};color:${c.color};}\n`;
+    css += `.pill.tag-${c.id}{background:transparent;color:${c.color};border-color:${c.color};}\n`;
+    css += `.pill.tag-${c.id}.on{background:${c.bg};}\n`;
+  });
+  // Aufwand tags
+  D.settings.aufwand.forEach(a => {
+    css += `.tag-${a.id}{background:${a.bg};color:${a.color};}\n`;
+    css += `.pill.tag-${a.id}{background:transparent;color:${a.color};border-color:${a.color};}\n`;
+    css += `.pill.tag-${a.id}.on{background:${a.bg};}\n`;
+  });
+  let el = document.getElementById('dynamic-tag-styles');
+  if (!el) {
+    el = document.createElement('style');
+    el.id = 'dynamic-tag-styles';
+    document.head.appendChild(el);
+  }
+  el.textContent = css;
+}
