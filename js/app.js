@@ -4,7 +4,7 @@ import { renderRFilters, renderRecipes, toggleRF, toggleER, addRecipe, delR, add
 import { renderWeek, openDrawModal, closeDrawModal, toggleDrawPill, setTimePill, drawWeek, backToCurrent, toggleDay, toggleDayActive, rerollDay, setPortions, setNote } from './week.js';
 import { renderShop, setShopView } from './shopping.js';
 import { renderArchiv, viewArchiveWeek } from './archive.js';
-import { exportPDF, exportRecipePDF } from './pdf.js';
+import { exportPDF, exportRecipePDF, exportShopPDF } from './pdf.js';
 
 // ── Global functions (needed for onclick="" in HTML) ──────────────────────────
 window.doLogin           = doLogin;
@@ -57,6 +57,7 @@ window.exportRecipePDF   = exportRecipePDF;
 window.setSortOrder      = setSortOrder;
 window.uploadRecipeImage  = uploadRecipeImage;
 window.removeRecipeImage  = removeRecipeImage;
+window.exportShopPDF     = exportShopPDF;
 
 // ── renderAll (used by auth after login) ─────────────────────────────────────
 export function renderAll() {
