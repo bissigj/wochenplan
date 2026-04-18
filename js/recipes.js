@@ -61,7 +61,7 @@ export function renderRecipes(searchQuery = '') {
   el.innerHTML = vis.map(r => {
     const isOpen = expandedR === r.id;
     return `<div class="card">
-      iv class="recipe-row" onclick="toggleER(${r.id})" style="cursor:pointer">
+      <div class="recipe-row" onclick="toggleER(${r.id})" style="cursor:pointer">
         <span class="recipe-name-col">${r.name}</span>
         <span class="recipe-meta">${r.time ? r.time + ' min' : ''}</span>
         <span class="tag tag-${r.cat}">${r.cat}</span>
