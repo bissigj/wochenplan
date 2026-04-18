@@ -1,7 +1,7 @@
 import { D } from './data.js';
 import { parseIngredient } from 'https://esm.sh/@jlucaspains/sharp-recipe-parser@1.3.6';
 import { saveRecipesDebounced, saveWeekNow } from './data.js';
-import { sbUploadImage } from './db.js';
+import { sbUploadImage, sbDeleteImage } from './db.js';
 import { CATS, AUFWAND, EINHEITEN } from './config.js';
 import { fmtIng, srcHTML, toast } from './ui.js';
 import { renderWeek } from './week.js';
@@ -139,9 +139,12 @@ export function toggleER(id) {
 }
 
 export async function removeRecipeImage(id) {
-  D.recipes.find(r => r.id === id).img = null;
+  const r = D.recipes.find(r => r.id === id);
+  if (r.img) await sbDeleteImage(r.img);
+  r.img = null;
   await saveRecipesDebounced();
   rerender();
+  toast('Foto entfernt');
 }
 
 function initSortable() {

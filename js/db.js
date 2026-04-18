@@ -87,3 +87,19 @@ export async function sbUploadImage(file) {
   if (!r.ok) { console.error('Upload failed', r.status, await r.text()); return null; }
   return `${SUPA_URL}/storage/v1/object/public/rezeptbilder/${path}`;
 }
+
+export async function sbDeleteImage(url) {
+  if (!url) return;
+  const path = url.split('/rezeptbilder/')[1];
+  if (!path) return;
+  let auth = H['Authorization'];
+  try {
+    const s = JSON.parse(localStorage.getItem('wp_session'));
+    if (s && s.access_token) auth = 'Bearer ' + s.access_token;
+  } catch(e) {}
+  const r = await fetch(`${SUPA_URL}/storage/v1/object/rezeptbilder/${path}`, {
+    method: 'DELETE',
+    headers: { 'apikey': SUPA_KEY, 'Authorization': auth }
+  });
+  if (!r.ok) console.warn('Delete image failed', r.status, await r.text());
+}
