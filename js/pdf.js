@@ -35,7 +35,7 @@ export function exportPDF() {
       return `<div class="ing-item"><span class="ing-name">${ing.n}</span><span class="ing-qty">${qty}</span></div>`;
     }).join('') || '<div class="ing-item"><span class="ing-name">—</span></div>';
     return `<div class="page">
-      ${r.img ? `<div style="width:100%;height:220px;background-image:url('${r.img}');background-size:cover;background-position:center top;border-radius:8px;margin-bottom:18px"></div>` : ''}
+      ${r.img ? `<div class="recipe-img-full" style="background-image:url('${r.img}')"></div>` : ''}
       <div class="recipe-header">
         <div class="recipe-day">${d.day}</div>
         <div class="recipe-name">${r.name}</div>
@@ -115,6 +115,10 @@ export function exportPDF() {
     .src-line a{color:#598234}
     .note{font-size:9pt;color:#555;background:#f8f9f4;border-left:3px solid #AEBD38;padding:8px 12px;margin-top:12px;border-radius:0 6px 6px 0}
 
+    /* Images */
+    .recipe-img-full{width:100%;aspect-ratio:16/7;background-size:cover;background-position:center;border-radius:8px;margin-bottom:18px}
+    .cover-img{width:100%;aspect-ratio:16/7;background-size:cover;background-position:center}
+
     /* Shopping list */
     .shop-title{font-size:22pt;font-weight:700;color:#1a1a1a;letter-spacing:-0.5px;margin-bottom:4px}
     .shop-sub{font-size:10pt;color:#888;margin-bottom:1cm}
@@ -135,7 +139,7 @@ export function exportPDF() {
       const r = D.recipes.find(r => r.id === d.recipeId);
       if (!r) return '';
       return `<div class="day-box active" style="${r.img ? 'padding:0;overflow:hidden' : ''}">
-        ${r.img ? `<div style="width:100%;height:120px;background-image:url('${r.img}');background-size:cover;background-position:center"></div><div style="padding:10px 14px">` : ''}
+        ${r.img ? `<div class="cover-img" style="background-image:url('${r.img}')"></div><div style="padding:10px 14px">` : ''}
         <div class="day-name">${d.day}</div>
         <div class="day-recipe">${r.name}</div>
         <div class="day-tags">
@@ -207,10 +211,12 @@ export function exportRecipePDF(id) {
     .step-text{font-size:10pt;line-height:1.6}
     .src-line{font-size:8.5pt;color:#888;margin-top:16px;padding-top:10px;border-top:.5px solid #eee}
     .src-line a{color:#598234}
+    .recipe-img-full{width:100%;aspect-ratio:16/7;background-size:cover;background-position:center;border-radius:8px;margin-bottom:18px}
     @media print{@page{margin:0}body{margin:1.5cm}}
   </style></head><body>
   <div class="page">
     <div class="accent"></div>
+    ${r.img ? `<div class="recipe-img-full" style="background-image:url('${r.img}')"></div>` : ''}
     <div class="recipe-header">
       <div class="recipe-name">${r.name}</div>
       <div class="meta-row">
