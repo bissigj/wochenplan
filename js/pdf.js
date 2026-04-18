@@ -2,6 +2,63 @@ import { D } from './data.js';
 import { fmtIng, toast } from './ui.js';
 import { getActivePlan } from './shopping.js';
 
+
+export function exportShopPDF() {
+  const plan = getActivePlan();
+  if (!plan.days || !plan.days.some(d => d.active && d.recipeId)) {
+    toast('Keine aktive Woche.');
+    return;
+  }
+  const agg = {};
+  plan.days.filter(d => d.active && d.recipeId).forEach(d => {
+    const r = D.recipes.find(r => r.id === d.recipeId);
+    if (!r || !r.ings) return;
+    const factor = (d.portions || plan.portions || 2) / (r.portions || 2);
+    r.ings.forEach(ing => {
+      const key = ing.n.toLowerCase().trim() + ':' + ing.u;
+      if (!agg[key]) agg[key] = { n: ing.n, u: ing.u, m: 0, recipes: [] };
+      agg[key].m += ing.m * factor;
+      if (!agg[key].recipes.includes(r.name)) agg[key].recipes.push(r.name);
+    });
+  });
+  const items = Object.values(agg).sort((a, b) => a.n.localeCompare(b.n));
+  const html = `<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><title>Einkaufsliste</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:-apple-system,"Helvetica Neue",Arial,sans-serif;font-size:11pt;color:#1a1a1a;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .page{padding:2cm}
+    .accent{height:4px;background:#598234;border-radius:2px;margin-bottom:1.5cm}
+    .title{font-size:24pt;font-weight:700;color:#1a1a1a;letter-spacing:-0.5px;margin-bottom:4px}
+    .sub{font-size:10pt;color:#888;margin-bottom:1cm}
+    .col-title{font-size:8pt;font-weight:700;color:#598234;text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;padding-bottom:6px;border-bottom:1.5px solid #598234}
+    .grid{columns:2;gap:20px}
+    .item{display:flex;justify-content:space-between;align-items:baseline;padding:6px 0;border-bottom:.5px solid #f0f0f0;font-size:10.5pt;break-inside:avoid}
+    .item-name{color:#1a1a1a}
+    .item-recipes{font-size:8pt;color:#aaa;margin-left:5px}
+    .item-qty{color:#598234;font-weight:600;font-size:9.5pt;white-space:nowrap;padding-left:10px}
+    @media print{@page{margin:0}body{margin:1.5cm}}
+  </style></head><body>
+  <div class="page">
+    <div class="accent"></div>
+    <div class="title">Einkaufsliste</div>
+    <div class="sub">aggregiert · ${plan.days.filter(d => d.active && d.recipeId).length} Tage</div>
+    <div class="col-title">Zutaten</div>
+    <div class="grid">${items.map(it => {
+      const m = it.m > 0 ? (Number.isInteger(it.m) ? it.m : Math.round(it.m * 10) / 10) : '';
+      const qty = m ? `${m} ${it.u}`.trim() : it.u || '';
+      return `<div class="item">
+        <span class="item-name">${it.n}<span class="item-recipes">${it.recipes.join(' · ')}</span></span>
+        <span class="item-qty">${qty}</span>
+      </div>`;
+    }).join('')}</div>
+  </div>
+  </body></html>`;
+  const blob = new Blob([html], { type: 'text/html' });
+  const url = URL.createObjectURL(blob);
+  const pw = window.open(url, '_blank');
+  if (pw) { pw.onload = () => { setTimeout(() => { pw.print(); URL.revokeObjectURL(url); }, 300); }; }
+}
+
 export function exportPDF() {
   const plan = getActivePlan();
   if (!plan.days || !plan.days.length) { toast('Keine Woche zum Exportieren.'); return; }
