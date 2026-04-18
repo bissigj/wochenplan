@@ -61,14 +61,14 @@ export function renderRecipes(searchQuery = '') {
   el.innerHTML = vis.map(r => {
     const isOpen = expandedR === r.id;
     return `<div class="card">
-      <div class="recipe-row">
+      iv class="recipe-row" onclick="toggleER(${r.id})" style="cursor:pointer">
         <span class="recipe-name-col">${r.name}</span>
         <span class="recipe-meta">${r.time ? r.time + ' min' : ''}</span>
         <span class="tag tag-${r.cat}">${r.cat}</span>
         <span class="tag tag-${r.auf}">${r.auf}</span>
         <button class="expand-btn" onclick="toggleER(${r.id})">${isOpen ? '▲' : '▼'}</button>
 
-        <button class="btn btn-d btn-sm" onclick="delR(${r.id})">×</button>
+        <button class="btn btn-d btn-sm" onclick="event.stopPropagation();delR(${r.id})" style="margin-left:8px;border-left:1px solid var(--bd2);padding-left:12px">×</button>
       </div>
       ${isOpen ? `<div class="recipe-detail">
       ${r.img ? `<div class="recipe-img" style="background-image:url('${r.img}');margin-bottom:1rem"></div>` : ''}
@@ -187,6 +187,7 @@ export async function addRecipe() {
 
 export async function delR(id) {
   const deleted = D.recipes.find(r => r.id === id);
+  if (!confirm(`"${deleted.name}" wirklich löschen?`)) return;
   const deletedDays = (D.weekPlan.days || []).filter(d => d.recipeId === id);
   // Delete image from storage if exists
   if (deleted && deleted.img) await sbDeleteImage(deleted.img);
