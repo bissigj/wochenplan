@@ -5,6 +5,42 @@ import { loadData } from './data.js';
 import { renderAll } from './app.js';
 
 export let session = null;
+let refreshTimer = null;
+
+function scheduleRefresh(session) {
+  clearTimeout(refreshTimer);
+  // expires_at ist Unix-Timestamp in Sekunden
+  const expiresIn = session.expires_at * 1000 - Date.now();
+  // 2 Minuten vor Ablauf refreshen
+  const refreshIn = expiresIn - 2 * 60 * 1000;
+  if (refreshIn <= 0) {
+    doRefresh(session.refresh_token);
+    return;
+  }
+  refreshTimer = setTimeout(() => doRefresh(session.refresh_token), refreshIn);
+}
+
+async function doRefresh(refreshToken) {
+  try {
+    const r = await fetch(`${SUPA_URL}/auth/v1/token?grant_type=refresh_token`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY },
+      body: JSON.stringify({ refresh_token: refreshToken })
+    });
+    const d = await r.json();
+    if (d.access_token) {
+      session = d;
+      setToken(d.access_token);
+      localStorage.setItem('wp_session', JSON.stringify(d));
+      scheduleRefresh(d); // nächsten Refresh planen
+    } else {
+      // Refresh fehlgeschlagen → neu anmelden
+      doLogout();
+    }
+  } catch(e) {
+    console.error('Token refresh failed', e);
+  }
+}
 
 export async function doLogin() {
   const email = document.getElementById('l-email').value.trim();
@@ -22,6 +58,7 @@ export async function doLogin() {
       return;
     }
     session = d;
+    scheduleRefresh(session);
     setToken(d.access_token);
     await onLoggedIn();
   } catch (e) {
@@ -90,6 +127,7 @@ export async function tryRestoreSession() {
       const s = JSON.parse(saved);
       if (s.access_token && s.expires_at && Date.now() / 1000 < s.expires_at) {
         session = s;
+        scheduleRefresh(session);
         setToken(s.access_token);
         await onLoggedIn();
         return true;
