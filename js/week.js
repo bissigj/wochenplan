@@ -131,55 +131,89 @@ export function renderWeek() {
   }
 }
 
-function renderWeekPlan(plan, readonly = false) {
-  const el = document.getElementById('week-view');
-  if (!plan || !plan.days || !plan.days.length) { el.innerHTML = '<div class="empty">Keine Tage.</div>'; return; }
-  el.innerHTML = '<div class="week-grid">' + plan.days.map((d, i) => {
-    const r = D.recipes.find(r => r.id === d.recipeId);
-    if (!r) return '';
-    const isOpen = expandedDays.has(i);
-    const isWeekend = i >= 5;
-    const factor = (d.portions || plan.portions || 2) / (r.portions || 2);
-    const ingsHTML = (r.ings || []).length
-      ? r.ings.map((ing, i) => `<div class="ing-row">${fmtIng(ing, factor)}</div>`).join('')
-      : '<span style="font-size:12px;color:var(--text3)">Keine Zutaten.</span>';
-    const stepsHTML = (r.steps || []).length
-      ? r.steps.map((s, si) => `<div class="step-mini"><span class="step-mini-num">${si + 1}</span><span style="font-size:12px">${s}</span></div>`).join('')
-      : '<span style="font-size:12px;color:var(--text3)">Keine Schritte.</span>';
-    return `<div class="day-card ${d.active ? '' : 'off'} ${isWeekend ? 'day-card-weekend' : ''}">
-      ${r.img && d.active ? `<div class="day-card-img" style="background-image:url('${r.img}')"></div>` : ''}
-      <div class="day-card-top" onclick="toggleDay(${i})">
-        <div class="day-lbl ${isWeekend ? 'day-lbl-weekend' : ''}">${d.day}${!d.active ? '<span style="font-size:10px;background:var(--bg3);padding:1px 6px;border-radius:99px;margin-left:4px">ausgeblendet</span>' : ''}</div>
-        ${d.active ? `<div class="day-recipe-name">${r.name}</div>
-          <div class="day-meta">${r.time ? r.time + ' min · ' : ''}${getAufLabel(r.auf)}</div>
-          <div class="row" style="gap:4px;flex-wrap:wrap">
-            <span class="tag tag-${r.cat}">${getCatLabel(r.cat)}</span>
-            <span style="font-size:11px;color:var(--text3);margin-left:auto">${isOpen ? '▲' : '▼'}</span>
-          </div>` : '<div style="font-size:13px;color:var(--text3)">—</div>'}
-      </div>
-      ${!readonly ? `<div class="day-actions">
-        <button class="icon-btn" onclick="toggleDayActive(${i},event)">👁</button>
-        ${d.active ? `
+// ── Day Card ──────────────────────────────────────────────────────────────────
+function renderDayCard(d, i, plan, readonly) {
+  const r = D.recipes.find(r => r.id === d.recipeId);
+  if (!r) return '';
+
+  const isOpen    = expandedDays.has(i);
+  const isWeekend = i >= 5;
+  const factor    = (d.portions || plan.portions || 2) / (r.portions || 2);
+
+  const ingsHTML = (r.ings || []).length
+    ? r.ings.map(ing => `<div class="ing-row">${fmtIng(ing, factor)}</div>`).join('')
+    : '<span style="font-size:12px;color:var(--text3)">Keine Zutaten.</span>';
+
+  const stepsHTML = (r.steps || []).length
+    ? r.steps.map((s, si) => `
+        <div class="step-mini">
+          <span class="step-mini-num">${si + 1}</span>
+          <span style="font-size:12px">${s}</span>
+        </div>`).join('')
+    : '<span style="font-size:12px;color:var(--text3)">Keine Schritte.</span>';
+
+  const detailHTML = d.active && isOpen ? `
+    <div class="day-detail open">
+      <div style="font-size:11px;color:var(--text3);margin-bottom:4px">Zutaten (${d.portions || plan.portions} Port.)</div>
+      <div class="ing-list" style="margin-bottom:10px">${ingsHTML}</div>
+      <div class="divider"></div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:6px;margin-top:8px">Zubereitung</div>
+      ${stepsHTML}
+      ${srcHTML(r.src) ? `<div class="divider"></div><div style="margin-top:8px">${srcHTML(r.src)}</div>` : ''}
+      ${!readonly
+        ? `<div class="divider"></div>
+           <div style="font-size:11px;color:var(--text3);margin-bottom:4px;margin-top:8px">Notiz</div>
+           <textarea class="day-note-input" placeholder="Notiz…" onclick="event.stopPropagation()"
+             onchange="setNote(${i},this.value)">${d.note || ''}</textarea>`
+        : d.note
+          ? `<div class="divider"></div><div style="font-size:12px;color:var(--text2);margin-top:8px">📝 ${d.note}</div>`
+          : ''}
+    </div>` : '';
+
+  const actionsHTML = !readonly ? `
+    <div class="day-actions">
+      <button class="icon-btn" onclick="toggleDayActive(${i},event)">👁</button>
+      ${d.active ? `
         <button class="icon-btn" onclick="rerollDay(${i},event)">↺</button>
         <div class="portions-row">
           <span style="font-size:11px;color:var(--text3)">Port.</span>
-          <input type="number" value="${d.portions || plan.portions}" min="1" max="20" onclick="event.stopPropagation()" onchange="setPortions(${i},+this.value)" />
-      </div>` : ''}
-      </div>` : ''}
-      ${d.active && isOpen ? `<div class="day-detail open">
-        <div style="font-size:11px;color:var(--text3);margin-bottom:4px">Zutaten (${d.portions || plan.portions} Port.)</div>
-        <div class="ing-list" style="margin-bottom:10px">${ingsHTML}</div>
-        <div class="divider"></div>
-        <div style="font-size:11px;color:var(--text3);margin-bottom:6px;margin-top:8px">Zubereitung</div>
-        ${stepsHTML}
-        ${srcHTML(r.src) ? `<div class="divider"></div><div style="margin-top:8px">${srcHTML(r.src)}</div>` : ''}
-        ${!readonly ? `<div class="divider"></div>
-          <div style="font-size:11px;color:var(--text3);margin-bottom:4px;margin-top:8px">Notiz</div>
-          <textarea class="day-note-input" placeholder="Notiz…" onclick="event.stopPropagation()" onchange="setNote(${i},this.value)">${d.note || ''}</textarea>`
-          : d.note ? `<div class="divider"></div><div style="font-size:12px;color:var(--text2);margin-top:8px">📝 ${d.note}</div>` : ''}
-      </div>` : ''}
+          <input type="number" value="${d.portions || plan.portions}" min="1" max="20"
+            onclick="event.stopPropagation()" onchange="setPortions(${i},+this.value)" />
+        </div>` : ''}
+    </div>` : '';
+
+  return `
+    <div class="day-card ${d.active ? '' : 'off'} ${isWeekend ? 'day-card-weekend' : ''}">
+      ${r.img && d.active ? `<div class="day-card-img" style="background-image:url('${r.img}')"></div>` : ''}
+      <div class="day-card-top" onclick="toggleDay(${i})">
+        <div class="day-lbl ${isWeekend ? 'day-lbl-weekend' : ''}">
+          ${d.day}
+          ${!d.active ? '<span style="font-size:10px;background:var(--bg3);padding:1px 6px;border-radius:99px;margin-left:4px">ausgeblendet</span>' : ''}
+        </div>
+        ${d.active
+          ? `<div class="day-recipe-name">${r.name}</div>
+             <div class="day-meta">${r.time ? r.time + ' min · ' : ''}${getAufLabel(r.auf)}</div>
+             <div class="row" style="gap:4px;flex-wrap:wrap">
+               <span class="tag tag-${r.cat}">${getCatLabel(r.cat)}</span>
+               <span style="font-size:11px;color:var(--text3);margin-left:auto">${isOpen ? '▲' : '▼'}</span>
+             </div>`
+          : '<div style="font-size:13px;color:var(--text3)">—</div>'}
+      </div>
+      ${actionsHTML}
+      ${detailHTML}
     </div>`;
-  }).join('') + '</div>';
+}
+
+// ── Week Plan ─────────────────────────────────────────────────────────────────
+function renderWeekPlan(plan, readonly = false) {
+  const el = document.getElementById('week-view');
+  if (!plan || !plan.days || !plan.days.length) {
+    el.innerHTML = '<div class="empty">Keine Tage.</div>';
+    return;
+  }
+  el.innerHTML = '<div class="week-grid">' +
+    plan.days.map((d, i) => renderDayCard(d, i, plan, readonly)).join('') +
+    '</div>';
 }
 
 export function toggleDay(i) {
