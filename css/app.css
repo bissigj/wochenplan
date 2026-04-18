@@ -277,3 +277,16 @@ body{padding:0;margin:0}
 .ing-row{display:flex;align-items:center;justify-content:space-between;padding:5px 8px;background:var(--bg2);border-radius:var(--rs);font-size:13px;color:var(--text)}
 .ing-row:hover{background:var(--bg3)}
 .ing-amt{flex:1}
+
+/* Recipe images */
+.recipe-img{
+  width:calc(100% + 2.5rem);height:180px;
+  background-size:cover;background-position:center;
+  border-radius:var(--r) var(--r) 0 0;
+  margin:-1rem -1.25rem 1rem;
+}
+.day-card-img{
+  width:100%;height:120px;
+  background-size:cover;background-position:center;
+}
+.img-upload-wrap{margin-top:4px}
