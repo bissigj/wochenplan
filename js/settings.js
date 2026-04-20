@@ -256,11 +256,11 @@ export async function saveFamilyName() {
 async function loadFamilyMembers() {
   const el = document.getElementById('members-list');
   if (!el) return;
-  const members = await sbGet('family_members', `family_id=eq.${D.familyId}&select=user_id,role`);
+  const members = await sbGet('family_members', `family_id=eq.${D.familyId}&select=user_id,role,email`);
   if (!members || !members.length) { el.textContent = 'Keine Mitglieder gefunden.'; return; }
   el.innerHTML = members.map(m =>
     `<div class="settings-row" style="border:none;padding:3px 0">
-      <span style="flex:1;font-family:monospace;font-size:11px;color:var(--text3)">${m.user_id.slice(0,8)}…</span>
+      <span style="flex:1;font-size:13px">${m.email || m.user_id.slice(0,8) + '…'}</span>
       <span class="tag" style="font-size:11px">${m.role}</span>
     </div>`
   ).join('');
@@ -291,7 +291,7 @@ export async function joinFamily() {
   if (i.used_at) { el.textContent = '❌ Code bereits verwendet.'; return; }
   if (new Date(i.expires_at) < new Date()) { el.textContent = '❌ Code abgelaufen.'; return; }
   // Join family
-  await sbInsert('family_members', { family_id: i.family_id, user_id: D.userId, role: i.role || 'member' });
+  await sbInsert('family_members', { family_id: i.family_id, user_id: D.userId, role: i.role || 'member', email: D.userEmail });
   // Mark invitation as used
   await sbUpdate('invitations', i.id, { used_by: D.userId, used_at: new Date().toISOString() });
   D.familyId = i.family_id;
