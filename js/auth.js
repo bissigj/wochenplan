@@ -137,14 +137,14 @@ export async function obJoinFamily() {
   const err = document.getElementById('ob-err');
   if (!code) { err.textContent = 'Bitte einen Einladungscode eingeben.'; return; }
   err.textContent = '';
-  const inv = await sbGet('invitations', `code=eq.${code}&select=id,family_id,used_at,expires_at`);
+  const inv = await sbGet('invitations', `code=eq.${code}&select=id,family_id,used_at,expires_at,role`);
   if (!inv || !inv.length) { err.textContent = '❌ Ungültiger Code.'; return; }
   const i = inv[0];
   if (i.used_at) { err.textContent = '❌ Code bereits verwendet.'; return; }
   if (new Date(i.expires_at) < new Date()) { err.textContent = '❌ Code abgelaufen.'; return; }
   D.familyId = i.family_id;
-  await sbInsert('family_members', { family_id: D.familyId, user_id: D.userId, role: 'member' });
-  await sbInsert('invitations', { used_by: D.userId, used_at: new Date().toISOString() });
+  await sbInsert('family_members', { family_id: D.familyId, user_id: D.userId, role: i.role || 'member' });
+  await sbUpdate('invitations', i.id, { used_by: D.userId, used_at: new Date().toISOString() });
   const fams = await sbGet('families', `id=eq.${D.familyId}&select=name`);
   if (fams && fams[0]) D.familyName = fams[0].name;
   document.getElementById('onboarding-screen').style.display = 'none';
