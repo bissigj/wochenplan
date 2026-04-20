@@ -6,7 +6,7 @@ import { renderWeek, openDrawModal, closeDrawModal, toggleDrawPill, setTimePill,
 import { renderShop, setShopView } from './shopping.js';
 import { renderArchiv, viewArchiveWeek } from './archive.js';
 import { exportPDF, exportRecipePDF, exportShopPDF } from './pdf.js';
-import { renderSettings, addCat, updateCat, updateCatColor, updateCatBg, deleteCat, addAuf, updateAuf, updateAufColor, updateAufBg, deleteAuf, addEinh, deleteEinh } from './settings.js';
+import { renderSettings, addCat, updateCat, updateCatColor, updateCatBg, deleteCat, addAuf, updateAuf, updateAufColor, updateAufBg, deleteAuf, addEinh, deleteEinh, saveFamilyName, createInvitation, joinFamily } from './settings.js';
 
 // ── Global functions (needed for onclick="" in HTML) ──────────────────────────
 window.doLogin           = doLogin;
@@ -75,6 +75,9 @@ window.updateAufBg       = updateAufBg;
 window.deleteAuf         = deleteAuf;
 window.addEinh           = addEinh;
 window.deleteEinh        = deleteEinh;
+window.saveFamilyName    = saveFamilyName;
+window.createInvitation  = createInvitation;
+window.joinFamily        = joinFamily;
 
 // ── renderAll (used by auth after login) ─────────────────────────────────────
 export function renderAll() {

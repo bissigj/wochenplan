@@ -7,7 +7,10 @@ export let D = {
   weekPlan: { kw: '', year: 0, days: [], portions: 2 },
   archive: [],
   nextId: 1,
-  settings: { cats: [], aufwand: [] }
+  settings: { cats: [], aufwand: [], einheiten: [] },
+  familyId: null,
+  familyName: '',
+  userId: null
 };
 export let dbSettingsId = null;
 
@@ -20,8 +23,9 @@ export function setDbWeekId(id) { dbWeekId = id; }
 
 export async function loadData() {
   try {
+    const fid = D.familyId;
     // Recipes
-    const recs = await sbGet('recipes', 'select=id,data');
+    const recs = await sbGet('recipes', `select=id,data&family_id=eq.${fid}`);
     if (recs && recs.length) {
       dbRecipeId = recs[0].id;
       D.recipes = recs[0].data.recipes || [];
@@ -29,11 +33,11 @@ export async function loadData() {
     } else {
       D.recipes = DEFAULTS.map(r => ({ ...r }));
       D.nextId = DEFAULTS.length + 1;
-      const ins = await sbInsert('recipes', { data: { recipes: D.recipes, nextId: D.nextId } });
+      const ins = await sbInsert('recipes', { data: { recipes: D.recipes, nextId: D.nextId }, family_id: D.familyId });
       if (ins && ins[0]) dbRecipeId = ins[0].id;
     }
     // Week plan – always exactly one row
-    const weeks = await sbGet('week_plan', 'select=id,data,updated_at');
+    const weeks = await sbGet('week_plan', `select=id,data,updated_at&family_id=eq.${fid}`);
     if (weeks && weeks.length) {
       weeks.sort((a, b) => new Date(b.updated_at || 0) - new Date(a.updated_at || 0));
       dbWeekId = weeks[0].id;
@@ -41,11 +45,11 @@ export async function loadData() {
       if (wp && wp.days && wp.days.length) D.weekPlan = wp;
     }
     // Archive – multiple rows
-    const arch = await sbGet('archive', 'select=id,data,kw,created_at');
+    const arch = await sbGet('archive', `select=id,data,kw,created_at&family_id=eq.${fid}`);
     D.archive = Array.isArray(arch) ? arch.map(a => ({ ...a.data, _dbid: a.id })) : [];
 
     // Settings – categories and aufwand
-    const sets = await sbGet('settings', 'select=id,data');
+    const sets = await sbGet('settings', `select=id,data&family_id=eq.${fid}`);
     if (sets && sets.length) {
       dbSettingsId = sets[0].id;
       D.settings = sets[0].data;
@@ -57,7 +61,7 @@ export async function loadData() {
     } else {
       D.settings = JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
       D.settings.einheiten = [...DEFAULT_EINHEITEN];
-      const ins = await sbInsert('settings', { data: D.settings });
+      const ins = await sbInsert('settings', { data: D.settings, family_id: D.familyId });
       if (ins && ins[0]) dbSettingsId = ins[0].id;
     }
 
@@ -86,7 +90,7 @@ export async function saveWeekNow() {
     if (dbWeekId) {
       await sbUpdate('week_plan', dbWeekId, { data: D.weekPlan, updated_at: new Date().toISOString() });
     } else {
-      const ins = await sbInsert('week_plan', { data: D.weekPlan });
+      const ins = await sbInsert('week_plan', { data: D.weekPlan, family_id: D.familyId });
       if (ins && ins[0]) dbWeekId = ins[0].id;
     }
     setSyncStatus('ok', 'Synchronisiert');
@@ -101,7 +105,7 @@ export async function saveSettingsNow() {
     if (dbSettingsId) {
       await sbUpdate('settings', dbSettingsId, { data: D.settings });
     } else {
-      const ins = await sbInsert('settings', { data: D.settings });
+      const ins = await sbInsert('settings', { data: D.settings, family_id: D.familyId });
       if (ins && ins[0]) dbSettingsId = ins[0].id;
     }
   } catch (e) { console.error('saveSettings error', e); }

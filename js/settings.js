@@ -1,5 +1,6 @@
 import { D } from './data.js';
 import { saveSettingsNow, applyTagStyles } from './data.js';
+import { sbGet, sbInsert, sbUpdate } from './db.js';
 import { toast } from './ui.js';
 import { renderRFilters, renderRecipes } from './recipes.js';
 import { renderWeek } from './week.js';
@@ -13,6 +14,35 @@ export function renderSettings() {
   const auf = D.settings.aufwand;
 
   el.innerHTML = `
+    <div class="card" style="margin-bottom:1rem">
+      <div class="section-title" style="margin-top:0">Familie</div>
+      <div id="family-section">
+        <div class="settings-row">
+          <input type="text" id="family-name-input" class="settings-input" value="${D.familyName || ''}" placeholder="Familienname" />
+          <button class="btn btn-sm" onclick="saveFamilyName()">Speichern</button>
+        </div>
+        <div style="margin-top:12px">
+          <div class="section-title">Mitglieder</div>
+          <div id="members-list" style="font-size:13px;color:var(--text2)">Wird geladen…</div>
+        </div>
+        <div style="margin-top:12px">
+          <div class="section-title">Einladen</div>
+          <div class="row" style="gap:6px">
+            <button class="btn btn-sm" onclick="createInvitation()">Einladungscode erstellen</button>
+          </div>
+          <div id="invitation-result" style="margin-top:8px;font-size:13px"></div>
+        </div>
+        <div style="margin-top:12px" id="join-section">
+          <div class="section-title">Familie beitreten</div>
+          <div class="row" style="gap:6px">
+            <input type="text" id="invite-code-input" placeholder="Einladungscode…" style="flex:1;max-width:200px" />
+            <button class="btn btn-sm" onclick="joinFamily()">Beitreten</button>
+          </div>
+          <div id="join-result" style="margin-top:8px;font-size:13px"></div>
+        </div>
+      </div>
+    </div>
+  `
     <div class="card" style="margin-bottom:1rem">
       <div class="section-title" style="margin-top:0">Kategorien</div>
       <div id="cats-list">
@@ -73,6 +103,7 @@ export function renderSettings() {
       </div>
     </div>
   `;
+  loadFamilyMembers();
 }
 
 // ── Default color palette for new entries ─────────────────────────────────────
@@ -222,4 +253,57 @@ export async function deleteEinh(val) {
   D.settings.einheiten = D.settings.einheiten.filter(e => e !== val);
   await saveSettingsNow();
   renderSettings();
+}
+
+// ── Family Management ─────────────────────────────────────────────────────────
+export async function saveFamilyName() {
+  const name = document.getElementById('family-name-input').value.trim();
+  if (!name) return;
+  await sbUpdate('families', D.familyId, { name });
+  D.familyName = name;
+  toast(`Familie umbenannt zu "${name}"`);
+}
+
+async function loadFamilyMembers() {
+  const el = document.getElementById('members-list');
+  if (!el) return;
+  const members = await sbGet('family_members', `family_id=eq.${D.familyId}&select=user_id,role`);
+  if (!members || !members.length) { el.textContent = 'Keine Mitglieder gefunden.'; return; }
+  el.innerHTML = members.map(m =>
+    `<div class="settings-row" style="border:none;padding:3px 0">
+      <span style="flex:1;font-family:monospace;font-size:11px;color:var(--text3)">${m.user_id.slice(0,8)}…</span>
+      <span class="tag" style="font-size:11px">${m.role}</span>
+    </div>`
+  ).join('');
+}
+
+export async function createInvitation() {
+  const code = Math.random().toString(36).slice(2, 8).toUpperCase();
+  await sbInsert('invitations', {
+    family_id: D.familyId,
+    code,
+    created_by: D.userId
+  });
+  const el = document.getElementById('invitation-result');
+  el.innerHTML = `Code: <strong style="font-family:monospace;font-size:15px;letter-spacing:2px">${code}</strong>
+    <span style="color:var(--text3);font-size:11px"> · gültig 7 Tage</span>`;
+  toast('Einladungscode erstellt');
+}
+
+export async function joinFamily() {
+  const code = document.getElementById('invite-code-input').value.trim().toUpperCase();
+  const el = document.getElementById('join-result');
+  if (!code) return;
+  const inv = await sbGet('invitations', `code=eq.${code}&select=id,family_id,used_at,expires_at`);
+  if (!inv || !inv.length) { el.textContent = '❌ Ungültiger Code.'; return; }
+  const i = inv[0];
+  if (i.used_at) { el.textContent = '❌ Code bereits verwendet.'; return; }
+  if (new Date(i.expires_at) < new Date()) { el.textContent = '❌ Code abgelaufen.'; return; }
+  // Join family
+  await sbInsert('family_members', { family_id: i.family_id, user_id: D.userId, role: 'member' });
+  // Mark invitation as used
+  await sbUpdate('invitations', i.id, { used_by: D.userId, used_at: new Date().toISOString() });
+  D.familyId = i.family_id;
+  el.innerHTML = '✓ Erfolgreich beigetreten!';
+  toast('Familie beigetreten');
 }

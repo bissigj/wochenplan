@@ -1,7 +1,8 @@
 import { SUPA_URL, SUPA_KEY } from './config.js';
-import { H, setToken } from './db.js';
+import { H, setToken, sbGet, sbInsert } from './db.js';
 import { setSyncStatus } from './ui.js';
-import { loadData } from './data.js';
+import { loadData, D } from './data.js';
+import { sbGet, sbInsert } from './db.js';
 import { renderAll } from './app.js';
 
 export let session = null;
@@ -109,12 +110,36 @@ export function showLogin() {
   document.getElementById('login-screen').style.display = 'flex';
 }
 
+async function resolveFamily(userId) {
+  // Check existing membership
+  const members = await sbGet('family_members', `user_id=eq.${userId}&select=family_id,role`);
+  if (members && members.length) {
+    D.familyId = members[0].family_id;
+    return;
+  }
+  // No family yet → create one
+  const fam = await sbInsert('families', { name: 'Meine Familie' });
+  if (fam && fam[0]) {
+    D.familyId = fam[0].id;
+    await sbInsert('family_members', {
+      family_id: D.familyId,
+      user_id: userId,
+      role: 'admin'
+    });
+  }
+}
+
 export async function onLoggedIn() {
   localStorage.setItem('wp_session', JSON.stringify(session));
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('register-screen').style.display = 'none';
   document.getElementById('main-screen').style.display = '';
   setSyncStatus('spin', 'Lade…');
+  D.userId = session.user.id;
+  await resolveFamily(session.user.id);
+  // Load family name
+  const fams = await sbGet('families', `id=eq.${D.familyId}&select=name`);
+  if (fams && fams[0]) D.familyName = fams[0].name;
   await loadData();
   setSyncStatus('ok', 'Synchronisiert');
   renderAll();

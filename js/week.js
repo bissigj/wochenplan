@@ -89,7 +89,7 @@ export async function drawWeek() {
   if (D.weekPlan.days && D.weekPlan.days.some(d => d.recipeId)) {
     const toArchive = JSON.parse(JSON.stringify(D.weekPlan));
     try {
-      const ins = await sbInsert('archive', { data: toArchive, kw: toArchive.kw });
+      const ins = await sbInsert('archive', { data: toArchive, kw: toArchive.kw, family_id: D.familyId });
       if (ins && ins[0]) toArchive._dbid = ins[0].id;
       D.archive.push(toArchive);
     } catch (e) { console.error('Archive save error', e); }
