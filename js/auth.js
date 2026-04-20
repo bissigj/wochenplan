@@ -2,7 +2,6 @@ import { SUPA_URL, SUPA_KEY } from './config.js';
 import { H, setToken, sbGet, sbInsert } from './db.js';
 import { setSyncStatus } from './ui.js';
 import { loadData, D } from './data.js';
-import { sbGet, sbInsert } from './db.js';
 import { renderAll } from './app.js';
 
 export let session = null;
