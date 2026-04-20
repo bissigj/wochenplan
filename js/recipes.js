@@ -2,7 +2,7 @@ import { D, getCatLabel, getAufLabel, applyTagStyles } from './data.js';
 import { parseIngredient } from 'https://esm.sh/@jlucaspains/sharp-recipe-parser@1.3.6';
 import { saveRecipesDebounced, saveWeekNow } from './data.js';
 import { sbUploadImage, sbDeleteImage } from './db.js';
-import { EINHEITEN } from './config.js';
+
 import { fmtIng, srcHTML, toast } from './ui.js';
 import { renderWeek } from './week.js';
 
@@ -99,7 +99,7 @@ export function renderRecipes(searchQuery = '') {
           <div class="ing-list">${(r.ings || []).map((ing, i) => `<div class="ing-row"><span class="ing-amt">${fmtIng(ing)}</span><button class="xbtn" onclick="delIng(${r.id},${i})">×</button></div>`).join('')}</div>
           <div class="row" style="gap:6px">
             <input type="number" id="im-${r.id}" placeholder="Menge" min="0.1" step="0.1" style="width:70px" />
-            <select id="iu-${r.id}" style="width:80px">${EINHEITEN.map(u => `<option>${u}</option>`).join('')}</select>
+            <select id="iu-${r.id}" style="width:80px">${D.settings.einheiten.map(u => `<option>${u}</option>`).join('')}</select>
             <input type="text" id="in-${r.id}" placeholder="Zutatname" style="flex:1" onkeydown="if(event.key==='Enter')addIng(${r.id})" />
             <button class="btn btn-sm" onclick="addIng(${r.id})">+</button>
           </div>

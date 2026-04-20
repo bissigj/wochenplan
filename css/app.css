@@ -289,3 +289,8 @@ body{padding:0;margin:0}
   cursor:pointer;background:var(--bg);flex-shrink:0;
 }
 .settings-color-bg{opacity:0.7}
+
+/* Einheiten tags in settings */
+.einh-tag{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;background:var(--bg2);border:0.5px solid var(--bd2);border-radius:99px;font-size:12px;color:var(--text)}
+.einh-tag .xbtn{font-size:11px;color:var(--text3);background:none;border:none;cursor:pointer;padding:0;line-height:1}
+.einh-tag .xbtn:hover{color:var(--red)}

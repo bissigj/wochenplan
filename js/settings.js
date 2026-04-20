@@ -35,6 +35,22 @@ export function renderSettings() {
       </div>
     </div>
 
+    <div class="card" style="margin-bottom:1rem">
+      <div class="section-title" style="margin-top:0">Einheiten</div>
+      <div id="einh-list" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">
+        ${D.settings.einheiten.map(e => `
+          <div class="einh-tag">
+            <span>${e}</span>
+            <button class="xbtn" onclick="deleteEinh('${e}')">×</button>
+          </div>`).join('')}
+      </div>
+      <div class="row" style="gap:6px">
+        <input type="text" id="new-einh-input" placeholder="Neue Einheit…" style="flex:1;max-width:160px"
+          onkeydown="if(event.key==='Enter')addEinh()" />
+        <button class="btn btn-sm" onclick="addEinh()">+</button>
+      </div>
+    </div>
+
     <div class="card">
       <div class="section-title" style="margin-top:0">Aufwand</div>
       <div id="auf-list">
@@ -187,4 +203,23 @@ export async function deleteAuf(id) {
   renderSettings();
   renderRFilters();
   renderRecipes();
+}
+
+// ── Einheiten CRUD ────────────────────────────────────────────────────────────
+export async function addEinh() {
+  const input = document.getElementById('new-einh-input');
+  const val = input.value.trim();
+  if (!val) return;
+  if (D.settings.einheiten.includes(val)) { toast('Einheit existiert bereits'); return; }
+  D.settings.einheiten.push(val);
+  input.value = '';
+  await saveSettingsNow();
+  renderSettings();
+  toast(`"${val}" hinzugefügt`);
+}
+
+export async function deleteEinh(val) {
+  D.settings.einheiten = D.settings.einheiten.filter(e => e !== val);
+  await saveSettingsNow();
+  renderSettings();
 }

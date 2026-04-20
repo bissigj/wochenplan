@@ -1,5 +1,5 @@
 import { sbGet, sbInsert, sbUpdate } from './db.js';
-import { DEFAULTS, DEFAULT_SETTINGS } from './config.js';
+import { DEFAULTS, DEFAULT_SETTINGS, DEFAULT_EINHEITEN } from './config.js';
 import { setSyncStatus } from './ui.js';
 
 export let D = {
@@ -49,8 +49,14 @@ export async function loadData() {
     if (sets && sets.length) {
       dbSettingsId = sets[0].id;
       D.settings = sets[0].data;
+      // Migrate: add einheiten if missing (existing installs)
+      if (!D.settings.einheiten) {
+        D.settings.einheiten = [...DEFAULT_EINHEITEN];
+        saveSettingsNow();
+      }
     } else {
       D.settings = JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
+      D.settings.einheiten = [...DEFAULT_EINHEITEN];
       const ins = await sbInsert('settings', { data: D.settings });
       if (ins && ins[0]) dbSettingsId = ins[0].id;
     }

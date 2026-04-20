@@ -19,7 +19,7 @@ export const DEFAULT_SETTINGS = {
     { id: 'auf_schwer',  label: 'schwer',  color: '#8a3838', bg: '#f5eeee' },
   ]
 };
-export const EINHEITEN = ['Stück','g','kg','dl','cl','ml','l','EL','TL','Prise','Bund','Dose','Pck.'];
+export const DEFAULT_EINHEITEN = ['Stück','g','kg','dl','cl','ml','l','EL','TL','Prise','Bund','Dose','Pck.'];
 
 export const DEFAULTS = [
   {id:1,name:'Spaghetti Pomodoro',cat:'pasta',auf:'einfach',time:25,portions:2,
