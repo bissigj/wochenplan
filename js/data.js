@@ -10,7 +10,8 @@ export let D = {
   settings: { cats: [], aufwand: [], einheiten: [] },
   familyId: null,
   familyName: '',
-  userId: null
+  userId: null,
+  userEmail: ''
 };
 export let dbSettingsId = null;
 
