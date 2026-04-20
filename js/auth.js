@@ -163,16 +163,15 @@ export async function onLoggedIn() {
   localStorage.setItem('wp_session', JSON.stringify(session));
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('register-screen').style.display = 'none';
-  document.getElementById('main-screen').style.display = '';
-  setSyncStatus('spin', 'Lade…');
   D.userId = session.user.id;
-  await resolveFamily(session.user.id);
-  // Load family name
+  const hasFamily = await resolveFamily(session.user.id);
+  if (!hasFamily) {
+    document.getElementById('onboarding-screen').style.display = 'flex';
+    return;
+  }
   const fams = await sbGet('families', `id=eq.${D.familyId}&select=name`);
   if (fams && fams[0]) D.familyName = fams[0].name;
-  await loadData();
-  setSyncStatus('ok', 'Synchronisiert');
-  renderAll();
+  await finishLogin();
 }
 
 export async function tryRestoreSession() {
