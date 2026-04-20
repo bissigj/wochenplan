@@ -27,7 +27,11 @@ export function renderSettings() {
         </div>
         <div style="margin-top:12px">
           <div class="section-title">Einladen</div>
-          <div class="row" style="gap:6px">
+          <div class="row" style="gap:6px;margin-bottom:6px">
+            <select id="invite-role" style="width:auto">
+              <option value="member">Member</option>
+              <option value="admin">Admin</option>
+            </select>
             <button class="btn btn-sm" onclick="createInvitation()">Einladungscode erstellen</button>
           </div>
           <div id="invitation-result" style="margin-top:8px;font-size:13px"></div>
@@ -263,11 +267,13 @@ async function loadFamilyMembers() {
 }
 
 export async function createInvitation() {
+  const role = document.getElementById('invite-role')?.value || 'member';
   const code = Math.random().toString(36).slice(2, 8).toUpperCase();
   await sbInsert('invitations', {
     family_id: D.familyId,
     code,
-    created_by: D.userId
+    created_by: D.userId,
+    role
   });
   const el = document.getElementById('invitation-result');
   el.innerHTML = `Code: <strong style="font-family:monospace;font-size:15px;letter-spacing:2px">${code}</strong>
@@ -279,13 +285,13 @@ export async function joinFamily() {
   const code = document.getElementById('invite-code-input').value.trim().toUpperCase();
   const el = document.getElementById('join-result');
   if (!code) return;
-  const inv = await sbGet('invitations', `code=eq.${code}&select=id,family_id,used_at,expires_at`);
+  const inv = await sbGet('invitations', `code=eq.${code}&select=id,family_id,used_at,expires_at,role`);
   if (!inv || !inv.length) { el.textContent = '❌ Ungültiger Code.'; return; }
   const i = inv[0];
   if (i.used_at) { el.textContent = '❌ Code bereits verwendet.'; return; }
   if (new Date(i.expires_at) < new Date()) { el.textContent = '❌ Code abgelaufen.'; return; }
   // Join family
-  await sbInsert('family_members', { family_id: i.family_id, user_id: D.userId, role: 'member' });
+  await sbInsert('family_members', { family_id: i.family_id, user_id: D.userId, role: i.role || 'member' });
   // Mark invitation as used
   await sbUpdate('invitations', i.id, { used_by: D.userId, used_at: new Date().toISOString() });
   D.familyId = i.family_id;
