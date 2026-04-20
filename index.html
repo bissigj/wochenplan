@@ -39,6 +39,29 @@
   </div>
 </div>
 
+<!-- Onboarding -->
+<div class="login-wrap" id="onboarding-screen" style="display:none">
+  <div class="login-box">
+    <h2>Willkommen!</h2>
+    <p>Möchtest du eine neue Familie erstellen oder einer bestehenden beitreten?</p>
+    <div id="ob-err" class="login-err"></div>
+
+    <div class="login-field" style="margin-top:1rem">
+      <label>Neue Familie erstellen</label>
+      <input type="text" id="ob-family-name" placeholder="Familienname z.B. Schnüsig" />
+    </div>
+    <button class="btn btn-p btn-full" style="margin-top:4px" onclick="obCreateFamily()">Familie erstellen</button>
+
+    <div style="text-align:center;color:var(--text3);margin:1rem 0;font-size:13px">— oder —</div>
+
+    <div class="login-field">
+      <label>Bestehender Familie beitreten</label>
+      <input type="text" id="ob-invite-code" placeholder="Einladungscode" style="text-transform:uppercase" />
+    </div>
+    <button class="btn btn-full" style="margin-top:4px" onclick="obJoinFamily()">Beitreten</button>
+  </div>
+</div>
+
 <!-- Main App -->
 <div id="main-screen" style="display:none">
 

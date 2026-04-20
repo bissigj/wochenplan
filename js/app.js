@@ -1,6 +1,6 @@
 import { showTab, toast } from './ui.js';
 import { D, applyTagStyles } from './data.js';
-import { doLogin, doRegister, doLogout, showLogin, showRegister, tryRestoreSession } from './auth.js';
+import { doLogin, doRegister, doLogout, showLogin, showRegister, tryRestoreSession, obCreateFamily, obJoinFamily } from './auth.js';
 import { renderRFilters, renderRecipes, toggleRF, toggleER, addRecipe, delR, addIng, delIng, addStep, delStep, updR, setSrcType, updSrc, openQE, closeQE, saveQE, setSortOrder, uploadRecipeImage, removeRecipeImage } from './recipes.js';
 import { renderWeek, openDrawModal, closeDrawModal, toggleDrawPill, setTimePill, drawWeek, backToCurrent, toggleDay, toggleDayActive, rerollDay, setPortions, setNote } from './week.js';
 import { renderShop, setShopView } from './shopping.js';
@@ -12,6 +12,8 @@ import { renderSettings, addCat, updateCat, updateCatColor, updateCatBg, deleteC
 window.doLogin           = doLogin;
 window.doRegister        = doRegister;
 window.doLogout          = doLogout;
+window.obCreateFamily    = obCreateFamily;
+window.obJoinFamily      = obJoinFamily;
 window.showLogin         = showLogin;
 window.showRegister      = showRegister;
 const PAGE_TITLES = { rezepte: 'Rezepte', woche: 'Wochenplan', einkauf: 'Einkauf', archiv: 'Archiv', einstellungen: 'Einstellungen' };

@@ -110,22 +110,53 @@ export function showLogin() {
 }
 
 async function resolveFamily(userId) {
-  // Check existing membership
   const members = await sbGet('family_members', `user_id=eq.${userId}&select=family_id,role`);
   if (members && members.length) {
     D.familyId = members[0].family_id;
-    return;
+    return true; // has family
   }
-  // No family yet → create one
-  const fam = await sbInsert('families', { name: 'Meine Familie' });
-  if (fam && fam[0]) {
-    D.familyId = fam[0].id;
-    await sbInsert('family_members', {
-      family_id: D.familyId,
-      user_id: userId,
-      role: 'admin'
-    });
-  }
+  return false; // no family yet
+}
+
+export async function obCreateFamily() {
+  const name = document.getElementById('ob-family-name').value.trim();
+  const err = document.getElementById('ob-err');
+  if (!name) { err.textContent = 'Bitte einen Familiennamen eingeben.'; return; }
+  err.textContent = '';
+  const fam = await sbInsert('families', { name });
+  if (!fam || !fam[0]) { err.textContent = 'Fehler beim Erstellen.'; return; }
+  D.familyId = fam[0].id;
+  await sbInsert('family_members', { family_id: D.familyId, user_id: D.userId, role: 'admin' });
+  D.familyName = name;
+  document.getElementById('onboarding-screen').style.display = 'none';
+  await finishLogin();
+}
+
+export async function obJoinFamily() {
+  const code = document.getElementById('ob-invite-code').value.trim().toUpperCase();
+  const err = document.getElementById('ob-err');
+  if (!code) { err.textContent = 'Bitte einen Einladungscode eingeben.'; return; }
+  err.textContent = '';
+  const inv = await sbGet('invitations', `code=eq.${code}&select=id,family_id,used_at,expires_at`);
+  if (!inv || !inv.length) { err.textContent = '❌ Ungültiger Code.'; return; }
+  const i = inv[0];
+  if (i.used_at) { err.textContent = '❌ Code bereits verwendet.'; return; }
+  if (new Date(i.expires_at) < new Date()) { err.textContent = '❌ Code abgelaufen.'; return; }
+  D.familyId = i.family_id;
+  await sbInsert('family_members', { family_id: D.familyId, user_id: D.userId, role: 'member' });
+  await sbInsert('invitations', { used_by: D.userId, used_at: new Date().toISOString() });
+  const fams = await sbGet('families', `id=eq.${D.familyId}&select=name`);
+  if (fams && fams[0]) D.familyName = fams[0].name;
+  document.getElementById('onboarding-screen').style.display = 'none';
+  await finishLogin();
+}
+
+async function finishLogin() {
+  document.getElementById('main-screen').style.display = '';
+  setSyncStatus('spin', 'Lade…');
+  await loadData();
+  setSyncStatus('ok', 'Synchronisiert');
+  renderAll();
 }
 
 export async function onLoggedIn() {
