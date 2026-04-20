@@ -126,7 +126,7 @@ export async function obCreateFamily() {
   const fam = await sbInsert('families', { name });
   if (!fam || !fam[0]) { err.textContent = 'Fehler beim Erstellen.'; return; }
   D.familyId = fam[0].id;
-  await sbInsert('family_members', { family_id: D.familyId, user_id: D.userId, role: 'admin' });
+  await sbInsert('family_members', { family_id: D.familyId, user_id: D.userId, role: 'admin', email: session.user.email });
   D.familyName = name;
   document.getElementById('onboarding-screen').style.display = 'none';
   await finishLogin();
@@ -143,7 +143,7 @@ export async function obJoinFamily() {
   if (i.used_at) { err.textContent = '❌ Code bereits verwendet.'; return; }
   if (new Date(i.expires_at) < new Date()) { err.textContent = '❌ Code abgelaufen.'; return; }
   D.familyId = i.family_id;
-  await sbInsert('family_members', { family_id: D.familyId, user_id: D.userId, role: i.role || 'member' });
+  await sbInsert('family_members', { family_id: D.familyId, user_id: D.userId, role: i.role || 'member', email: session.user.email });
   await sbUpdate('invitations', i.id, { used_by: D.userId, used_at: new Date().toISOString() });
   const fams = await sbGet('families', `id=eq.${D.familyId}&select=name`);
   if (fams && fams[0]) D.familyName = fams[0].name;
@@ -164,6 +164,7 @@ export async function onLoggedIn() {
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('register-screen').style.display = 'none';
   D.userId = session.user.id;
+  D.userEmail = session.user.email;
   const hasFamily = await resolveFamily(session.user.id);
   if (!hasFamily) {
     document.getElementById('onboarding-screen').style.display = 'flex';
