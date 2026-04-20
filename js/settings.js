@@ -32,7 +32,7 @@ export function renderSettings() {
           </div>
           <div id="invitation-result" style="margin-top:8px;font-size:13px"></div>
         </div>
-        <div style="margin-top:12px" id="join-section">
+        <div style="margin-top:12px">
           <div class="section-title">Familie beitreten</div>
           <div class="row" style="gap:6px">
             <input type="text" id="invite-code-input" placeholder="Einladungscode…" style="flex:1;max-width:200px" />
@@ -42,7 +42,7 @@ export function renderSettings() {
         </div>
       </div>
     </div>
-  `
+
     <div class="card" style="margin-bottom:1rem">
       <div class="section-title" style="margin-top:0">Kategorien</div>
       <div id="cats-list">
@@ -66,22 +66,6 @@ export function renderSettings() {
     </div>
 
     <div class="card" style="margin-bottom:1rem">
-      <div class="section-title" style="margin-top:0">Einheiten</div>
-      <div id="einh-list" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">
-        ${D.settings.einheiten.map(e => `
-          <div class="einh-tag">
-            <span>${e}</span>
-            <button class="xbtn" onclick="deleteEinh('${e}')">×</button>
-          </div>`).join('')}
-      </div>
-      <div class="row" style="gap:6px">
-        <input type="text" id="new-einh-input" placeholder="Neue Einheit…" style="flex:1;max-width:160px"
-          onkeydown="if(event.key==='Enter')addEinh()" />
-        <button class="btn btn-sm" onclick="addEinh()">+</button>
-      </div>
-    </div>
-
-    <div class="card">
       <div class="section-title" style="margin-top:0">Aufwand</div>
       <div id="auf-list">
         ${auf.map(a => `
@@ -102,26 +86,27 @@ export function renderSettings() {
         <button class="btn btn-sm" onclick="addAuf()">+</button>
       </div>
     </div>
+
+    <div class="card">
+      <div class="section-title" style="margin-top:0">Einheiten</div>
+      <div id="einh-list" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">
+        ${D.settings.einheiten.map(e => `
+          <div class="einh-tag">
+            <span>${e}</span>
+            <button class="xbtn" onclick="deleteEinh('${e}')">×</button>
+          </div>`).join('')}
+      </div>
+      <div class="row" style="gap:6px">
+        <input type="text" id="new-einh-input" placeholder="Neue Einheit…" style="flex:1;max-width:160px"
+          onkeydown="if(event.key==='Enter')addEinh()" />
+        <button class="btn btn-sm" onclick="addEinh()">+</button>
+      </div>
+    </div>
   `;
   loadFamilyMembers();
 }
 
-// ── Default color palette for new entries ─────────────────────────────────────
-const PALETTE = [
-  { color: '#1a6b4a', bg: '#e0f0e8' },
-  { color: '#6b4a1a', bg: '#f0e8e0' },
-  { color: '#1a4a6b', bg: '#e0e8f0' },
-  { color: '#6b1a4a', bg: '#f0e0e8' },
-  { color: '#4a6b1a', bg: '#e8f0e0' },
-  { color: '#4a1a6b', bg: '#e8e0f0' },
-  { color: '#6b6b1a', bg: '#f0f0e0' },
-];
 
-function nextColor(arr) {
-  return PALETTE[arr.length % PALETTE.length];
-}
-
-// ── Category CRUD ─────────────────────────────────────────────────────────────
 export async function addCat() {
   const input = document.getElementById('new-cat-input');
   const label = input.value.trim().toLowerCase();
