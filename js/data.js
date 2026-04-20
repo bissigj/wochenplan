@@ -19,9 +19,6 @@ export let dbRecipeId = null;
 export let dbWeekId = null;
 let saveTimer = null;
 
-export function setDbRecipeId(id) { dbRecipeId = id; }
-export function setDbWeekId(id) { dbWeekId = id; }
-
 export async function loadData() {
   try {
     const fid = D.familyId;
@@ -69,7 +66,7 @@ export async function loadData() {
     // Migrate old recipes: cat/auf as string label → id
     let needsSave = false;
     D.recipes.forEach(r => {
-      if (r.cat && !r.cat.startsWith('cat_') && !r.cat.startsWith('auf_')) {
+      if (r.cat && !r.cat.startsWith('cat_')) {
         const found = D.settings.cats.find(c => c.label === r.cat);
         if (found) { r.cat = found.id; needsSave = true; }
       }

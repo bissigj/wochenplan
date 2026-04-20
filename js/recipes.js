@@ -55,7 +55,8 @@ export function renderRecipes(searchQuery = '') {
     const q = searchQuery.toLowerCase();
     vis = vis.filter(r =>
       r.name.toLowerCase().includes(q) ||
-      r.cat.toLowerCase().includes(q) ||
+      getCatLabel(r.cat).toLowerCase().includes(q) ||
+      getAufLabel(r.auf).toLowerCase().includes(q) ||
       (r.ings || []).some(ing => ing.n.toLowerCase().includes(q))
     );
   }
@@ -171,22 +172,6 @@ function initSortable() {
       await saveRecipesDebounced();
     }
   });
-}
-
-export async function addRecipe() {
-  const n = document.getElementById('new-name').value.trim();
-  if (!n) return;
-  D.recipes.push({
-    id: D.nextId++,
-    name: n,
-    cat: document.getElementById('new-cat').value,
-    auf: document.getElementById('new-auf').value,
-    time: null, portions: 2, ings: [], steps: [], src: null
-  });
-  document.getElementById('new-name').value = '';
-  await saveRecipesDebounced();
-  renderRFilters();
-  rerender();
 }
 
 export async function delR(id) {

@@ -1,8 +1,6 @@
-import { D } from './data.js';
-import { saveWeekNow, saveRecipesDebounced } from './data.js';
+import { D, saveWeekNow, getCatLabel, getAufLabel } from './data.js';
 import { sbInsert } from './db.js';
 import { DAYS } from './config.js';
-import { getCatLabel, getAufLabel } from './data.js';
 import { kw, fmtIng, srcHTML, toast, showTab } from './ui.js';
 import { renderShop } from './shopping.js';
 

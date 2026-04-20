@@ -1,5 +1,4 @@
-import { D } from './data.js';
-import { saveSettingsNow, applyTagStyles } from './data.js';
+import { D, saveSettingsNow, applyTagStyles } from './data.js';
 import { sbGet, sbInsert, sbUpdate } from './db.js';
 import { toast } from './ui.js';
 import { renderRFilters, renderRecipes } from './recipes.js';
@@ -110,6 +109,21 @@ export function renderSettings() {
   loadFamilyMembers();
 }
 
+
+// ── Color palette for new entries ────────────────────────────────────────────
+const PALETTE = [
+  { color: '#1a6b4a', bg: '#e0f0e8' },
+  { color: '#6b4a1a', bg: '#f0e8e0' },
+  { color: '#1a4a6b', bg: '#e0e8f0' },
+  { color: '#6b1a4a', bg: '#f0e0e8' },
+  { color: '#4a6b1a', bg: '#e8f0e0' },
+  { color: '#4a1a6b', bg: '#e8e0f0' },
+  { color: '#6b6b1a', bg: '#f0f0e0' },
+];
+
+function nextColor(arr) {
+  return PALETTE[arr.length % PALETTE.length];
+}
 
 export async function addCat() {
   const input = document.getElementById('new-cat-input');
