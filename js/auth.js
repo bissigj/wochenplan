@@ -188,8 +188,6 @@ export async function tryRestoreSession() {
         return true;
       }
     }
-  } catch (e) {
-    console.error('tryRestoreSession error', e);
-  }
+  } catch (e) {}
   return false;
 }

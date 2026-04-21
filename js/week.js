@@ -1,13 +1,15 @@
-import { D, saveWeekNow, getCatLabel, getAufLabel } from './data.js';
+import { D } from './data.js';
+import { saveWeekNow, saveRecipesDebounced } from './data.js';
 import { sbInsert } from './db.js';
 import { DAYS } from './config.js';
+import { getCatLabel, getAufLabel } from './data.js';
 import { kw, fmtIng, srcHTML, toast, showTab } from './ui.js';
 import { renderShop } from './shopping.js';
 
 export let expandedDays = new Set();
 export let viewingArchive = null;
 export function setViewingArchive(w) { viewingArchive = w; }
-export let drawDiff = new Set(); // populated dynamically from D.settings.aufwand in openDrawModal
+export let drawDiff = new Set(['auf_einfach', 'auf_mittel', 'auf_schwer']);
 export let drawMaxTime = 0;
 
 // ── Draw Modal ────────────────────────────────────────────────────────────────
@@ -20,8 +22,6 @@ const TIME_OPTIONS = [
 ];
 
 export function openDrawModal() {
-  // Initialize drawDiff with all aufwand IDs if empty
-  if (drawDiff.size === 0) D.settings.aufwand.forEach(a => drawDiff.add(a.id));
   // Aufwand-Pills – dynamisch aus Settings
   document.getElementById('draw-diff-pills').innerHTML = D.settings.aufwand.map(a =>
     `<button class="pill ${drawDiff.has(a.id) ? 'on' : ''} tag-${a.id}"

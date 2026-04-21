@@ -1043,16 +1043,3 @@ textarea{resize:vertical;min-height:60px;line-height:1.5}
   text-align:center;
   padding:1rem;
 }
-
-/* ── Mobile tap highlight ─────────────────────────────────────────────────── */
-button, .btn, .pill, .icon-btn {
-  -webkit-tap-highlight-color: transparent;
-}
-
-/* ── Z-index tokens ───────────────────────────────────────────────────────── */
-:root {
-  --z-header: 50;
-  --z-modal: 100;
-  --z-toast: 200;
-  --z-fab: 49;
-}

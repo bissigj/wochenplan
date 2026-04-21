@@ -13,7 +13,7 @@ export function toast(msg) {
 }
 
 export function showTab(t) {
-  ['rezepte', 'woche', 'einkauf', 'archiv', 'einstellungen'].forEach(id => {
+  ['rezepte', 'woche', 'einkauf', 'archiv', 'einstellungen', 'woche'].forEach(id => {
     const el = document.getElementById('tab-' + id);
     if (el) el.style.display = id === t ? '' : 'none';
   });

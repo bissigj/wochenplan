@@ -53,10 +53,10 @@ export function renderShop() {
           <label for="sri-${d.day}-${i}">${fmtIng(ing, factor)}</label>
         </div>`).join('')}
       </div>`;
-    }).join('') || '<div class="empty-state"><div class="empty-state-icon">🥗</div><div class="empty-state-title">Keine Zutaten hinterlegt</div></div>';
+    }).join('') || '<div class="empty">Keine Zutaten hinterlegt.</div>';
   } else {
     const items = aggregateIngredients(plan);
-    if (!items.length) { el.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🥗</div><div class="empty-state-title">Keine Zutaten hinterlegt</div></div>'; return; }
+    if (!items.length) { el.innerHTML = '<div class="empty">Keine Zutaten hinterlegt.</div>'; return; }
     el.innerHTML = '<div class="card">' + items.map((it, i) => {
       const m = Number.isInteger(it.m) ? it.m : Math.round(it.m * 10) / 10;
       return `<div class="shop-item">

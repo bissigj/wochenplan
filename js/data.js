@@ -1,6 +1,7 @@
 import { sbGet, sbInsert, sbUpdate, sbDelete } from './db.js';
 import { DEFAULT_SETTINGS, DEFAULT_EINHEITEN } from './config.js';
 import { setSyncStatus } from './ui.js';
+
 export let D = {
   recipes: [],
   weekPlan: { kw: '', year: 0, days: [], portions: 2 },
@@ -12,7 +13,6 @@ export let D = {
   userId: null,
   userEmail: ''
 };
-
 
 export let dbSettingsId = null;
 export let dbWeekId = null;
@@ -116,12 +116,17 @@ export async function deleteRecipeFromDB(recipe) {
 }
 
 export function saveRecipesDebounced(recipe) {
-  if (!recipe) { console.warn('saveRecipesDebounced called without recipe'); return; }
+  // If specific recipe passed, save just that one after debounce
   clearTimeout(saveTimer);
   saveTimer = setTimeout(async () => {
     setSyncStatus('spin', 'Speichern…');
     try {
-      await saveRecipeNow(recipe);
+      if (recipe) {
+        await saveRecipeNow(recipe);
+      } else {
+        // Save all (fallback)
+        for (const r of D.recipes) await saveRecipeNow(r);
+      }
       setSyncStatus('ok', 'Synchronisiert');
     } catch (e) {
       setSyncStatus('err', 'Fehler beim Speichern');

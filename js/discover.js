@@ -1,4 +1,5 @@
-import { D, getCatLabel, getAufLabel, saveRecipeNow } from './data.js';
+import { D, getCatLabel, getAufLabel } from './data.js';
+import { saveRecipeNow } from './data.js';
 import { sbGet } from './db.js';
 import { toast } from './ui.js';
 import { renderRFilters, renderRecipes } from './recipes.js';
