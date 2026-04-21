@@ -1037,3 +1037,9 @@ textarea{resize:vertical;min-height:60px;line-height:1.5}
   border-bottom:1px solid var(--bd);
   flex-shrink:0;
 }
+
+/* ── Discover more button ─────────────────────────────────────────────────── */
+.discover-more{
+  text-align:center;
+  padding:1rem;
+}
