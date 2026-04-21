@@ -1,10 +1,9 @@
 import { D } from './data.js';
-import { saveWeekNow, saveRecipesDebounced } from './data.js';
+import { saveWeekNow } from './data.js';
 import { sbInsert } from './db.js';
 import { DAYS } from './config.js';
 import { getCatLabel, getAufLabel } from './data.js';
-import { kw, fmtIng, srcHTML, toast, showTab } from './ui.js';
-import { renderShop } from './shopping.js';
+import { kw, fmtIng, srcHTML, toast, esc } from './ui.js';
 
 export let expandedDays = new Set();
 export let viewingArchive = null;
@@ -25,7 +24,7 @@ export function openDrawModal() {
   // Aufwand-Pills – dynamisch aus Settings
   document.getElementById('draw-diff-pills').innerHTML = D.settings.aufwand.map(a =>
     `<button class="pill ${drawDiff.has(a.id) ? 'on' : ''} tag-${a.id}"
-      data-v="${a.id}" onclick="toggleDrawPill(this)">${a.label}</button>`
+      data-v="${esc(a.id)}" onclick="toggleDrawPill(this)">${esc(a.label)}</button>`
   ).join('');
   // Zeit-Pills – aus TIME_OPTIONS
   document.getElementById('draw-time-pills').innerHTML = TIME_OPTIONS.map(o =>
@@ -68,9 +67,15 @@ export function getPool() {
   });
 }
 
+// Fix #7: Aktuelle Woche zählt auch als "kürzlich verwendet", damit Re-Roll variiert
 function getRecentIds() {
   const ids = new Set();
-  D.archive.slice(-2).forEach(w => (w.days || []).forEach(d => { if (d.recipeId) ids.add(d.recipeId); }));
+  D.archive.slice(-2).forEach(w => (w.days || []).forEach(d => {
+    if (d.recipeId) ids.add(d.recipeId);
+  }));
+  (D.weekPlan.days || []).forEach(d => {
+    if (d.recipeId) ids.add(d.recipeId);
+  });
   return [...ids];
 }
 
@@ -85,11 +90,15 @@ export async function drawWeek() {
   while (shuffled.length < 7 && extra.length) shuffled.push(extra.shift());
   const portions = +document.getElementById('draw-portions').value || 2;
 
-  // Archive current week
+  // Fix #1: family_id beim Archivieren mitschicken (sonst RLS-Fehler)
   if (D.weekPlan.days && D.weekPlan.days.some(d => d.recipeId)) {
     const toArchive = JSON.parse(JSON.stringify(D.weekPlan));
     try {
-      const ins = await sbInsert('archive', { data: toArchive, kw: toArchive.kw });
+      const ins = await sbInsert('archive', {
+        data: toArchive,
+        kw: toArchive.kw,
+        family_id: D.familyId
+      });
       if (ins && ins[0]) toArchive._dbid = ins[0].id;
       D.archive.push(toArchive);
     } catch (e) { console.error('Archive save error', e); }
@@ -160,7 +169,7 @@ function renderDayCard(d, i, plan, readonly) {
     ? r.steps.map((s, si) => `
         <div class="step-mini">
           <span class="step-mini-num">${si + 1}</span>
-          <span style="font-size:12px">${s}</span>
+          <span style="font-size:12px">${esc(s)}</span>
         </div>`).join('')
     : '<span style="font-size:12px;color:var(--text3)">Keine Schritte.</span>';
 
@@ -176,9 +185,9 @@ function renderDayCard(d, i, plan, readonly) {
         ? `<div class="divider"></div>
            <div style="font-size:11px;color:var(--text3);margin-bottom:4px;margin-top:8px">Notiz</div>
            <textarea class="day-note-input" placeholder="Notiz…" onclick="event.stopPropagation()"
-             onchange="setNote(${i},this.value)">${d.note || ''}</textarea>`
+             onchange="setNote(${i},this.value)">${esc(d.note || '')}</textarea>`
         : d.note
-          ? `<div class="divider"></div><div style="font-size:12px;color:var(--text2);margin-top:8px">📝 ${d.note}</div>`
+          ? `<div class="divider"></div><div style="font-size:12px;color:var(--text2);margin-top:8px">📝 ${esc(d.note)}</div>`
           : ''}
     </div>` : '';
 
@@ -196,17 +205,17 @@ function renderDayCard(d, i, plan, readonly) {
 
   return `
     <div class="day-card ${d.active ? '' : 'off'} ${isWeekend ? 'day-card-weekend' : ''}">
-      ${r.img && d.active ? `<div class="day-card-img" style="background-image:url('${r.img}')"></div>` : ''}
+      ${r.img && d.active ? `<div class="day-card-img" style="background-image:url('${esc(r.img)}')"></div>` : ''}
       <div class="day-card-top" onclick="toggleDay(${i})">
         <div class="day-lbl ${isWeekend ? 'day-lbl-weekend' : ''}">
-          ${d.day}
+          ${esc(d.day)}
           ${!d.active ? '<span style="font-size:10px;background:var(--bg3);padding:1px 6px;border-radius:99px;margin-left:4px">ausgeblendet</span>' : ''}
         </div>
         ${d.active
-          ? `<div class="day-recipe-name">${r.name}</div>
-             <div class="day-meta">${r.time ? r.time + ' min · ' : ''}${getAufLabel(r.auf)}</div>
+          ? `<div class="day-recipe-name">${esc(r.name)}</div>
+             <div class="day-meta">${r.time ? r.time + ' min · ' : ''}${esc(getAufLabel(r.auf))}</div>
              <div class="row" style="gap:4px;flex-wrap:wrap">
-               <span class="tag tag-${r.cat}">${getCatLabel(r.cat)}</span>
+               <span class="tag tag-${esc(r.cat)}">${esc(getCatLabel(r.cat))}</span>
                <span style="font-size:11px;color:var(--text3);margin-left:auto">${isOpen ? '▲' : '▼'}</span>
              </div>`
           : '<div style="font-size:13px;color:var(--text3)">—</div>'}

@@ -12,8 +12,9 @@ export function toast(msg) {
   setTimeout(() => el.classList.remove('show'), 1800);
 }
 
+// Fix #3: 'woche' war doppelt im Array
 export function showTab(t) {
-  ['rezepte', 'woche', 'einkauf', 'archiv', 'einstellungen', 'woche'].forEach(id => {
+  ['rezepte', 'woche', 'einkauf', 'archiv', 'einstellungen'].forEach(id => {
     const el = document.getElementById('tab-' + id);
     if (el) el.style.display = id === t ? '' : 'none';
   });
@@ -26,17 +27,34 @@ export function kw(d) {
   return Math.floor((dt.getTime() - sw) / 604800000) + 1;
 }
 
+// Fix #25: Zentrale Mengen-Formatierung – ganze Zahlen ohne Kommastellen, sonst 1 Nachkommastelle
+export function formatAmount(m) {
+  if (m == null || !(m > 0)) return '';
+  return Number.isInteger(m) ? String(m) : (Math.round(m * 10) / 10).toString();
+}
+
 export function fmtIng(ing, factor = 1) {
   const m = ing.m && ing.m > 0 ? ing.m * factor : null;
-  const mStr = m === null ? '' : (Number.isInteger(m) ? m : m.toFixed(1));
-  return `${mStr} ${ing.u} ${ing.n}`.trim();
+  const mStr = formatAmount(m);
+  return `${mStr} ${esc(ing.u || '')} ${esc(ing.n || '')}`.trim();
+}
+
+// Fix #26: HTML-Escape-Helper gegen XSS (wichtig für Discover-importierte Rezepte)
+export function esc(s) {
+  return String(s ?? '').replace(/[&<>"']/g, c => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  }[c]));
 }
 
 export function srcHTML(src) {
   if (!src || !src.val) return '';
   if (src.type === 'url') {
     const l = src.val.replace(/^https?:\/\/(www\.)?/, '').split('/')[0];
-    return `<span class="src-display">🔗 <a href="${src.val}" target="_blank">${l}</a></span>`;
+    return `<span class="src-display">🔗 <a href="${esc(src.val)}" target="_blank" rel="noopener">${esc(l)}</a></span>`;
   }
-  return `<span class="src-display">📖 ${src.val}${src.seite ? ', S. ' + src.seite : ''}</span>`;
+  return `<span class="src-display">📖 ${esc(src.val)}${src.seite ? ', S. ' + esc(src.seite) : ''}</span>`;
 }

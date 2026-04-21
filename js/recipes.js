@@ -3,7 +3,7 @@ import { parseIngredient } from 'https://esm.sh/@jlucaspains/sharp-recipe-parser
 import { saveRecipesDebounced, saveRecipeNow, deleteRecipeFromDB, saveWeekNow } from './data.js';
 import { sbUploadImage, sbDeleteImage } from './db.js';
 
-import { fmtIng, srcHTML, toast } from './ui.js';
+import { fmtIng, srcHTML, toast, esc } from './ui.js';
 import { renderWeek } from './week.js';
 
 export let expandedR = null;
@@ -19,7 +19,7 @@ export function renderRFilters() {
     ...D.settings.aufwand.map(a => ({ id: a.id, label: a.label, type: 'auf' }))
   ];
   document.getElementById('r-filters').innerHTML = allFilters.map(f =>
-    `<button class="pill tag-${f.id} ${rFilters.has(f.id) ? 'on' : ''}" onclick="toggleRF('${f.id}')">${f.label}</button>`
+    `<button class="pill tag-${esc(f.id)} ${rFilters.has(f.id) ? 'on' : ''}" onclick="toggleRF('${esc(f.id)}')">${esc(f.label)}</button>`
   ).join('');
 }
 
@@ -41,11 +41,12 @@ export function setSortOrder(v) {
 
 export function renderRecipes(searchQuery = '') {
   const el = document.getElementById('r-list');
-  let vis = D.recipes;
+  // Fix #4: Arbeitskopie, damit .sort() niemals D.recipes mutiert
+  let vis = [...D.recipes];
   if (rFilters.size) {
     const catIds = D.settings.cats.map(c => c.id);
     const aufIds = D.settings.aufwand.map(a => a.id);
-    vis = D.recipes.filter(r => {
+    vis = vis.filter(r => {
       const cf = [...rFilters].filter(f => catIds.includes(f));
       const af = [...rFilters].filter(f => aufIds.includes(f));
       return (cf.length === 0 || cf.includes(r.cat)) && (af.length === 0 || af.includes(r.auf));
@@ -57,13 +58,13 @@ export function renderRecipes(searchQuery = '') {
       r.name.toLowerCase().includes(q) ||
       getCatLabel(r.cat).toLowerCase().includes(q) ||
       getAufLabel(r.auf).toLowerCase().includes(q) ||
-      (r.ings || []).some(ing => ing.n.toLowerCase().includes(q))
+      (r.ings || []).some(ing => (ing.n || '').toLowerCase().includes(q))
     );
   }
   if (sortOrder === 'name') vis.sort((a, b) => a.name.localeCompare(b.name));
-  else if (sortOrder === 'cat') vis.sort((a, b) => a.cat.localeCompare(b.cat) || a.name.localeCompare(b.name));
+  else if (sortOrder === 'cat') vis.sort((a, b) => (a.cat || '').localeCompare(b.cat || '') || a.name.localeCompare(b.name));
   else if (sortOrder === 'time') vis.sort((a, b) => (a.time || 999) - (b.time || 999));
-  
+
   if (!vis.length) {
     const isSearch = searchQuery.length > 0 || rFilters.size > 0;
     el.innerHTML = isSearch
@@ -71,18 +72,19 @@ export function renderRecipes(searchQuery = '') {
       : '<div class="empty-state"><div class="empty-state-icon">🍳</div><div class="empty-state-title">Noch keine Rezepte</div><div class="empty-state-sub">Tippe auf + um dein erstes Rezept hinzuzufügen.</div></div>';
     return;
   }
+  const einheiten = D.settings.einheiten || [];
   el.innerHTML = vis.map(r => {
     const isOpen = expandedR === r.id;
     return `<div class="card">
       <div class="recipe-row" onclick="toggleER(${r.id})" style="cursor:pointer">
-        <span class="recipe-name-col">${r.name}</span>
+        <span class="recipe-name-col">${esc(r.name)}</span>
         <span class="recipe-meta">${r.time ? r.time + ' min' : ''}</span>
-        <span class="tag tag-${r.cat}">${getCatLabel(r.cat)}</span>
-        <span class="tag tag-${r.auf}">${getAufLabel(r.auf)}</span>
+        <span class="tag tag-${esc(r.cat)}">${esc(getCatLabel(r.cat))}</span>
+        <span class="tag tag-${esc(r.auf)}">${esc(getAufLabel(r.auf))}</span>
         <button class="xbtn" onclick="event.stopPropagation();delR(${r.id})" style="margin-left:6px;padding:4px 6px;font-size:16px;opacity:0.4" onmouseover="this.style.opacity=1;this.style.color='var(--red)'" onmouseout="this.style.opacity=0.4;this.style.color=''">×</button>
       </div>
       ${isOpen ? `<div class="recipe-detail recipe-detail-open">
-      ${r.img ? `<div class="recipe-img" style="background-image:url('${r.img}');margin-bottom:1rem"></div>` : ''}
+      ${r.img ? `<div class="recipe-img" style="background-image:url('${esc(r.img)}');margin-bottom:1rem"></div>` : ''}
       <div class="detail-grid">
         <div>
           <div class="section-title">Eckdaten</div>
@@ -95,25 +97,25 @@ export function renderRecipes(searchQuery = '') {
           <div class="row" style="gap:8px;margin-bottom:10px">
             <div style="flex:1"><span class="label">Kategorie</span>
               <select class="inline-select" style="width:100%" onchange="updR(${r.id},'cat',this.value)">
-                ${D.settings.cats.map(c => `<option value="${c.id}" ${r.cat === c.id ? 'selected' : ''}>${c.label}</option>`).join('')}
+                ${D.settings.cats.map(c => `<option value="${esc(c.id)}" ${r.cat === c.id ? 'selected' : ''}>${esc(c.label)}</option>`).join('')}
               </select></div>
             <div style="flex:1"><span class="label">Aufwand</span>
               <select class="inline-select" style="width:100%" onchange="updR(${r.id},'auf',this.value)">
-                ${D.settings.aufwand.map(a => `<option value="${a.id}" ${r.auf === a.id ? 'selected' : ''}>${a.label}</option>`).join('')}
+                ${D.settings.aufwand.map(a => `<option value="${esc(a.id)}" ${r.auf === a.id ? 'selected' : ''}>${esc(a.label)}</option>`).join('')}
               </select></div>
           </div>
           <div class="section-title">Zutaten (für ${r.portions || 2} Port.)</div>
           <div class="ing-list">${(r.ings || []).map((ing, i) => `<div class="ing-row"><span class="ing-amt">${fmtIng(ing)}</span><button class="xbtn" onclick="delIng(${r.id},${i})">×</button></div>`).join('')}</div>
           <div class="row" style="gap:6px">
-            <input type="number" id="im-${r.id}" placeholder="Menge" min="0.1" step="0.1" style="width:70px" />
-            <select id="iu-${r.id}" style="width:80px">${D.settings.einheiten.map(u => `<option>${u}</option>`).join('')}</select>
+            <input type="number" id="im-${r.id}" placeholder="Menge" min="0" step="0.1" style="width:70px" />
+            <select id="iu-${r.id}" style="width:80px">${einheiten.map(u => `<option>${esc(u)}</option>`).join('')}</select>
             <input type="text" id="in-${r.id}" placeholder="Zutatname" style="flex:1" onkeydown="if(event.key==='Enter')addIng(${r.id})" />
             <button class="btn btn-sm" onclick="addIng(${r.id})">+</button>
           </div>
         </div>
         <div>
           <div class="section-title">Zubereitung</div>
-          <ol class="steps-list" id="steps-${r.id}">${(r.steps || []).map((s, i) => `<li class="step-item" data-idx="${i}"><span class="drag-handle">⠿</span><span class="step-num">${i + 1}</span><span class="step-text">${s}</span><button class="xbtn" onclick="delStep(${r.id},${i})" style="margin-top:3px">×</button></li>`).join('')}</ol>
+          <ol class="steps-list" id="steps-${r.id}">${(r.steps || []).map((s, i) => `<li class="step-item" data-idx="${i}"><span class="drag-handle">⠿</span><span class="step-num">${i + 1}</span><span class="step-text">${esc(s)}</span><button class="xbtn" onclick="delStep(${r.id},${i})" style="margin-top:3px">×</button></li>`).join('')}</ol>
           <div class="row" style="gap:6px">
             <input type="text" id="st-${r.id}" placeholder="Schritt hinzufügen…" style="flex:1" onkeydown="if(event.key==='Enter')addStep(${r.id})" />
             <button class="btn btn-sm" onclick="addStep(${r.id})">+</button>
@@ -124,12 +126,12 @@ export function renderRecipes(searchQuery = '') {
             <button class="pill ${r.src && r.src.type === 'buch' ? 'on' : ''}" onclick="setSrcType(${r.id},'buch')">📖 Buch</button>
           </div>
           ${(!r.src || r.src.type === 'url')
-            ? `<input type="url" value="${r.src?.val || ''}" placeholder="https://…" onchange="updSrc(${r.id},'val',this.value)" />`
-            : `<input type="text" value="${r.src?.val || ''}" placeholder="Kochbuchname" style="margin-bottom:6px" onchange="updSrc(${r.id},'val',this.value)" />
-               <input type="text" value="${r.src?.seite || ''}" placeholder="Seite (optional)" onchange="updSrc(${r.id},'seite',this.value)" />`}
+            ? `<input type="url" value="${esc(r.src?.val || '')}" placeholder="https://…" onchange="updSrc(${r.id},'val',this.value)" />`
+            : `<input type="text" value="${esc(r.src?.val || '')}" placeholder="Kochbuchname" style="margin-bottom:6px" onchange="updSrc(${r.id},'val',this.value)" />
+               <input type="text" value="${esc(r.src?.seite || '')}" placeholder="Seite (optional)" onchange="updSrc(${r.id},'seite',this.value)" />`}
           <div style="margin-top:6px">${srcHTML(r.src)}</div>
           <div class="section-title" style="margin-top:12px">Foto</div>
-          <div id="img-preview-${r.id}" style="width:100%;height:140px;background-size:cover;background-position:center;border-radius:var(--rs);margin-bottom:8px;${r.img ? `background-image:url('${r.img}')` : 'display:none'}"></div>
+          <div id="img-preview-${r.id}" style="width:100%;height:140px;background-size:cover;background-position:center;border-radius:var(--rs);margin-bottom:8px;${r.img ? `background-image:url('${esc(r.img)}')` : 'display:none'}"></div>
           <div class="img-upload-wrap">
             <label class="btn btn-sm" style="cursor:pointer">
               <span class="img-upload-label">${r.img ? 'Foto ersetzen' : '+ Foto hochladen'}</span>
@@ -199,7 +201,7 @@ export async function delR(id) {
   // Undo Toast
   let undone = false;
   const toastEl = document.getElementById('toast');
-  toastEl.innerHTML = `"${deleted.name}" gelöscht. <span style="text-decoration:underline;cursor:pointer" onclick="undoDelR()">Rückgängig</span>`;
+  toastEl.innerHTML = `"${esc(deleted.name)}" gelöscht. <span style="text-decoration:underline;cursor:pointer" onclick="undoDelR()">Rückgängig</span>`;
   toastEl.classList.add('show');
   window._undoDelR = async () => {
     if (undone) return;
@@ -216,15 +218,18 @@ export async function delR(id) {
   setTimeout(() => { toastEl.classList.remove('show'); window._undoDelR = null; }, 5000);
 }
 
+// Fix #8: Menge optional (0 oder leer). Wichtig für "Salz, Pfeffer" etc.
 export async function addIng(id) {
-  const m = parseFloat(document.getElementById('im-' + id).value);
+  const mRaw = document.getElementById('im-' + id).value;
   const u = document.getElementById('iu-' + id).value;
   const n = document.getElementById('in-' + id).value.trim();
-  if (!n || isNaN(m)) return;
-  D.recipes.find(r => r.id === id).ings.push({ m, u, n });
+  if (!n) return;
+  const m = mRaw === '' ? 0 : parseFloat(mRaw);
+  const r = D.recipes.find(r => r.id === id);
+  r.ings.push({ m: isNaN(m) ? 0 : m, u, n });
   document.getElementById('im-' + id).value = '';
   document.getElementById('in-' + id).value = '';
-  saveRecipesDebounced(D.recipes.find(r => r.id === id));
+  saveRecipesDebounced(r);
   rerender();
 }
 
@@ -263,13 +268,11 @@ export async function uploadRecipeImage(id, input) {
   const file = input.files[0];
   if (!file) return;
 
-  // Validate file type
   if (!file.type.startsWith('image/')) {
     toast('Nur Bilder erlaubt (JPG, PNG, HEIC)');
     return;
   }
 
-  // Show preview immediately
   const previewUrl = URL.createObjectURL(file);
   const previewEl = document.getElementById('img-preview-' + id);
   if (previewEl) {

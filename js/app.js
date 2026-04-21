@@ -17,7 +17,9 @@ window.obCreateFamily    = obCreateFamily;
 window.obJoinFamily      = obJoinFamily;
 window.showLogin         = showLogin;
 window.showRegister      = showRegister;
-const PAGE_TITLES = { rezepte: 'Rezepte', woche: 'Wochenplan', einkauf: 'Einkauf', archiv: 'Archiv' };
+
+const PAGE_TITLES = { rezepte: 'Rezepte', woche: 'Wochenplan', einkauf: 'Einkauf', archiv: 'Archiv', einstellungen: 'Einstellungen' };
+
 window.showTab = (t) => {
   showTab(t);
   if (t === 'einkauf') renderShop();
@@ -37,6 +39,7 @@ window.showTab = (t) => {
   const fabGroup = document.getElementById('fab-group');
   if (fabGroup) fabGroup.classList.toggle('hidden', t !== 'rezepte');
 };
+
 window.toggleRF          = toggleRF;
 window.toggleER          = toggleER;
 window.delR              = delR;
@@ -66,8 +69,8 @@ window.viewArchiveWeek   = viewArchiveWeek;
 window.exportPDF         = exportPDF;
 window.exportRecipePDF   = exportRecipePDF;
 window.setSortOrder      = setSortOrder;
-window.uploadRecipeImage  = uploadRecipeImage;
-window.removeRecipeImage  = removeRecipeImage;
+window.uploadRecipeImage = uploadRecipeImage;
+window.removeRecipeImage = removeRecipeImage;
 window.togglePublic      = togglePublic;
 window.exportShopPDF     = exportShopPDF;
 window.openDiscover      = openDiscover;
@@ -128,7 +131,6 @@ window.filterRecipes = (q) => {
 };
 
 // ── Init ──────────────────────────────────────────────────────────────────────
-
 (async () => {
   const restored = await tryRestoreSession();
   if (!restored) {

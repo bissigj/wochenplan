@@ -1,5 +1,5 @@
 import { D } from './data.js';
-import { fmtIng } from './ui.js';
+import { fmtIng, esc, formatAmount } from './ui.js';
 import { viewingArchive } from './week.js';
 
 export let shopView = 'recipe';
@@ -12,13 +12,13 @@ export function aggregateIngredients(plan) {
     if (!r || !r.ings) return;
     const factor = (d.portions || plan.portions || 2) / (r.portions || 2);
     r.ings.forEach(ing => {
-      const key = ing.n.toLowerCase().trim() + ':' + ing.u;
+      const key = (ing.n || '').toLowerCase().trim() + ':' + (ing.u || '');
       if (!agg[key]) agg[key] = { n: ing.n, u: ing.u, m: 0, recipes: [] };
-      agg[key].m += ing.m * factor;
+      agg[key].m += (ing.m || 0) * factor;
       if (!agg[key].recipes.includes(r.name)) agg[key].recipes.push(r.name);
     });
   });
-  return Object.values(agg).sort((a, b) => a.n.localeCompare(b.n));
+  return Object.values(agg).sort((a, b) => (a.n || '').localeCompare(b.n || ''));
 }
 
 export function getActivePlan() {
@@ -47,10 +47,10 @@ export function renderShop() {
       if (!r || !r.ings || !r.ings.length) return '';
       const factor = (d.portions || plan.portions || 2) / (r.portions || 2);
       return `<div class="card shop-group">
-        <div class="shop-group-title">${r.name} <span style="font-weight:400;color:var(--text3)">${d.day}</span></div>
+        <div class="shop-group-title">${esc(r.name)} <span style="font-weight:400;color:var(--text3)">${esc(d.day)}</span></div>
         ${r.ings.map((ing, i) => `<div class="shop-item">
-          <input type="checkbox" id="sri-${d.day}-${i}" onchange="this.nextElementSibling.classList.toggle('done',this.checked)" />
-          <label for="sri-${d.day}-${i}">${fmtIng(ing, factor)}</label>
+          <input type="checkbox" id="sri-${esc(d.day)}-${i}" onchange="this.nextElementSibling.classList.toggle('done',this.checked)" />
+          <label for="sri-${esc(d.day)}-${i}">${fmtIng(ing, factor)}</label>
         </div>`).join('')}
       </div>`;
     }).join('') || '<div class="empty">Keine Zutaten hinterlegt.</div>';
@@ -58,14 +58,12 @@ export function renderShop() {
     const items = aggregateIngredients(plan);
     if (!items.length) { el.innerHTML = '<div class="empty">Keine Zutaten hinterlegt.</div>'; return; }
     el.innerHTML = '<div class="card">' + items.map((it, i) => {
-      const m = Number.isInteger(it.m) ? it.m : Math.round(it.m * 10) / 10;
+      const m = formatAmount(it.m);
+      const qty = m ? `${m} ${esc(it.u || '')}`.trim() : esc(it.u || '');
       return `<div class="shop-item">
-        <input type="checkbox" id="sai-${i}" onchange="this.nextElementSibling.classList.toggle('done',this.checked)" />
-        <label for="sai-${i}">
-          <span style="font-weight:500">${it.n}</span>
-          <span style="display:block;font-size:11px;color:var(--text3);margin-top:1px">${it.recipes.join(' · ')}</span>
-        </label>
-        <span class="shop-qty">${m} ${it.u}</span>
+        <input type="checkbox" id="si-${i}" onchange="this.nextElementSibling.classList.toggle('done',this.checked)" />
+        <label for="si-${i}">${esc(it.n || '')} <span style="color:var(--text3);font-size:11px">· ${it.recipes.map(esc).join(' · ')}</span></label>
+        <span class="shop-qty">${qty}</span>
       </div>`;
     }).join('') + '</div>';
   }

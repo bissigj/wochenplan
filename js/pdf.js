@@ -1,5 +1,5 @@
 import { D, getCatLabel, getAufLabel } from './data.js';
-import { fmtIng, toast } from './ui.js';
+import { fmtIng, toast, esc, formatAmount } from './ui.js';
 import { getActivePlan, aggregateIngredients } from './shopping.js';
 
 // ── PDF Design Tokens ─────────────────────────────────────────────────────────
@@ -23,6 +23,9 @@ const catColor = (id) => { const c = D.settings.cats.find(c => c.id === id); ret
 const aufColor = (id) => { const a = D.settings.aufwand.find(a => a.id === id); return a ? a.color : PDF.muted; };
 const catBg    = (id) => { const c = D.settings.cats.find(c => c.id === id); return c ? c.bg : PDF.line; };
 const aufBg    = (id) => { const a = D.settings.aufwand.find(a => a.id === id); return a ? a.bg : PDF.line; };
+
+// ── URL escape helper (für background-image etc.) ─────────────────────────────
+const escUrl = (u) => String(u ?? '').replace(/'/g, '%27').replace(/"/g, '%22');
 
 
 export function exportShopPDF() {
@@ -54,10 +57,10 @@ export function exportShopPDF() {
     <div class="sub">aggregiert · ${plan.days.filter(d => d.active && d.recipeId).length} Tage</div>
     <div class="col-title">Zutaten</div>
     <div class="grid">${items.map(it => {
-      const m = it.m > 0 ? (Number.isInteger(it.m) ? it.m : Math.round(it.m * 10) / 10) : '';
-      const qty = m ? `${m} ${it.u}`.trim() : it.u || '';
+      const m = formatAmount(it.m);
+      const qty = m ? `${m} ${esc(it.u || '')}`.trim() : esc(it.u || '');
       return `<div class="item">
-        <span class="item-name">${it.n}<span class="item-recipes">${it.recipes.join(' · ')}</span></span>
+        <span class="item-name">${esc(it.n || '')}<span class="item-recipes">${it.recipes.map(esc).join(' · ')}</span></span>
         <span class="item-qty">${qty}</span>
       </div>`;
     }).join('')}</div>
@@ -81,21 +84,21 @@ export function exportPDF() {
     if (!r) return '';
     const factor = (d.portions || plan.portions || 2) / (r.portions || 2);
     const srcLine = r.src && r.src.val
-      ? (r.src.type === 'url' ? `<a href="${r.src.val}">${r.src.val}</a>` : `📖 ${r.src.val}${r.src.seite ? ', S. ' + r.src.seite : ''}`)
+      ? (r.src.type === 'url' ? `<a href="${esc(r.src.val)}">${esc(r.src.val)}</a>` : `📖 ${esc(r.src.val)}${r.src.seite ? ', S. ' + esc(r.src.seite) : ''}`)
       : '';
     const ingsHTML = (r.ings || []).map(ing => {
-      const m = ing.m > 0 ? (Number.isInteger(ing.m * factor) ? ing.m * factor : (ing.m * factor).toFixed(1)) : '';
-      const qty = [m, ing.u].filter(Boolean).join(' ');
-      return `<div class="ing-item"><span class="ing-name">${ing.n}</span><span class="ing-qty">${qty}</span></div>`;
+      const m = formatAmount((ing.m || 0) * factor);
+      const qty = [m, esc(ing.u || '')].filter(Boolean).join(' ');
+      return `<div class="ing-item"><span class="ing-name">${esc(ing.n || '')}</span><span class="ing-qty">${qty}</span></div>`;
     }).join('') || '<div class="ing-item"><span class="ing-name">—</span></div>';
     return `<div class="page">
-      ${r.img ? `<div class="recipe-img-full" style="background-image:url('${r.img}')"></div>` : ''}
+      ${r.img ? `<div class="recipe-img-full" style="background-image:url('${escUrl(r.img)}')"></div>` : ''}
       <div class="recipe-header">
-        <div class="recipe-day">${d.day}</div>
-        <div class="recipe-name">${r.name}</div>
+        <div class="recipe-day">${esc(d.day)}</div>
+        <div class="recipe-name">${esc(r.name)}</div>
         <div class="meta-row">
-          <span class="tag" style="background:${catBg(r.cat)};color:${catColor(r.cat)}">${getCatLabel(r.cat)}</span>
-          <span class="tag" style="background:${aufBg(r.auf)};color:${aufColor(r.auf)}">${getAufLabel(r.auf)}</span>
+          <span class="tag" style="background:${catBg(r.cat)};color:${catColor(r.cat)}">${esc(getCatLabel(r.cat))}</span>
+          <span class="tag" style="background:${aufBg(r.auf)};color:${aufColor(r.auf)}">${esc(getAufLabel(r.auf))}</span>
           ${r.time ? `<span class="chip">· ${r.time} min</span>` : ''}
           <span class="chip">· ${d.portions || plan.portions} Portionen</span>
         </div>
@@ -107,15 +110,15 @@ export function exportPDF() {
         </div>
         <div>
           <div class="col-title">Zubereitung</div>
-          ${(r.steps || []).map((s, i) => `<div class="step"><span class="snum">${i + 1}</span><span class="step-text">${s}</span></div>`).join('') || '<p>—</p>'}
+          ${(r.steps || []).map((s, i) => `<div class="step"><span class="snum">${i + 1}</span><span class="step-text">${esc(s)}</span></div>`).join('') || '<p>—</p>'}
         </div>
       </div>
       ${srcLine ? `<div class="src-line">${srcLine}</div>` : ''}
-      ${d.note ? `<div class="note">${d.note}</div>` : ''}
+      ${d.note ? `<div class="note">${esc(d.note)}</div>` : ''}
     </div>`;
   }).join('');
 
-  const html = `<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><title>${plan.kw}</title>
+  const html = `<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><title>${esc(plan.kw)}</title>
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
     body{font-family:${PDF.font};font-size:11pt;color:${PDF.text};background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
@@ -186,21 +189,21 @@ export function exportPDF() {
   <!-- Cover -->
   <div class="page">
     <div class="cover-accent"></div>
-    <div class="cover-kw">Wochenplan</div>
+    <div class="cover-kw">${esc(plan.kw || 'Wochenplan')}</div>
     <div class="cover-sub">${activeDays.length} Tage</div>
     <div class="week-grid">${plan.days.map(d => {
-      if (!d.active || !d.recipeId) return `<div class="day-box"><div class="day-name">${d.day}</div><div class="day-inactive">—</div></div>`;
+      if (!d.active || !d.recipeId) return `<div class="day-box"><div class="day-name">${esc(d.day)}</div><div class="day-inactive">—</div></div>`;
       const r = D.recipes.find(r => r.id === d.recipeId);
       if (!r) return '';
       return `<div class="day-box active" style="${r.img ? 'padding:0;overflow:hidden' : ''}">
-        ${r.img ? `<div class="cover-img" style="background-image:url('${r.img}')"></div><div style="padding:10px 14px">` : ''}
-        <div class="day-name">${d.day}</div>
-        <div class="day-recipe">${r.name}</div>
+        ${r.img ? `<div class="cover-img" style="background-image:url('${escUrl(r.img)}')"></div><div style="padding:10px 14px">` : ''}
+        <div class="day-name">${esc(d.day)}</div>
+        <div class="day-recipe">${esc(r.name)}</div>
         <div class="day-tags">
-          <span class="tag" style="background:${catBg(r.cat)};color:${catColor(r.cat)}">${getCatLabel(r.cat)}</span>
-          <span class="tag" style="background:${aufBg(r.auf)};color:${aufColor(r.auf)}">${getAufLabel(r.auf)}</span>
+          <span class="tag" style="background:${catBg(r.cat)};color:${catColor(r.cat)}">${esc(getCatLabel(r.cat))}</span>
+          <span class="tag" style="background:${aufBg(r.auf)};color:${aufColor(r.auf)}">${esc(getAufLabel(r.auf))}</span>
         </div>
-        ${d.note ? `<div class="day-note">${d.note}</div>` : ''}
+        ${d.note ? `<div class="day-note">${esc(d.note)}</div>` : ''}
         ${r.img ? '</div>' : ''}
       </div>`;
     }).join('')}</div>
@@ -215,10 +218,10 @@ export function exportPDF() {
     <div class="shop-title">Einkaufsliste</div>
     <div class="shop-sub">aggregiert</div>
     <div class="shop-grid">${shopItems.map(it => {
-      const m = it.m > 0 ? (Number.isInteger(it.m) ? it.m : Math.round(it.m * 10) / 10) : '';
-      const qty = m ? `${m} ${it.u}`.trim() : it.u || '';
+      const m = formatAmount(it.m);
+      const qty = m ? `${m} ${esc(it.u || '')}`.trim() : esc(it.u || '');
       return `<div class="shop-item-p">
-        <span class="shop-name">${it.n}<span class="shop-recipes">${it.recipes.join(' · ')}</span></span>
+        <span class="shop-name">${esc(it.n || '')}<span class="shop-recipes">${it.recipes.map(esc).join(' · ')}</span></span>
         <span class="shop-qty">${qty}</span>
       </div>`;
     }).join('')}</div>
@@ -237,14 +240,14 @@ export function exportRecipePDF(id) {
   if (!r) return;
 
   const ingsHTML = (r.ings || []).map(ing => {
-    const m = ing.m > 0 ? (Number.isInteger(ing.m) ? ing.m : ing.m.toFixed(1)) : '';
-    const qty = [m, ing.u].filter(Boolean).join(' ');
-    return `<div class="ing-item"><span class="ing-name">${ing.n}</span><span class="ing-qty">${qty}</span></div>`;
+    const m = formatAmount(ing.m);
+    const qty = [m, esc(ing.u || '')].filter(Boolean).join(' ');
+    return `<div class="ing-item"><span class="ing-name">${esc(ing.n || '')}</span><span class="ing-qty">${qty}</span></div>`;
   }).join('') || '<div class="ing-item"><span class="ing-name">—</span></div>';
   const srcLine = r.src && r.src.val
-    ? (r.src.type === 'url' ? `<a href="${r.src.val}">${r.src.val}</a>` : `📖 ${r.src.val}${r.src.seite ? ', S. ' + r.src.seite : ''}`)
+    ? (r.src.type === 'url' ? `<a href="${esc(r.src.val)}">${esc(r.src.val)}</a>` : `📖 ${esc(r.src.val)}${r.src.seite ? ', S. ' + esc(r.src.seite) : ''}`)
     : '';
-  const html = `<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><title>${r.name}</title>
+  const html = `<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><title>${esc(r.name)}</title>
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
     body{font-family:${PDF.font};font-size:11pt;color:${PDF.text};-webkit-print-color-adjust:exact;print-color-adjust:exact}
@@ -269,12 +272,12 @@ export function exportRecipePDF(id) {
   </style></head><body>
   <div class="page">
     <div class="accent"></div>
-    ${r.img ? `<div class="recipe-img-full" style="background-image:url('${r.img}')"></div>` : ''}
+    ${r.img ? `<div class="recipe-img-full" style="background-image:url('${escUrl(r.img)}')"></div>` : ''}
     <div class="recipe-header">
-      <div class="recipe-name">${r.name}</div>
+      <div class="recipe-name">${esc(r.name)}</div>
       <div class="meta-row">
-        <span class="tag" style="background:${catBg(r.cat)};color:${catColor(r.cat)}">${getCatLabel(r.cat)}</span>
-        <span class="tag" style="background:${aufBg(r.auf)};color:${aufColor(r.auf)}">${getAufLabel(r.auf)}</span>
+        <span class="tag" style="background:${catBg(r.cat)};color:${catColor(r.cat)}">${esc(getCatLabel(r.cat))}</span>
+        <span class="tag" style="background:${aufBg(r.auf)};color:${aufColor(r.auf)}">${esc(getAufLabel(r.auf))}</span>
         ${r.time ? `<span class="chip">· ${r.time} min</span>` : ''}
         <span class="chip">· ${r.portions || 2} Portionen</span>
       </div>
@@ -286,7 +289,7 @@ export function exportRecipePDF(id) {
       </div>
       <div>
         <div class="col-title">Zubereitung</div>
-        ${(r.steps || []).map((s, i) => `<div class="step"><span class="snum">${i+1}</span><span class="step-text">${s}</span></div>`).join('') || '<p>—</p>'}
+        ${(r.steps || []).map((s, i) => `<div class="step"><span class="snum">${i+1}</span><span class="step-text">${esc(s)}</span></div>`).join('') || '<p>—</p>'}
       </div>
     </div>
     ${srcLine ? `<div class="src-line">${srcLine}</div>` : ''}

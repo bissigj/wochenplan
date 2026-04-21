@@ -18,15 +18,30 @@ export let dbSettingsId = null;
 export let dbWeekId = null;
 let saveTimer = null;
 
+// Fix #5 / Safety: stellt sicher, dass settings immer vollständig sind
+function ensureSettingsComplete() {
+  if (!D.settings || typeof D.settings !== 'object') {
+    D.settings = { cats: [], aufwand: [], einheiten: [] };
+  }
+  if (!Array.isArray(D.settings.cats)) D.settings.cats = [];
+  if (!Array.isArray(D.settings.aufwand)) D.settings.aufwand = [];
+  if (!Array.isArray(D.settings.einheiten)) D.settings.einheiten = [...DEFAULT_EINHEITEN];
+}
+
 export async function loadData() {
   try {
     const fid = D.familyId;
 
-    // ── Recipes – one row per recipe ─────────────────────────────────────────
-    const recs = await sbGet('recipes_v2',
-      `select=id,recipe_id,data,public&family_id=eq.${fid}&order=recipe_id.asc`);
+    // Fix #20: Parallele Queries statt sequentiell (schneller beim Login)
+    const [recs, weeks, arch, sets] = await Promise.all([
+      sbGet('recipes_v2', `select=id,recipe_id,data,public&family_id=eq.${fid}&order=recipe_id.asc`),
+      sbGet('week_plan',  `select=id,data,updated_at&family_id=eq.${fid}`),
+      sbGet('archive',    `select=id,data,kw,created_at&family_id=eq.${fid}`),
+      sbGet('settings',   `select=id,data&family_id=eq.${fid}`),
+    ]);
 
-    if (recs && recs.length) {
+    // ── Recipes – one row per recipe ─────────────────────────────────────────
+    if (Array.isArray(recs) && recs.length) {
       D.recipes = recs.map(r => ({ ...r.data, _dbid: r.id, public: r.public }));
       D.nextId = Math.max(...D.recipes.map(r => r.id)) + 1;
       // Mark image ownership – only delete images we uploaded ourselves
@@ -34,14 +49,12 @@ export async function loadData() {
         if (r.img && r.img_owned === undefined) r.img_owned = true;
       });
     } else {
-      // New family – start empty
       D.recipes = [];
       D.nextId = 1;
     }
 
     // ── Week plan ─────────────────────────────────────────────────────────────
-    const weeks = await sbGet('week_plan', `select=id,data,updated_at&family_id=eq.${fid}`);
-    if (weeks && weeks.length) {
+    if (Array.isArray(weeks) && weeks.length) {
       weeks.sort((a, b) => new Date(b.updated_at || 0) - new Date(a.updated_at || 0));
       dbWeekId = weeks[0].id;
       const wp = weeks[0].data;
@@ -49,16 +62,15 @@ export async function loadData() {
     }
 
     // ── Archive ───────────────────────────────────────────────────────────────
-    const arch = await sbGet('archive', `select=id,data,kw,created_at&family_id=eq.${fid}`);
     D.archive = Array.isArray(arch) ? arch.map(a => ({ ...a.data, _dbid: a.id })) : [];
 
     // ── Settings ──────────────────────────────────────────────────────────────
-    const sets = await sbGet('settings', `select=id,data&family_id=eq.${fid}`);
-    if (sets && sets.length) {
+    if (Array.isArray(sets) && sets.length) {
       dbSettingsId = sets[0].id;
-      D.settings = sets[0].data;
-      if (!D.settings.einheiten) {
-        D.settings.einheiten = [...DEFAULT_EINHEITEN];
+      D.settings = sets[0].data || {};
+      ensureSettingsComplete();
+      if (!sets[0].data || !sets[0].data.einheiten) {
+        // Einheiten waren nicht gespeichert – jetzt speichern
         saveSettingsNow();
       }
     } else {
@@ -115,18 +127,14 @@ export async function deleteRecipeFromDB(recipe) {
   } catch (e) { console.error('deleteRecipe error', e); }
 }
 
+// Fix #16: Fallback-Branch entfernt – die Funktion wurde nie ohne recipe aufgerufen
 export function saveRecipesDebounced(recipe) {
-  // If specific recipe passed, save just that one after debounce
+  if (!recipe) return; // Sicherheitsnetz
   clearTimeout(saveTimer);
   saveTimer = setTimeout(async () => {
     setSyncStatus('spin', 'Speichern…');
     try {
-      if (recipe) {
-        await saveRecipeNow(recipe);
-      } else {
-        // Save all (fallback)
-        for (const r of D.recipes) await saveRecipeNow(r);
-      }
+      await saveRecipeNow(recipe);
       setSyncStatus('ok', 'Synchronisiert');
     } catch (e) {
       setSyncStatus('err', 'Fehler beim Speichern');
@@ -136,11 +144,12 @@ export function saveRecipesDebounced(recipe) {
 }
 
 // ── Week plan ─────────────────────────────────────────────────────────────────
+// Fix #2: updated_at nicht selbst setzen – Supabase-Trigger erledigt das
 export async function saveWeekNow() {
   setSyncStatus('spin', 'Speichern…');
   try {
     if (dbWeekId) {
-      await sbUpdate('week_plan', dbWeekId, { data: D.weekPlan, updated_at: new Date().toISOString() });
+      await sbUpdate('week_plan', dbWeekId, { data: D.weekPlan });
     } else {
       const ins = await sbInsert('week_plan', { data: D.weekPlan, family_id: D.familyId });
       if (ins && ins[0]) dbWeekId = ins[0].id;
@@ -180,7 +189,7 @@ export function getAufLabel(id) {
 // ── Dynamic tag styles ────────────────────────────────────────────────────────
 export function applyTagStyles() {
   let css = '';
-  const allEntries = [...D.settings.cats, ...D.settings.aufwand];
+  const allEntries = [...(D.settings.cats || []), ...(D.settings.aufwand || [])];
 
   allEntries.forEach(e => {
     css += `.tag-${e.id}{background:${e.bg};color:${e.color};}\n`;

@@ -1,17 +1,40 @@
 import { D, saveSettingsNow, applyTagStyles } from './data.js';
 import { sbGet, sbInsert, sbUpdate } from './db.js';
-import { toast } from './ui.js';
+import { toast, esc } from './ui.js';
 import { renderRFilters, renderRecipes } from './recipes.js';
 import { renderWeek } from './week.js';
+import { joinFamilyByCode } from './auth.js';
+
+// ── Accordion state preservation (Fix #9) ────────────────────────────────────
+function getOpenAccordions() {
+  return Array.from(document.querySelectorAll('.acc-item.open')).map(el => {
+    const body = el.querySelector('.acc-body');
+    return body ? body.id.replace(/^acc-/, '') : null;
+  }).filter(Boolean);
+}
+
+function restoreOpenAccordions(ids) {
+  ids.forEach(id => {
+    const body = document.getElementById('acc-' + id);
+    if (body) body.closest('.acc-item')?.classList.add('open');
+  });
+}
+
+// Wrapper: behält offene Akkordeons beim Neu-Render
+function rerenderSettings() {
+  const open = getOpenAccordions();
+  renderSettings();
+  restoreOpenAccordions(open);
+}
 
 // ── Render Settings Tab ───────────────────────────────────────────────────────
 function accordion(id, title, content, open = false) {
   return `<div class="acc-item ${open ? 'open' : ''}">
-    <button class="acc-header" onclick="toggleAcc('${id}')">
-      <span>${title}</span>
+    <button class="acc-header" onclick="toggleAcc('${esc(id)}')">
+      <span>${esc(title)}</span>
       <svg class="acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="6 9 12 15 18 9"/></svg>
     </button>
-    <div class="acc-body" id="acc-${id}">${content}</div>
+    <div class="acc-body" id="acc-${esc(id)}">${content}</div>
   </div>`;
 }
 
@@ -27,11 +50,10 @@ export function renderSettings() {
   const cats = D.settings.cats;
   const auf = D.settings.aufwand;
 
-  // Build sections separately to avoid nested template literal issues
   const familyContent = `
     <div id="family-section">
       <div class="settings-row">
-        <input type="text" id="family-name-input" class="settings-input" value="${D.familyName || ''}" placeholder="Familienname" />
+        <input type="text" id="family-name-input" class="settings-input" value="${esc(D.familyName || '')}" placeholder="Familienname" />
         <button class="btn btn-sm" onclick="saveFamilyName()">Speichern</button>
       </div>
       <div style="margin-top:12px">
@@ -63,14 +85,14 @@ export function renderSettings() {
     <div id="cats-list">
       ${cats.map(c => `
         <div class="settings-row">
-          <input type="color" value="${c.color}" class="settings-color"
-            onchange="updateCatColor('${c.id}', this.value)" title="Textfarbe" />
-          <input type="color" value="${c.bg}" class="settings-color settings-color-bg"
-            onchange="updateCatBg('${c.id}', this.value)" title="Hintergrundfarbe" />
-          <input type="text" value="${c.label}" class="settings-input"
-            onchange="updateCat('${c.id}', this.value)" />
-          <span class="tag tag-${c.id}" style="flex-shrink:0">${c.label}</span>
-          <button class="btn btn-d btn-sm" onclick="deleteCat('${c.id}')">×</button>
+          <input type="color" value="${esc(c.color)}" class="settings-color"
+            onchange="updateCatColor('${esc(c.id)}', this.value)" title="Textfarbe" />
+          <input type="color" value="${esc(c.bg)}" class="settings-color settings-color-bg"
+            onchange="updateCatBg('${esc(c.id)}', this.value)" title="Hintergrundfarbe" />
+          <input type="text" value="${esc(c.label)}" class="settings-input"
+            onchange="updateCat('${esc(c.id)}', this.value)" />
+          <span class="tag tag-${esc(c.id)}" style="flex-shrink:0">${esc(c.label)}</span>
+          <button class="btn btn-d btn-sm" onclick="deleteCat('${esc(c.id)}')">×</button>
         </div>`).join('')}
     </div>
     <div class="row" style="gap:6px;margin-top:8px">
@@ -83,14 +105,14 @@ export function renderSettings() {
     <div id="auf-list">
       ${auf.map(a => `
         <div class="settings-row">
-          <input type="color" value="${a.color}" class="settings-color"
-            onchange="updateAufColor('${a.id}', this.value)" title="Textfarbe" />
-          <input type="color" value="${a.bg}" class="settings-color settings-color-bg"
-            onchange="updateAufBg('${a.id}', this.value)" title="Hintergrundfarbe" />
-          <input type="text" value="${a.label}" class="settings-input"
-            onchange="updateAuf('${a.id}', this.value)" />
-          <span class="tag tag-${a.id}" style="flex-shrink:0">${a.label}</span>
-          <button class="btn btn-d btn-sm" onclick="deleteAuf('${a.id}')">×</button>
+          <input type="color" value="${esc(a.color)}" class="settings-color"
+            onchange="updateAufColor('${esc(a.id)}', this.value)" title="Textfarbe" />
+          <input type="color" value="${esc(a.bg)}" class="settings-color settings-color-bg"
+            onchange="updateAufBg('${esc(a.id)}', this.value)" title="Hintergrundfarbe" />
+          <input type="text" value="${esc(a.label)}" class="settings-input"
+            onchange="updateAuf('${esc(a.id)}', this.value)" />
+          <span class="tag tag-${esc(a.id)}" style="flex-shrink:0">${esc(a.label)}</span>
+          <button class="btn btn-d btn-sm" onclick="deleteAuf('${esc(a.id)}')">×</button>
         </div>`).join('')}
     </div>
     <div class="row" style="gap:6px;margin-top:8px">
@@ -99,12 +121,13 @@ export function renderSettings() {
       <button class="btn btn-sm" onclick="addAuf()">+</button>
     </div>`;
 
+  // Fix #10: Einheiten via data-Attribut statt im onclick-String (Sonderzeichen-sicher)
   const einhContent = `
     <div id="einh-list" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">
-      ${D.settings.einheiten.map(e => `
+      ${(D.settings.einheiten || []).map(e => `
         <div class="einh-tag">
-          <span>${e}</span>
-          <button class="xbtn" onclick="deleteEinh('${e}')">×</button>
+          <span>${esc(e)}</span>
+          <button class="xbtn" data-einh="${esc(e)}" onclick="deleteEinh(this.dataset.einh)">×</button>
         </div>`).join('')}
     </div>
     <div class="row" style="gap:6px">
@@ -150,7 +173,7 @@ export async function addCat() {
   input.value = '';
   await saveSettingsNow();
   applyTagStyles();
-  renderSettings();
+  rerenderSettings();
   renderRFilters();
   toast(`"${label}" hinzugefügt`);
 }
@@ -164,15 +187,15 @@ export async function updateCat(id, newLabel) {
   applyTagStyles();
   renderRFilters();
   renderRecipes();
-  renderSettings();
+  rerenderSettings();
 }
 
+// Fix #14: Bei Farb-Änderung reicht applyTagStyles, kein Re-Render nötig
 export async function updateCatColor(id, color) {
   const cat = D.settings.cats.find(c => c.id === id);
   if (cat) cat.color = color;
   await saveSettingsNow();
   applyTagStyles();
-  renderSettings();
 }
 
 export async function updateCatBg(id, bg) {
@@ -180,7 +203,6 @@ export async function updateCatBg(id, bg) {
   if (cat) cat.bg = bg;
   await saveSettingsNow();
   applyTagStyles();
-  renderSettings();
 }
 
 export async function deleteCat(id) {
@@ -191,7 +213,7 @@ export async function deleteCat(id) {
   D.settings.cats = D.settings.cats.filter(c => c.id !== id);
   await saveSettingsNow();
   applyTagStyles();
-  renderSettings();
+  rerenderSettings();
   renderRFilters();
   renderRecipes();
 }
@@ -208,10 +230,11 @@ export async function addAuf() {
   input.value = '';
   await saveSettingsNow();
   applyTagStyles();
-  renderSettings();
+  rerenderSettings();
   toast(`"${label}" hinzugefügt`);
 }
 
+// Fix #13: renderWeek nach Label-Änderung für konsistente Darstellung
 export async function updateAuf(id, newLabel) {
   newLabel = newLabel.trim().toLowerCase();
   if (!newLabel) return;
@@ -221,7 +244,7 @@ export async function updateAuf(id, newLabel) {
   applyTagStyles();
   renderWeek();
   renderRecipes();
-  renderSettings();
+  rerenderSettings();
 }
 
 export async function updateAufColor(id, color) {
@@ -229,7 +252,6 @@ export async function updateAufColor(id, color) {
   if (auf) auf.color = color;
   await saveSettingsNow();
   applyTagStyles();
-  renderSettings();
 }
 
 export async function updateAufBg(id, bg) {
@@ -237,7 +259,6 @@ export async function updateAufBg(id, bg) {
   if (auf) auf.bg = bg;
   await saveSettingsNow();
   applyTagStyles();
-  renderSettings();
 }
 
 export async function deleteAuf(id) {
@@ -248,7 +269,7 @@ export async function deleteAuf(id) {
   D.settings.aufwand = D.settings.aufwand.filter(a => a.id !== id);
   await saveSettingsNow();
   applyTagStyles();
-  renderSettings();
+  rerenderSettings();
   renderRFilters();
   renderRecipes();
 }
@@ -258,18 +279,19 @@ export async function addEinh() {
   const input = document.getElementById('new-einh-input');
   const val = input.value.trim();
   if (!val) return;
-  if (D.settings.einheiten.includes(val)) { toast('Einheit existiert bereits'); return; }
+  if ((D.settings.einheiten || []).includes(val)) { toast('Einheit existiert bereits'); return; }
+  if (!D.settings.einheiten) D.settings.einheiten = [];
   D.settings.einheiten.push(val);
   input.value = '';
   await saveSettingsNow();
-  renderSettings();
+  rerenderSettings();
   toast(`"${val}" hinzugefügt`);
 }
 
 export async function deleteEinh(val) {
-  D.settings.einheiten = D.settings.einheiten.filter(e => e !== val);
+  D.settings.einheiten = (D.settings.einheiten || []).filter(e => e !== val);
   await saveSettingsNow();
-  renderSettings();
+  rerenderSettings();
 }
 
 // ── Family Management ─────────────────────────────────────────────────────────
@@ -285,11 +307,11 @@ async function loadFamilyMembers() {
   const el = document.getElementById('members-list');
   if (!el) return;
   const members = await sbGet('family_members', `family_id=eq.${D.familyId}&select=user_id,role,email`);
-  if (!members || !members.length) { el.textContent = 'Keine Mitglieder gefunden.'; return; }
+  if (!Array.isArray(members) || !members.length) { el.textContent = 'Keine Mitglieder gefunden.'; return; }
   el.innerHTML = members.map(m =>
     `<div class="settings-row" style="border:none;padding:3px 0">
-      <span style="flex:1;font-size:13px">${m.email || m.user_id.slice(0,8) + '…'}</span>
-      <span class="tag" style="font-size:11px">${m.role}</span>
+      <span style="flex:1;font-size:13px">${esc(m.email || m.user_id.slice(0,8) + '…')}</span>
+      <span class="tag" style="font-size:11px">${esc(m.role)}</span>
     </div>`
   ).join('');
 }
@@ -304,25 +326,19 @@ export async function createInvitation() {
     role
   });
   const el = document.getElementById('invitation-result');
-  el.innerHTML = `Code: <strong style="font-family:monospace;font-size:15px;letter-spacing:2px">${code}</strong>
+  el.innerHTML = `Code: <strong style="font-family:monospace;font-size:15px;letter-spacing:2px">${esc(code)}</strong>
     <span style="color:var(--text3);font-size:11px"> · gültig 7 Tage</span>`;
   toast('Einladungscode erstellt');
 }
 
+// Fix #19: Gemeinsame joinFamilyByCode aus auth.js verwenden
 export async function joinFamily() {
   const code = document.getElementById('invite-code-input').value.trim().toUpperCase();
   const el = document.getElementById('join-result');
   if (!code) return;
-  const inv = await sbGet('invitations', `code=eq.${code}&select=id,family_id,used_at,expires_at,role`);
-  if (!inv || !inv.length) { el.textContent = '❌ Ungültiger Code.'; return; }
-  const i = inv[0];
-  if (i.used_at) { el.textContent = '❌ Code bereits verwendet.'; return; }
-  if (new Date(i.expires_at) < new Date()) { el.textContent = '❌ Code abgelaufen.'; return; }
-  // Join family
-  await sbInsert('family_members', { family_id: i.family_id, user_id: D.userId, role: i.role || 'member', email: D.userEmail });
-  // Mark invitation as used
-  await sbUpdate('invitations', i.id, { used_by: D.userId, used_at: new Date().toISOString() });
-  D.familyId = i.family_id;
-  el.innerHTML = '✓ Erfolgreich beigetreten!';
-  toast('Familie beigetreten');
+  const ok = await joinFamilyByCode(code, el);
+  if (ok) {
+    el.innerHTML = '✓ Erfolgreich beigetreten!';
+    toast('Familie beigetreten');
+  }
 }

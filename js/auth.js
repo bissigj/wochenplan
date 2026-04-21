@@ -32,9 +32,8 @@ async function doRefresh(refreshToken) {
       session = d;
       setToken(d.access_token);
       localStorage.setItem('wp_session', JSON.stringify(d));
-      scheduleRefresh(d); // nächsten Refresh planen
+      scheduleRefresh(d);
     } else {
-      // Refresh fehlgeschlagen → neu anmelden
       doLogout();
     }
   } catch(e) {
@@ -69,7 +68,8 @@ export async function doLogin() {
 export async function doRegister() {
   const email = document.getElementById('r-email').value.trim();
   const pw = document.getElementById('r-pw').value;
-  document.getElementById('r-err').textContent = '';
+  const errEl = document.getElementById('r-err');
+  errEl.textContent = '';
   try {
     const r = await fetch(`${SUPA_URL}/auth/v1/signup`, {
       method: 'POST',
@@ -78,16 +78,22 @@ export async function doRegister() {
     });
     const d = await r.json();
     if (d.error || d.error_code) {
-      document.getElementById('r-err').textContent = d.error_description || d.msg || d.error;
+      errEl.textContent = d.error_description || d.msg || d.error;
       return;
     }
-    if (d.access_token) { session = d; setToken(d.access_token); await onLoggedIn(); return; }
-    document.getElementById('l-email').value = email;
-    document.getElementById('l-pw').value = pw;
-    showLogin();
-    setTimeout(doLogin, 400);
+    // Fall 1: Email-Confirm aus → sofort angemeldet
+    if (d.access_token) {
+      session = d;
+      setToken(d.access_token);
+      scheduleRefresh(session);
+      await onLoggedIn();
+      return;
+    }
+    // Fix #6: Fall 2: Email-Confirm an → klares Feedback statt stilles Nichts
+    errEl.style.color = 'var(--meadow)';
+    errEl.textContent = '✓ Konto erstellt. Prüfe deine E-Mails zur Bestätigung.';
   } catch (e) {
-    document.getElementById('r-err').textContent = 'Verbindungsfehler: ' + e.message;
+    errEl.textContent = 'Verbindungsfehler: ' + e.message;
   }
 }
 
@@ -111,11 +117,11 @@ export function showLogin() {
 
 async function resolveFamily(userId) {
   const members = await sbGet('family_members', `user_id=eq.${userId}&select=family_id,role`);
-  if (members && members.length) {
+  if (Array.isArray(members) && members.length) {
     D.familyId = members[0].family_id;
-    return true; // has family
+    return true;
   }
-  return false; // no family yet
+  return false;
 }
 
 export async function obCreateFamily() {
@@ -137,18 +143,32 @@ export async function obJoinFamily() {
   const err = document.getElementById('ob-err');
   if (!code) { err.textContent = 'Bitte einen Einladungscode eingeben.'; return; }
   err.textContent = '';
-  const inv = await sbGet('invitations', `code=eq.${code}&select=id,family_id,used_at,expires_at,role`);
-  if (!inv || !inv.length) { err.textContent = '❌ Ungültiger Code.'; return; }
-  const i = inv[0];
-  if (i.used_at) { err.textContent = '❌ Code bereits verwendet.'; return; }
-  if (new Date(i.expires_at) < new Date()) { err.textContent = '❌ Code abgelaufen.'; return; }
-  D.familyId = i.family_id;
-  await sbInsert('family_members', { family_id: D.familyId, user_id: D.userId, role: i.role || 'member', email: session.user.email });
-  await sbUpdate('invitations', i.id, { used_by: D.userId, used_at: new Date().toISOString() });
-  const fams = await sbGet('families', `id=eq.${D.familyId}&select=name`);
-  if (fams && fams[0]) D.familyName = fams[0].name;
+  const ok = await joinFamilyByCode(code, err);
+  if (!ok) return;
   document.getElementById('onboarding-screen').style.display = 'none';
   await finishLogin();
+}
+
+// Fix #19: Gemeinsame Funktion für Onboarding + Settings
+// errEl: optionales DOM-Element für Fehlertexte
+export async function joinFamilyByCode(code, errEl) {
+  const setErr = (msg) => { if (errEl) errEl.textContent = msg; };
+  const inv = await sbGet('invitations', `code=eq.${code}&select=id,family_id,used_at,expires_at,role`);
+  if (!Array.isArray(inv) || !inv.length) { setErr('❌ Ungültiger Code.'); return false; }
+  const i = inv[0];
+  if (i.used_at) { setErr('❌ Code bereits verwendet.'); return false; }
+  if (new Date(i.expires_at) < new Date()) { setErr('❌ Code abgelaufen.'); return false; }
+  D.familyId = i.family_id;
+  await sbInsert('family_members', {
+    family_id: D.familyId,
+    user_id: D.userId,
+    role: i.role || 'member',
+    email: (session && session.user && session.user.email) || D.userEmail || ''
+  });
+  await sbUpdate('invitations', i.id, { used_by: D.userId, used_at: new Date().toISOString() });
+  const fams = await sbGet('families', `id=eq.${D.familyId}&select=name`);
+  if (Array.isArray(fams) && fams[0]) D.familyName = fams[0].name;
+  return true;
 }
 
 async function finishLogin() {
@@ -171,7 +191,7 @@ export async function onLoggedIn() {
     return;
   }
   const fams = await sbGet('families', `id=eq.${D.familyId}&select=name`);
-  if (fams && fams[0]) D.familyName = fams[0].name;
+  if (Array.isArray(fams) && fams[0]) D.familyName = fams[0].name;
   await finishLogin();
 }
 

@@ -1,7 +1,7 @@
 import { D, getCatLabel, getAufLabel } from './data.js';
 import { saveRecipeNow } from './data.js';
 import { sbGet } from './db.js';
-import { toast } from './ui.js';
+import { toast, esc, formatAmount } from './ui.js';
 import { renderRFilters, renderRecipes } from './recipes.js';
 
 let allPublicRecipes = [];
@@ -61,17 +61,19 @@ async function loadPublicRecipes() {
     `select=id,recipe_id,data,public,family_id&public=eq.true&family_id=neq.${D.familyId}&order=created_at.desc&limit=500`
   );
 
-  if (!recs || !recs.length) {
+  if (!Array.isArray(recs) || !recs.length) {
     el.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🍽️</div><div class="empty-state-title">Noch keine öffentlichen Rezepte</div><div class="empty-state-sub">Andere Familien haben noch nichts geteilt.</div></div>';
     return;
   }
 
-  // Load family names
+  // Fix #21: Statt N+1 einzeln abrufen, alle Familie-Namen in einem Query holen
   const familyIds = [...new Set(recs.map(r => r.family_id))];
-  const families = {};
-  for (const fid of familyIds) {
-    const fam = await sbGet('families', `id=eq.${fid}&select=id,name`);
-    if (fam && fam[0]) families[fid] = fam[0].name;
+  let families = {};
+  if (familyIds.length) {
+    const fams = await sbGet('families', `id=in.(${familyIds.join(',')})&select=id,name`);
+    if (Array.isArray(fams)) {
+      families = Object.fromEntries(fams.map(f => [f.id, f.name]));
+    }
   }
 
   // Attach family name to each recipe
@@ -87,13 +89,13 @@ function renderDiscoverFilters() {
   if (!el) return;
 
   const cats = D.settings.cats.map(c =>
-    `<button class="pill tag-${c.id} ${discoverCat === c.id ? 'on' : ''}"
-      onclick="setDiscoverCat('${c.id}')">${c.label}</button>`
+    `<button class="pill tag-${esc(c.id)} ${discoverCat === c.id ? 'on' : ''}"
+      onclick="setDiscoverCat('${esc(c.id)}')">${esc(c.label)}</button>`
   ).join('');
 
   const aufs = D.settings.aufwand.map(a =>
-    `<button class="pill tag-${a.id} ${discoverAuf === a.id ? 'on' : ''}"
-      onclick="setDiscoverAuf('${a.id}')">${a.label}</button>`
+    `<button class="pill tag-${esc(a.id)} ${discoverAuf === a.id ? 'on' : ''}"
+      onclick="setDiscoverAuf('${esc(a.id)}')">${esc(a.label)}</button>`
   ).join('');
 
   el.innerHTML = cats + aufs;
@@ -105,31 +107,32 @@ function renderDiscoverCard(row, alreadyImported) {
   const isOpen = discoverExpanded === row.id;
 
   const ingsHtml = (r.ings || []).map(ing => {
-    const amt = ing.m ? `${ing.m}${ing.u ? ' ' + ing.u : ''}` : '';
-    return `<div class="ing-row"><span class="ing-amt">${amt ? `<b>${amt}</b> ` : ''}${ing.n}</span></div>`;
+    const mStr = formatAmount(ing.m);
+    const amt = mStr ? `${mStr}${ing.u ? ' ' + esc(ing.u) : ''}` : '';
+    return `<div class="ing-row"><span class="ing-amt">${amt ? `<b>${amt}</b> ` : ''}${esc(ing.n || '')}</span></div>`;
   }).join('');
 
   const stepsHtml = (r.steps || []).map((st, i) =>
     `<li class="step-item">
       <span class="step-num">${i + 1}</span>
-      <span class="step-text">${st}</span>
+      <span class="step-text">${esc(st)}</span>
     </li>`
   ).join('');
 
   return `
     <div class="discover-card">
-      ${r.img ? `<div class="discover-img" style="background-image:url('${r.img}')"></div>` : ''}
+      ${r.img ? `<div class="discover-img" style="background-image:url('${esc(r.img)}')"></div>` : ''}
       <div class="discover-body">
-        <div class="discover-card-top" onclick="toggleDiscoverR('${row.id}')" style="cursor:pointer">
+        <div class="discover-card-top" onclick="toggleDiscoverR('${esc(row.id)}')" style="cursor:pointer">
           <div class="discover-meta">
-            <span class="discover-family">🏠 ${row.familyName}</span>
+            <span class="discover-family">🏠 ${esc(row.familyName)}</span>
             ${r.time ? `<span class="discover-time">⏱ ${r.time} min</span>` : ''}
             <span style="margin-left:auto;font-size:11px;color:var(--text3)">${isOpen ? '▲' : '▼'}</span>
           </div>
-          <div class="discover-name">${r.name}</div>
+          <div class="discover-name">${esc(r.name)}</div>
           <div class="row" style="gap:5px;margin-top:6px">
-            <span class="tag tag-${r.cat}">${getCatLabel(r.cat)}</span>
-            <span class="tag tag-${r.auf}">${getAufLabel(r.auf)}</span>
+            <span class="tag tag-${esc(r.cat)}">${esc(getCatLabel(r.cat))}</span>
+            <span class="tag tag-${esc(r.auf)}">${esc(getAufLabel(r.auf))}</span>
           </div>
         </div>
         ${isOpen ? `
@@ -148,7 +151,7 @@ function renderDiscoverCard(row, alreadyImported) {
         <div style="margin-top:10px">
           ${alreadyImported
             ? '<div class="discover-imported">✓ Bereits importiert</div>'
-            : `<button class="btn btn-p btn-sm" onclick="importRecipe('${row.id}')">+ Importieren</button>`
+            : `<button class="btn btn-p btn-sm" onclick="importRecipe('${esc(row.id)}')">+ Importieren</button>`
           }
         </div>
       </div>
@@ -169,9 +172,9 @@ function renderDiscoverList() {
 
   if (discoverSearch) {
     filtered = filtered.filter(row =>
-      row.data.name.toLowerCase().includes(discoverSearch) ||
+      (row.data.name || '').toLowerCase().includes(discoverSearch) ||
       getCatLabel(row.data.cat).toLowerCase().includes(discoverSearch) ||
-      row.familyName.toLowerCase().includes(discoverSearch)
+      (row.familyName || '').toLowerCase().includes(discoverSearch)
     );
   }
   if (discoverCat) filtered = filtered.filter(row => row.data.cat === discoverCat);
