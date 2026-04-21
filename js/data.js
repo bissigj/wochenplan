@@ -12,6 +12,7 @@ export let D = {
   familyName: '',
   userId: null,
   userEmail: ''
+  recipeFilter: ''
 };
 
 export let dbSettingsId = null;
