@@ -11,3 +11,11 @@ export const state = {
   activeTab: 'rezepte',
   recipeFilter: ''
 };
+
+const listeners = [];
+
+export function setState(patch) {
+  Object.assign(state, patch);
+  listeners.forEach(fn => fn(state));
+  renderApp(); // 🔥 wichtig
+}
