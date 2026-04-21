@@ -1,923 +1,175 @@
-@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=DM+Sans:wght@300;400;500;600&display=swap');
+import { sbGet, sbInsert, sbUpdate } from './db.js';
+import { DEFAULTS, DEFAULT_SETTINGS, DEFAULT_EINHEITEN } from './config.js';
+import { setSyncStatus } from './ui.js';
 
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+export let D = {
+  recipes: [],
+  weekPlan: { kw: '', year: 0, days: [], portions: 2 },
+  archive: [],
+  nextId: 1,
+  settings: { cats: [], aufwand: [], einheiten: [] },
+  familyId: null,
+  familyName: '',
+  userId: null,
+  userEmail: ''
+};
+export let dbSettingsId = null;
 
-:root{
-  /* Palette */
-  --bg:#faf9f6;
-  --bg2:#f3f1eb;
-  --bg3:#ede9e0;
-  --bg4:#e5e0d4;
-  --text:#2d2c28;
-  --text2:#7a7568;
-  --text3:#b0aa9e;
-  --bd:rgba(45,44,40,0.10);
-  --bd2:rgba(45,44,40,0.18);
+export let dbRecipeId = null;
+export let dbWeekId = null;
+let saveTimer = null;
 
-  /* Brand */
-  --meadow:#4d7a28;
-  --meadow-light:#e8f0df;
-  --moss:#8fa828;
-  --moss-light:#f0f4d8;
-  --thunder:#2d2c28;
-  --waterfall:#6b8fa8;
-  --warm:#c8783a;
-  --warm-light:#faf0e6;
-  --red:#b03030;
+export async function loadData() {
+  try {
+    const fid = D.familyId;
+    // Recipes
+    const recs = await sbGet('recipes', `select=id,data&family_id=eq.${fid}`);
+    if (recs && recs.length) {
+      dbRecipeId = recs[0].id;
+      D.recipes = recs[0].data.recipes || [];
+      D.nextId = recs[0].data.nextId || 1;
+    } else {
+      D.recipes = DEFAULTS.map(r => ({ ...r }));
+      D.nextId = DEFAULTS.length + 1;
+      const ins = await sbInsert('recipes', { data: { recipes: D.recipes, nextId: D.nextId }, family_id: D.familyId });
+      if (ins && ins[0]) dbRecipeId = ins[0].id;
+    }
+    // Week plan – always exactly one row
+    const weeks = await sbGet('week_plan', `select=id,data,updated_at&family_id=eq.${fid}`);
+    if (weeks && weeks.length) {
+      weeks.sort((a, b) => new Date(b.updated_at || 0) - new Date(a.updated_at || 0));
+      dbWeekId = weeks[0].id;
+      const wp = weeks[0].data;
+      if (wp && wp.days && wp.days.length) D.weekPlan = wp;
+    }
+    // Archive – multiple rows
+    const arch = await sbGet('archive', `select=id,data,kw,created_at&family_id=eq.${fid}`);
+    D.archive = Array.isArray(arch) ? arch.map(a => ({ ...a.data, _dbid: a.id })) : [];
 
-  /* Typography */
-  --font-display:'Lora', Georgia, serif;
-  --font-body:'DM Sans', -apple-system, sans-serif;
+    // Settings – categories and aufwand
+    const sets = await sbGet('settings', `select=id,data&family_id=eq.${fid}`);
+    if (sets && sets.length) {
+      dbSettingsId = sets[0].id;
+      D.settings = sets[0].data;
+      // Migrate: add einheiten if missing (existing installs)
+      if (!D.settings.einheiten) {
+        D.settings.einheiten = [...DEFAULT_EINHEITEN];
+        saveSettingsNow();
+      }
+    } else {
+      D.settings = JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
+      D.settings.einheiten = [...DEFAULT_EINHEITEN];
+      const ins = await sbInsert('settings', { data: D.settings, family_id: D.familyId });
+      if (ins && ins[0]) dbSettingsId = ins[0].id;
+    }
 
-  /* Radius */
-  --r:14px;
-  --rs:8px;
-  --rpill:99px;
-
-  /* Shadow */
-  --shadow:0 1px 3px rgba(45,44,40,0.08), 0 4px 12px rgba(45,44,40,0.06);
-  --shadow-sm:0 1px 2px rgba(45,44,40,0.08), 0 2px 6px rgba(45,44,40,0.05);
-  --shadow-lg:0 4px 16px rgba(45,44,40,0.10), 0 12px 32px rgba(45,44,40,0.08);
-}
-
-@media(prefers-color-scheme:dark){:root{
-  --bg:#1c1b18;
-  --bg2:#242320;
-  --bg3:#2c2b27;
-  --bg4:#343330;
-  --text:#e8e5dc;
-  --text2:#9a9488;
-  --text3:#5a5650;
-  --bd:rgba(232,229,220,0.09);
-  --bd2:rgba(232,229,220,0.16);
-  --meadow:#78b840;
-  --meadow-light:#162508;
-  --moss:#b0cc38;
-  --moss-light:#1e2408;
-  --warm:#d89050;
-  --warm-light:#281808;
-  --shadow:0 1px 3px rgba(0,0,0,0.25), 0 4px 12px rgba(0,0,0,0.20);
-  --shadow-sm:0 1px 2px rgba(0,0,0,0.20), 0 2px 6px rgba(0,0,0,0.15);
-  --shadow-lg:0 4px 16px rgba(0,0,0,0.30), 0 12px 32px rgba(0,0,0,0.25);
-}}
-
-/* ── Base ─────────────────────────────────────────────────────────────────── */
-body{
-  font-family:var(--font-body);
-  background:var(--bg3);
-  color:var(--text);
-  min-height:100vh;
-  font-size:15px;
-  line-height:1.5;
-  -webkit-font-smoothing:antialiased;
-}
-
-/* ── Fixed Layout ─────────────────────────────────────────────────────────── */
-.app-header{
-  position:fixed;top:0;left:0;right:0;z-index:50;
-  background:var(--bg);
-  border-bottom:1px solid var(--bd);
-  backdrop-filter:blur(12px);
-  -webkit-backdrop-filter:blur(12px);
-  background:rgba(250,249,246,0.92);
-}
-@media(prefers-color-scheme:dark){
-  .app-header{background:rgba(28,27,24,0.92)}
-}
-.app-header-inner{
-  max-width:900px;margin:0 auto;
-  display:flex;align-items:center;justify-content:space-between;
-  padding:0 1.25rem;
-  height:54px;
-}
-.app-title{
-  font-family:var(--font-display);
-  font-size:20px;
-  font-weight:600;
-  color:var(--text);
-  letter-spacing:-0.3px;
-}
-.app-content{
-  max-width:900px;margin:0 auto;
-  padding:1.25rem 1.25rem 1.5rem;
-  margin-top:54px;
-  margin-bottom:68px;
+    // Migrate old recipes: cat/auf as string label → id
+    let needsSave = false;
+    D.recipes.forEach(r => {
+      if (r.cat && !r.cat.startsWith('cat_')) {
+        const found = D.settings.cats.find(c => c.label === r.cat);
+        if (found) { r.cat = found.id; needsSave = true; }
+      }
+      if (r.auf && !r.auf.startsWith('auf_')) {
+        const found = D.settings.aufwand.find(a => a.label === r.auf);
+        if (found) { r.auf = found.id; needsSave = true; }
+      }
+    });
+    if (needsSave) saveRecipesDebounced();
+  } catch (e) {
+    setSyncStatus('err', 'Offline');
+    console.error(e);
+  }
 }
 
-/* ── Sync bar ─────────────────────────────────────────────────────────────── */
-.sync-bar{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text3)}
-.dot{width:6px;height:6px;border-radius:50%;background:var(--text3);flex-shrink:0;transition:background .3s}
-.dot.ok{background:var(--meadow)}
-.dot.err{background:var(--red)}
-.dot.spin{animation:pulse 1.2s ease-in-out infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
-
-/* ── Cards ────────────────────────────────────────────────────────────────── */
-.card{
-  background:var(--bg);
-  border-radius:var(--r);
-  padding:1rem 1.25rem;
-  margin-bottom:10px;
-  box-shadow:var(--shadow-sm);
-  border:1px solid var(--bd);
-  transition:box-shadow .2s;
-}
-.card:hover{box-shadow:var(--shadow)}
-
-/* ── Buttons ──────────────────────────────────────────────────────────────── */
-.btn{
-  display:inline-flex;align-items:center;gap:5px;
-  padding:7px 14px;
-  font-size:13px;font-family:var(--font-body);font-weight:500;
-  border:1px solid var(--bd2);
-  border-radius:var(--rs);
-  background:var(--bg);
-  color:var(--text);
-  cursor:pointer;
-  white-space:nowrap;
-  transition:all .15s;
-}
-.btn:hover{background:var(--bg2);border-color:var(--bd2)}
-.btn:active{transform:scale(0.97)}
-.btn-p{
-  background:var(--meadow);color:#fff;
-  border-color:var(--meadow);
-  box-shadow:0 1px 3px rgba(77,122,40,0.3);
-}
-.btn-p:hover{opacity:.88;background:var(--meadow)}
-.btn-d{color:var(--red);border-color:transparent;background:transparent}
-.btn-d:hover{background:#fdf0f0;border-color:transparent}
-.btn-full{width:100%;justify-content:center;padding:11px;font-size:14px;font-weight:500}
-.btn-sm{padding:4px 10px;font-size:12px}
-
-/* ── Inputs ───────────────────────────────────────────────────────────────── */
-input[type=text],input[type=url],input[type=number],
-input[type=email],input[type=password],select,textarea{
-  padding:8px 10px;
-  font-size:13px;font-family:var(--font-body);
-  border:1px solid var(--bd2);
-  border-radius:var(--rs);
-  background:var(--bg);
-  color:var(--text);
-  width:100%;
-  transition:border-color .15s, box-shadow .15s;
-}
-input:focus,select:focus,textarea:focus{
-  outline:none;
-  border-color:var(--meadow);
-  box-shadow:0 0 0 3px rgba(77,122,40,0.12);
-}
-textarea{resize:vertical;min-height:60px;line-height:1.5}
-
-/* ── Tags & Pills ─────────────────────────────────────────────────────────── */
-.tag{
-  font-size:11px;font-weight:500;
-  padding:2px 9px;
-  border-radius:var(--rpill);
-  white-space:nowrap;
-  letter-spacing:0.01em;
-}
-/* Tag colors injected dynamically by applyTagStyles() */
-
-.pill{
-  font-size:12px;font-weight:500;
-  padding:4px 12px;
-  border-radius:var(--rpill);
-  border:1px solid var(--bd2);
-  background:transparent;
-  color:var(--text2);
-  cursor:pointer;
-  font-family:var(--font-body);
-  transition:all .15s;
-}
-.pill:hover{background:var(--bg2)}
-.pill.on{background:var(--bg3);color:var(--text);border-color:var(--bd2)}
-
-/* ── Layout helpers ───────────────────────────────────────────────────────── */
-.row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.label{font-size:11px;color:var(--text2);display:block;margin-bottom:4px;font-weight:500;letter-spacing:0.02em}
-.divider{height:1px;background:var(--bd);margin:10px 0}
-.empty{text-align:center;padding:2.5rem;color:var(--text3);font-size:14px;font-style:italic}
-.badge{font-size:11px;font-weight:500;padding:2px 8px;border-radius:var(--rpill);background:var(--bg3);color:var(--text2)}
-.section-title{
-  font-size:11px;font-weight:600;
-  color:var(--text2);
-  margin-bottom:8px;margin-top:1rem;
-  text-transform:uppercase;letter-spacing:0.06em;
-}
-.section-title:first-child{margin-top:0}
-.pills{display:flex;gap:6px;flex-wrap:wrap}
-
-/* ── Search ───────────────────────────────────────────────────────────────── */
-.search-wrap{margin-bottom:1rem}
-.search-input{
-  width:100%;
-  background:var(--bg);
-  border:1px solid var(--bd);
-  border-radius:var(--r);
-  padding:10px 16px;
-  font-size:14px;
-  font-family:var(--font-body);
-  color:var(--text);
-  box-shadow:var(--shadow-sm);
-  transition:all .15s;
-}
-.search-input::placeholder{color:var(--text3)}
-.search-input:focus{
-  outline:none;
-  border-color:var(--meadow);
-  box-shadow:0 0 0 3px rgba(77,122,40,0.10), var(--shadow-sm);
+export async function saveWeekNow() {
+  setSyncStatus('spin', 'Speichern…');
+  try {
+    if (dbWeekId) {
+      await sbUpdate('week_plan', dbWeekId, { data: D.weekPlan, updated_at: new Date().toISOString() });
+    } else {
+      const ins = await sbInsert('week_plan', { data: D.weekPlan, family_id: D.familyId });
+      if (ins && ins[0]) dbWeekId = ins[0].id;
+    }
+    setSyncStatus('ok', 'Synchronisiert');
+  } catch (e) {
+    setSyncStatus('err', 'Fehler beim Speichern');
+    console.error(e);
+  }
 }
 
-/* ── Recipe list ──────────────────────────────────────────────────────────── */
-.recipe-row{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
-.recipe-name-col{
-  flex:1;min-width:100px;
-  font-size:14px;font-weight:500;
-  font-family:var(--font-display);
-}
-.recipe-meta{font-size:12px;color:var(--text3)}
-.expand-btn{background:none;border:none;cursor:pointer;color:var(--text3);font-size:12px;padding:2px 5px}
-.recipe-detail{margin-top:12px;padding-top:12px;border-top:1px solid var(--bd)}
-.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-@media(max-width:560px){.detail-grid{grid-template-columns:1fr}}
-
-/* ── Recipe image ─────────────────────────────────────────────────────────── */
-.recipe-img{
-  width:100%;
-  max-width:500px;
-  aspect-ratio:16/7;
-  background-size:cover;
-  background-position:center;
-  border-radius:var(--rs);
-  margin-bottom:1rem;
-}
-.img-upload-wrap{margin-top:4px}
-
-/* ── Steps ────────────────────────────────────────────────────────────────── */
-.steps-list{list-style:none;display:flex;flex-direction:column;gap:6px;margin-bottom:8px}
-.step-item{display:flex;align-items:flex-start;gap:8px}
-.step-num{
-  width:20px;height:20px;border-radius:50%;
-  background:var(--meadow-light);color:var(--meadow);
-  font-size:11px;font-weight:600;
-  display:flex;align-items:center;justify-content:center;
-  flex-shrink:0;margin-top:2px;
-}
-.step-text{flex:1;font-size:13px}
-.drag-handle{cursor:grab;color:var(--text3);font-size:14px;padding:0 4px;user-select:none;flex-shrink:0}
-.drag-handle:active{cursor:grabbing}
-.step-item.sortable-ghost{opacity:.3;background:var(--bg2)}
-.step-item.sortable-chosen{background:var(--bg2);border-radius:var(--rs)}
-
-/* ── Ingredient list ──────────────────────────────────────────────────────── */
-.ing-list{display:flex;flex-direction:column;gap:2px;margin-bottom:8px}
-.ing-row{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:6px 10px;
-  background:var(--bg2);
-  border-radius:var(--rs);
-  font-size:13px;
-  transition:background .15s;
-}
-.ing-row:hover{background:var(--bg3)}
-.ing-amt{flex:1}
-.xbtn{background:none;border:none;cursor:pointer;color:var(--text3);font-size:12px;padding:0 2px;line-height:1;transition:color .1s}
-.xbtn:hover{color:var(--red)}
-
-/* ── Inline selects ───────────────────────────────────────────────────────── */
-.inline-select{
-  padding:4px 8px;font-size:12px;font-family:var(--font-body);
-  border:1px solid var(--bd2);border-radius:var(--rs);
-  background:var(--bg);color:var(--text);cursor:pointer;
-}
-.inline-select:focus{outline:none;border-color:var(--meadow)}
-
-/* ── Week ─────────────────────────────────────────────────────────────────── */
-.week-header{
-  display:flex;align-items:center;gap:10px;
-  margin-bottom:1.25rem;flex-wrap:wrap;
-}
-.week-title{
-  font-family:var(--font-display);
-  font-size:20px;font-weight:600;
-  letter-spacing:-0.3px;
-}
-.archive-banner{
-  background:var(--warm-light);
-  border:1px solid rgba(200,120,58,0.2);
-  border-radius:var(--rs);
-  padding:8px 14px;
-  margin-bottom:1rem;
-  font-size:13px;
-  display:flex;align-items:center;gap:10px;
-  color:var(--warm);
-}
-.week-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-@media(max-width:500px){.week-grid{grid-template-columns:repeat(2,1fr)}}
-
-/* ── Day cards ────────────────────────────────────────────────────────────── */
-.day-card{
-  background:var(--bg);
-  border-radius:var(--r);
-  overflow:hidden;
-  box-shadow:var(--shadow-sm);
-  border:1px solid var(--bd);
-  transition:box-shadow .2s, transform .15s;
-}
-.day-card:hover{box-shadow:var(--shadow);transform:translateY(-1px)}
-.day-card.off{opacity:.4;filter:grayscale(30%)}
-.day-card-top{padding:12px 14px 10px;cursor:pointer;transition:background .15s}
-.day-card-top:hover{background:var(--bg2)}
-.day-lbl{
-  font-size:10px;font-weight:600;
-  color:var(--text3);
-  text-transform:uppercase;letter-spacing:0.08em;
-  margin-bottom:4px;
-  display:flex;align-items:center;gap:6px;
-}
-.day-recipe-name{
-  font-family:var(--font-display);
-  font-size:14px;font-weight:500;
-  margin-bottom:6px;line-height:1.3;
-}
-.day-meta{font-size:11px;color:var(--text3);margin-bottom:6px}
-.day-detail{
-  border-top:1px solid var(--bd);
-  padding:12px 14px;
-  display:none;font-size:13px;
-  background:var(--bg2);
-}
-.day-detail.open{display:block}
-.day-note-input{
-  width:100%;font-size:12px;font-family:var(--font-body);
-  padding:6px 8px;margin-top:6px;
-  border:1px solid var(--bd2);border-radius:var(--rs);
-  background:var(--bg);color:var(--text);
-  resize:none;min-height:48px;
-  transition:border-color .15s;
-}
-.day-note-input:focus{outline:none;border-color:var(--meadow)}
-.day-card-img{width:100%;aspect-ratio:16/7;background-size:cover;background-position:center}
-.step-mini{display:flex;gap:7px;align-items:flex-start;padding:3px 0}
-.step-mini-num{
-  width:16px;height:16px;border-radius:50%;
-  background:var(--meadow-light);color:var(--meadow);
-  font-size:10px;font-weight:600;
-  display:flex;align-items:center;justify-content:center;
-  flex-shrink:0;margin-top:2px;
+export async function saveSettingsNow() {
+  try {
+    if (dbSettingsId) {
+      await sbUpdate('settings', dbSettingsId, { data: D.settings });
+    } else {
+      const ins = await sbInsert('settings', { data: D.settings, family_id: D.familyId });
+      if (ins && ins[0]) dbSettingsId = ins[0].id;
+    }
+  } catch (e) { console.error('saveSettings error', e); }
 }
 
-/* ── Day action bar ───────────────────────────────────────────────────────── */
-.day-actions{
-  padding:7px 10px;
-  display:flex;align-items:center;gap:5px;
-  background:var(--bg2);
-  border-top:1px solid var(--bd);
-}
-.icon-btn{
-  width:30px;height:30px;
-  border-radius:var(--rs);
-  border:1px solid var(--bd2);
-  background:var(--bg);
-  color:var(--text2);
-  cursor:pointer;font-size:14px;
-  display:flex;align-items:center;justify-content:center;
-  flex-shrink:0;
-  transition:all .15s;
-}
-.icon-btn:hover{background:var(--meadow);color:#fff;border-color:var(--meadow)}
-.portions-row{margin-left:auto;display:flex;align-items:center;gap:4px;flex-shrink:0}
-.portions-row input[type=number]{
-  width:32px;height:30px;
-  border:1px solid var(--bd2);border-radius:var(--rs);
-  background:var(--bg);color:var(--text);
-  font-size:13px;font-weight:500;font-family:var(--font-body);
-  text-align:center;padding:0;
-  -webkit-appearance:none;-moz-appearance:textfield;appearance:textfield;
-}
-.portions-row input[type=number]::-webkit-inner-spin-button,
-.portions-row input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
-.portions-row input[type=number]:focus{outline:none;border-color:var(--meadow)}
-
-/* ── Weekend accent ───────────────────────────────────────────────────────── */
-.day-card-weekend{border-left:3px solid var(--moss)}
-.day-lbl-weekend{color:var(--moss)}
-
-/* ── Shopping ─────────────────────────────────────────────────────────────── */
-.shop-group{margin-bottom:1rem}
-.shop-group-title{
-  font-size:12px;font-weight:600;
-  color:var(--text2);
-  padding-bottom:5px;
-  border-bottom:1px solid var(--bd);
-  margin-bottom:6px;
-  letter-spacing:0.02em;
-}
-.shop-item{
-  display:flex;align-items:flex-start;
-  padding:7px 0;border-bottom:1px solid var(--bd);
-  font-size:13px;gap:9px;
-  transition:opacity .15s;
-}
-.shop-item:last-child{border-bottom:none}
-.shop-item input[type=checkbox]{
-  width:15px;height:15px;
-  accent-color:var(--meadow);
-  flex-shrink:0;cursor:pointer;margin-top:2px;
-}
-.shop-item label{flex:1;cursor:pointer;transition:color .15s}
-.shop-item label.done{text-decoration:line-through;color:var(--text3)}
-.shop-qty{font-size:12px;color:var(--meadow);font-weight:500;margin-left:auto;padding-left:8px;white-space:nowrap;margin-top:2px}
-
-/* ── Archive ──────────────────────────────────────────────────────────────── */
-.archive-item{
-  display:flex;align-items:center;gap:10px;
-  padding:10px 0;border-bottom:1px solid var(--bd);font-size:13px;
-}
-.archive-item:last-child{border-bottom:none}
-.archive-kw{font-weight:600;min-width:90px;font-family:var(--font-display)}
-.archive-recipes{flex:1;color:var(--text2);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-
-/* ── Modal ────────────────────────────────────────────────────────────────── */
-.modal-wrap{
-  position:fixed;inset:0;
-  background:rgba(20,18,14,0.55);
-  backdrop-filter:blur(4px);
-  display:flex;align-items:center;justify-content:center;
-  z-index:100;padding:1rem;
-}
-.modal{
-  background:var(--bg);
-  border-radius:var(--r);
-  padding:1.5rem;
-  width:100%;max-width:400px;
-  box-shadow:var(--shadow-lg);
-  border:1px solid var(--bd);
-}
-.modal h3{
-  font-family:var(--font-display);
-  font-size:18px;font-weight:600;
-  margin-bottom:1rem;letter-spacing:-0.2px;
-}
-.modal-footer{display:flex;gap:8px;justify-content:flex-end;margin-top:1.25rem}
-
-/* ── Toast ────────────────────────────────────────────────────────────────── */
-.toast{
-  position:fixed;
-  bottom:calc(68px + 1rem);
-  left:50%;transform:translateX(-50%);
-  background:var(--text);color:var(--bg);
-  padding:8px 18px;
-  border-radius:var(--rpill);
-  font-size:13px;font-weight:500;
-  opacity:0;transition:opacity .2s, transform .2s;
-  pointer-events:none;z-index:200;
-  white-space:nowrap;
-  box-shadow:var(--shadow-lg);
-  transform:translateX(-50%) translateY(4px);
-}
-.toast.show{opacity:1;pointer-events:auto;transform:translateX(-50%) translateY(0)}
-
-/* ── Source display ───────────────────────────────────────────────────────── */
-.src-display{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text2)}
-.src-display a{color:var(--waterfall);word-break:break-all}
-
-/* ── Login / Onboarding ───────────────────────────────────────────────────── */
-.login-wrap{
-  min-height:100vh;
-  display:flex;align-items:center;justify-content:center;
-  padding:1rem;
-  background:var(--bg3);
-  /* subtle texture */
-  background-image:
-    radial-gradient(circle at 20% 20%, rgba(77,122,40,0.06) 0%, transparent 50%),
-    radial-gradient(circle at 80% 80%, rgba(143,168,40,0.05) 0%, transparent 50%);
-}
-.login-box{
-  background:var(--bg);
-  border:1px solid var(--bd);
-  border-radius:18px;
-  padding:2rem 2rem 1.75rem;
-  width:100%;max-width:340px;
-  box-shadow:var(--shadow-lg);
-}
-.login-box h2{
-  font-family:var(--font-display);
-  font-size:22px;font-weight:600;
-  margin-bottom:.4rem;
-  letter-spacing:-0.4px;
-}
-.login-box p{font-size:13px;color:var(--text2);margin-bottom:1.5rem;line-height:1.5}
-.login-field{margin-bottom:12px}
-.login-field label{display:block;font-size:12px;font-weight:500;color:var(--text2);margin-bottom:4px}
-.login-err{font-size:12px;color:var(--red);margin-top:8px;min-height:18px}
-.login-switch{font-size:12px;color:var(--text3);margin-top:14px;text-align:center}
-.login-switch a{color:var(--meadow);cursor:pointer;font-weight:500}
-
-/* Login branding mark */
-.login-box::before{
-  content:'🌿';
-  display:block;font-size:28px;
-  margin-bottom:1rem;
+export function saveRecipesDebounced() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(async () => {
+    setSyncStatus('spin', 'Speichern…');
+    try {
+      const payload = { recipes: D.recipes, nextId: D.nextId };
+      if (dbRecipeId) {
+        await sbUpdate('recipes', dbRecipeId, { data: payload });
+      } else {
+        const ins = await sbInsert('recipes', { data: payload });
+        if (ins && ins[0]) dbRecipeId = ins[0].id;
+      }
+      setSyncStatus('ok', 'Synchronisiert');
+    } catch (e) {
+      setSyncStatus('err', 'Fehler beim Speichern');
+      console.error(e);
+    }
+  }, 800);
 }
 
-/* ── Bottom Navigation ────────────────────────────────────────────────────── */
-.bottom-nav{
-  position:fixed;bottom:0;left:0;right:0;z-index:50;
-  height:60px;
-  background:var(--bg);
-  border-top:1px solid var(--bd);
-  display:flex;align-items:stretch;
-  padding-bottom:env(safe-area-inset-bottom,0px);
-  box-shadow:0 -1px 12px rgba(45,44,40,0.06);
-}
-.nav-item{
-  flex:1;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;gap:3px;
-  background:transparent;border:none;cursor:pointer;
-  padding:6px 4px;font-family:var(--font-body);
-  color:var(--text3);
-  transition:color .15s;
-  position:relative;
-}
-.nav-item.active{color:var(--meadow)}
-.nav-item.active::after{
-  content:'';
-  position:absolute;top:6px;
-  left:50%;transform:translateX(-50%);
-  width:24px;height:2px;
-  background:var(--meadow);
-  border-radius:1px;
-}
-.nav-icon{width:22px;height:22px;flex-shrink:0}
-.nav-label{font-size:10px;font-weight:500;letter-spacing:0.02em}
-
-/* ── Quick Entry ──────────────────────────────────────────────────────────── */
-.qe-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
-.qe-textarea{
-  width:100%;font-size:13px;font-family:var(--font-body);
-  padding:8px 10px;
-  border:1px solid var(--bd2);border-radius:var(--rs);
-  background:var(--bg);color:var(--text);
-  resize:vertical;min-height:120px;line-height:1.5;
-  transition:border-color .15s, box-shadow .15s;
-}
-.qe-textarea:focus{
-  outline:none;border-color:var(--meadow);
-  box-shadow:0 0 0 3px rgba(77,122,40,0.10);
-}
-.qe-hint{font-size:11px;color:var(--text3);margin-top:4px}
-
-/* ── Settings ─────────────────────────────────────────────────────────────── */
-.settings-row{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--bd)}
-.settings-row:last-child{border-bottom:none}
-.settings-input{
-  flex:1;padding:5px 8px;font-size:13px;font-family:var(--font-body);
-  border:1px solid var(--bd2);border-radius:var(--rs);
-  background:var(--bg);color:var(--text);
-  transition:border-color .15s;
-}
-.settings-input:focus{outline:none;border-color:var(--meadow)}
-.settings-color{
-  width:32px;height:32px;padding:2px;
-  border:1px solid var(--bd2);border-radius:var(--rs);
-  cursor:pointer;background:var(--bg);flex-shrink:0;
-}
-.settings-color-bg{opacity:0.7}
-
-/* ── Einheiten tags ───────────────────────────────────────────────────────── */
-.einh-tag{
-  display:inline-flex;align-items:center;gap:4px;
-  padding:3px 10px;
-  background:var(--bg2);border:1px solid var(--bd2);
-  border-radius:var(--rpill);
-  font-size:12px;font-weight:500;color:var(--text);
-}
-.einh-tag .xbtn{font-size:11px;color:var(--text3);background:none;border:none;cursor:pointer;padding:0;line-height:1}
-.einh-tag .xbtn:hover{color:var(--red)}
-
-/* ── Week / Shop header ───────────────────────────────────────────────────── */
-.week-header .btn,.week-header .btn-sm{font-size:12px}
-
-/* ── Misc ─────────────────────────────────────────────────────────────────── */
-.ing-chips{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px}
-.ing-chip{
-  display:flex;align-items:center;gap:3px;
-  font-size:12px;padding:3px 9px;
-  background:var(--bg2);border-radius:var(--rpill);
-  border:1px solid var(--bd);color:var(--text2);
+// ── Label lookup helpers ──────────────────────────────────────────────────────
+export function getCatLabel(id) {
+  if (!id) return '';
+  const found = D.settings.cats.find(c => c.id === id);
+  return found ? found.label : id;
 }
 
-/* ── Floating Action Button ───────────────────────────────────────────────── */
-.fab{
-  position:fixed;
-  bottom:calc(60px + 1rem);
-  right:1.25rem;
-  z-index:49;
-  width:52px;height:52px;
-  border-radius:50%;
-  background:var(--meadow);
-  color:#fff;
-  border:none;
-  cursor:pointer;
-  display:flex;align-items:center;justify-content:center;
-  box-shadow:0 2px 8px rgba(77,122,40,0.35), 0 6px 20px rgba(77,122,40,0.20);
-  transition:transform .15s, box-shadow .15s, opacity .15s;
-}
-.fab:hover{
-  transform:scale(1.08);
-  box-shadow:0 4px 12px rgba(77,122,40,0.45), 0 8px 24px rgba(77,122,40,0.25);
-}
-.fab:active{transform:scale(0.95)}
-
-/* Hide FAB when not on rezepte tab */
-.fab.hidden{opacity:0;pointer-events:none;transform:scale(0.8)}
-
-/* ── Primary Button (week header) ─────────────────────────────────────────── */
-.btn-primary{
-  display:inline-flex;align-items:center;gap:6px;
-  padding:8px 16px;
-  font-size:13px;font-family:var(--font-body);font-weight:500;
-  background:var(--meadow);color:#fff;
-  border:none;border-radius:var(--rs);
-  cursor:pointer;white-space:nowrap;
-  box-shadow:0 1px 3px rgba(77,122,40,0.3);
-  transition:all .15s;
-}
-.btn-primary:hover{opacity:.88}
-.btn-primary:active{transform:scale(0.97)}
-
-/* ── Icon-only Button ─────────────────────────────────────────────────────── */
-.btn-icon{
-  display:inline-flex;align-items:center;justify-content:center;
-  width:34px;height:34px;
-  border-radius:var(--rs);
-  border:1px solid var(--bd2);
-  background:var(--bg);
-  color:var(--text2);
-  cursor:pointer;
-  transition:all .15s;
-  flex-shrink:0;
-}
-.btn-icon:hover{background:var(--bg2);color:var(--text)}
-
-/* ── Segment Control ──────────────────────────────────────────────────────── */
-.shop-header{
-  display:flex;align-items:center;justify-content:space-between;
-  margin-bottom:1rem;gap:10px;
-}
-.segment-control{
-  display:flex;
-  border:1px solid var(--bd2);
-  border-radius:var(--rs);
-  overflow:hidden;
-  background:var(--bg2);
-}
-.segment{
-  padding:6px 14px;
-  font-size:13px;font-weight:500;font-family:var(--font-body);
-  background:transparent;border:none;
-  color:var(--text2);cursor:pointer;
-  transition:all .15s;
-}
-.segment.on{
-  background:var(--bg);
-  color:var(--text);
-  box-shadow:var(--shadow-sm);
+export function getAufLabel(id) {
+  if (!id) return '';
+  const found = D.settings.aufwand.find(a => a.id === id);
+  return found ? found.label : id;
 }
 
-/* ── Accordion ────────────────────────────────────────────────────────────── */
-.acc-wrap{display:flex;flex-direction:column;gap:8px}
-.acc-item{
-  background:var(--bg);
-  border:1px solid var(--bd);
-  border-radius:var(--r);
-  overflow:hidden;
-  box-shadow:var(--shadow-sm);
-}
-.acc-header{
-  width:100%;
-  display:flex;align-items:center;justify-content:space-between;
-  padding:14px 16px;
-  background:transparent;border:none;
-  font-family:var(--font-body);font-size:14px;font-weight:600;
-  color:var(--text);cursor:pointer;
-  transition:background .15s;
-  text-align:left;
-}
-.acc-header:hover{background:var(--bg2)}
-.acc-chevron{
-  color:var(--text3);flex-shrink:0;
-  transition:transform .2s;
-}
-.acc-item.open .acc-chevron{transform:rotate(180deg)}
-.acc-body{
-  display:none;
-  padding:0 16px 16px;
-  border-top:1px solid var(--bd);
-}
-.acc-item.open .acc-body{display:block}
+// ── Dynamic tag styles ────────────────────────────────────────────────────────
+export function applyTagStyles() {
+  let css = '';
 
-/* ── Empty States ─────────────────────────────────────────────────────────── */
-.empty-state{
-  text-align:center;
-  padding:3rem 1.5rem;
-  color:var(--text3);
-}
-.empty-state-icon{
-  font-size:36px;
-  margin-bottom:.75rem;
-  display:block;
-  opacity:0.7;
-}
-.empty-state-title{
-  font-family:var(--font-display);
-  font-size:16px;font-weight:500;
-  color:var(--text2);
-  margin-bottom:.4rem;
-}
-.empty-state-sub{
-  font-size:13px;
-  color:var(--text3);
-  line-height:1.5;
-}
+  const allEntries = [
+    ...D.settings.cats,
+    ...D.settings.aufwand
+  ];
 
-/* ── Recipe detail animation ──────────────────────────────────────────────── */
-.recipe-detail{
-  margin-top:12px;padding-top:12px;
-  border-top:1px solid var(--bd);
-  animation:fadeSlideIn .18s ease;
-}
-@keyframes fadeSlideIn{
-  from{opacity:0;transform:translateY(-6px)}
-  to{opacity:1;transform:translateY(0)}
-}
+  allEntries.forEach(e => {
+    // Tag – always filled background, consistent in both modes
+    css += `.tag-${e.id}{background:${e.bg};color:${e.color};}\n`;
 
-/* ── Day card recipe name – display font ──────────────────────────────────── */
-.day-recipe-name{
-  font-family:var(--font-display);
-  font-size:14px;font-weight:500;
-  margin-bottom:6px;line-height:1.3;
-}
+    // Pill inactive – transparent bg, colored border (25% opacity) + text
+    const borderAlpha = e.color + '60'; // ~38% opacity
+    css += `.pill.tag-${e.id}{background:transparent;color:${e.color};border-color:${borderAlpha};}\n`;
 
-/* ── Weekend dot accent ───────────────────────────────────────────────────── */
-.day-lbl-dot{
-  width:5px;height:5px;
-  border-radius:50%;
-  background:var(--moss);
-  display:inline-block;
-  margin-right:2px;
-  vertical-align:middle;
-}
+    // Pill active – same as tag
+    css += `.pill.tag-${e.id}.on{background:${e.bg};border-color:${e.color};}\n`;
+  });
 
-/* ── Custom Checkbox ──────────────────────────────────────────────────────── */
-.shop-item input[type=checkbox]{
-  appearance:none;-webkit-appearance:none;
-  width:17px;height:17px;
-  border:1.5px solid var(--bd2);
-  border-radius:5px;
-  background:var(--bg);
-  cursor:pointer;
-  flex-shrink:0;
-  margin-top:2px;
-  transition:all .15s;
-  position:relative;
-}
-.shop-item input[type=checkbox]:checked{
-  background:var(--meadow);
-  border-color:var(--meadow);
-}
-.shop-item input[type=checkbox]:checked::after{
-  content:'';
-  position:absolute;
-  left:4px;top:1px;
-  width:5px;height:9px;
-  border:2px solid #fff;
-  border-top:none;border-left:none;
-  transform:rotate(45deg);
-}
-.shop-item input[type=checkbox]:hover:not(:checked){
-  border-color:var(--meadow);
-}
 
-/* ── Draw modal pill refinement ───────────────────────────────────────────── */
-#draw-diff-pills .pill,
-#draw-time-pills .pill{
-  padding:5px 14px;
-  font-size:12px;
-}
 
-/* ── Archive list refinement ──────────────────────────────────────────────── */
-.archive-item{
-  padding:12px 0;
-  transition:opacity .15s;
-}
-.archive-item:hover{opacity:.8}
-.archive-kw{
-  font-family:var(--font-display);
-  font-size:14px;font-weight:500;
-  min-width:100px;
-}
-
-/* Tag + pill dark mode handled dynamically via applyTagStyles() */
-
-/* ── Onboarding ───────────────────────────────────────────────────────────── */
-.ob-section{
-  background:var(--bg2);
-  border:1px solid var(--bd);
-  border-radius:var(--r);
-  padding:1rem;
-  margin-bottom:.75rem;
-}
-.ob-section-label{
-  font-family:var(--font-display);
-  font-size:13px;font-weight:600;
-  color:var(--text2);
-  margin-bottom:.75rem;
-}
-.ob-divider{
-  text-align:center;
-  position:relative;
-  margin:.75rem 0;
-}
-.ob-divider::before{
-  content:'';
-  position:absolute;
-  top:50%;left:0;right:0;
-  height:1px;background:var(--bd);
-}
-.ob-divider span{
-  position:relative;
-  background:var(--bg);
-  padding:0 .75rem;
-  font-size:12px;color:var(--text3);
-}
-
-/* ── Sync dot tooltip ─────────────────────────────────────────────────────── */
-.dot{cursor:default}
-.dot:hover::after{
-  content:attr(title);
-  position:absolute;
-  top:calc(100% + 6px);
-  right:0;
-  background:var(--text);
-  color:var(--bg);
-  font-size:11px;
-  padding:3px 8px;
-  border-radius:var(--rs);
-  white-space:nowrap;
-  pointer-events:none;
-  z-index:200;
-}
-.sync-bar{position:relative}
-
-/* ── Sort select ──────────────────────────────────────────────────────────── */
-.sort-select{
-  appearance:none;-webkit-appearance:none;
-  padding:5px 28px 5px 10px;
-  font-size:12px;font-family:var(--font-body);font-weight:500;
-  border:1px solid var(--bd2);
-  border-radius:var(--rs);
-  background:var(--bg) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23b0aa9e' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 8px center;
-  color:var(--text2);
-  cursor:pointer;
-  flex-shrink:0;
-  transition:border-color .15s;
-}
-.sort-select:focus{outline:none;border-color:var(--meadow);color:var(--text)}
-.sort-select:hover{border-color:var(--bd2);color:var(--text)}
-
-/* ── Draw modal improvements ──────────────────────────────────────────────── */
-.draw-portions-row{
-  display:flex;align-items:center;gap:8px;
-  margin-bottom:1rem;
-}
-.draw-portions-row input{
-  width:60px;text-align:center;
-  font-size:16px;font-weight:600;
-}
-.draw-pool-info{
-  font-size:12px;
-  color:var(--text3);
-  background:var(--bg2);
-  border-radius:var(--rs);
-  padding:7px 10px;
-  margin-bottom:.75rem;
-  border:1px solid var(--bd);
-}
-
-/* ── Bottom nav – 4 items wider spacing ───────────────────────────────────── */
-.bottom-nav .nav-item{
-  font-size:10px;
-}
-
-/* ── Header gear button active ────────────────────────────────────────────── */
-.app-header-inner .btn-icon{
-  border-color:transparent;
-  background:transparent;
-}
-.app-header-inner .btn-icon:hover{
-  background:var(--bg2);
-  border-color:var(--bd);
+  let el = document.getElementById('dynamic-tag-styles');
+  if (!el) {
+    el = document.createElement('style');
+    el.id = 'dynamic-tag-styles';
+    document.head.appendChild(el);
+  }
+  el.textContent = css;
 }
