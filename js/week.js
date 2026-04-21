@@ -1,6 +1,8 @@
-import { D, saveWeekNow, getCatLabel, getAufLabel } from './data.js';
+import { D } from './data.js';
+import { saveWeekNow, saveRecipesDebounced } from './data.js';
 import { sbInsert } from './db.js';
 import { DAYS } from './config.js';
+import { getCatLabel, getAufLabel } from './data.js';
 import { kw, fmtIng, srcHTML, toast, showTab } from './ui.js';
 import { renderShop } from './shopping.js';
 
@@ -87,7 +89,7 @@ export async function drawWeek() {
   if (D.weekPlan.days && D.weekPlan.days.some(d => d.recipeId)) {
     const toArchive = JSON.parse(JSON.stringify(D.weekPlan));
     try {
-      const ins = await sbInsert('archive', { data: toArchive, kw: toArchive.kw, family_id: D.familyId });
+      const ins = await sbInsert('archive', { data: toArchive, kw: toArchive.kw });
       if (ins && ins[0]) toArchive._dbid = ins[0].id;
       D.archive.push(toArchive);
     } catch (e) { console.error('Archive save error', e); }
@@ -134,7 +136,7 @@ export function renderWeek() {
     btnGen.style.display = '';
     btnBack.style.display = 'none';
     if (!D.weekPlan.days || !D.weekPlan.days.length) {
-      document.getElementById('week-view').innerHTML = '<div class="empty-state"><div class="empty-state-icon">🗓</div><div class="empty-state-title">Noch keine Woche geplant</div><div class="empty-state-sub">Tippe auf «Neu generieren» um loszulegen.</div></div>';
+      document.getElementById('week-view').innerHTML = '<div class="empty">Noch keine Woche generiert.</div>';
     } else {
       renderWeekPlan(D.weekPlan, false);
     }
@@ -197,7 +199,6 @@ function renderDayCard(d, i, plan, readonly) {
       ${r.img && d.active ? `<div class="day-card-img" style="background-image:url('${r.img}')"></div>` : ''}
       <div class="day-card-top" onclick="toggleDay(${i})">
         <div class="day-lbl ${isWeekend ? 'day-lbl-weekend' : ''}">
-          ${isWeekend ? '<span class="day-lbl-dot"></span>' : ''}
           ${d.day}
           ${!d.active ? '<span style="font-size:10px;background:var(--bg3);padding:1px 6px;border-radius:99px;margin-left:4px">ausgeblendet</span>' : ''}
         </div>

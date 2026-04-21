@@ -1,5 +1,5 @@
 import { sbGet, sbInsert, sbUpdate, sbDelete } from './db.js';
-import { DEFAULTS, DEFAULT_SETTINGS, DEFAULT_EINHEITEN } from './config.js';
+import { DEFAULT_SETTINGS, DEFAULT_EINHEITEN } from './config.js';
 import { setSyncStatus } from './ui.js';
 
 export let D = {
@@ -34,20 +34,9 @@ export async function loadData() {
         if (r.img && r.img_owned === undefined) r.img_owned = true;
       });
     } else {
-      // First load – insert default recipes
+      // New family – start empty
       D.recipes = [];
-      for (const r of DEFAULTS) {
-        const rec = { ...r };
-        const ins = await sbInsert('recipes_v2', {
-          family_id: fid,
-          recipe_id: rec.id,
-          data: rec,
-          public: true
-        });
-        if (ins && ins[0]) rec._dbid = ins[0].id;
-        D.recipes.push(rec);
-      }
-      D.nextId = DEFAULTS.length + 1;
+      D.nextId = 1;
     }
 
     // ── Week plan ─────────────────────────────────────────────────────────────
