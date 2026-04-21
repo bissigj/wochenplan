@@ -1030,3 +1030,10 @@ textarea{resize:vertical;min-height:60px;line-height:1.5}
   color:var(--moss);
   font-style:italic;
 }
+
+/* ── Discover toolbar ─────────────────────────────────────────────────────── */
+.discover-toolbar{
+  padding:12px 1.5rem;
+  border-bottom:1px solid var(--bd);
+  flex-shrink:0;
+}
