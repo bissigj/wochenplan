@@ -1,5 +1,5 @@
 import { D } from './data.js';
-import { showTab } from './ui.js';
+
 import { setViewingArchive, renderWeek, expandedDays } from './week.js';
 
 export function getArchiveViewModel(archive, recipes) {
@@ -54,6 +54,6 @@ export function renderArchiv() {
 export function viewArchiveWeek(idx) {
   setViewingArchive(D.archive[idx]);
   expandedDays.clear();
-  showTab('woche');
+  window.showTab('woche');
   renderWeek();
 }

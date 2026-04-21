@@ -23,7 +23,8 @@ export function renderRFilters() {
 }
 
 function rerender() {
-  renderRecipes();
+  const q = document.getElementById('recipe-search')?.value || '';
+  renderRecipes(q.toLowerCase().trim());
 }
 
 export function toggleRF(f) {
@@ -37,7 +38,7 @@ export function setSortOrder(v) {
   rerender();
 }
 
-export function renderRecipes() {
+export function renderRecipes(searchQuery = '') {
   const el = document.getElementById('r-list');
 
   let vis = D.recipes;
@@ -63,7 +64,7 @@ export function renderRecipes() {
   // ─────────────────────────────
   // SEARCH (STATE-BASED)
   // ─────────────────────────────
-  const q = (D.recipeFilter || '').toLowerCase().trim();
+  const q = (searchQuery || '').toLowerCase().trim();
 
   if (q) {
     vis = vis.filter(r =>
@@ -89,7 +90,7 @@ export function renderRecipes() {
   // EMPTY STATE
   // ─────────────────────────────
   if (!vis.length) {
-    const isSearch = q.length > 0 || rFilters.size > 0;
+    const isSearch = (searchQuery || '').length > 0 || rFilters.size > 0;
 
     el.innerHTML = isSearch
       ? `

@@ -1,7 +1,7 @@
 import { D, saveWeekNow, getCatLabel, getAufLabel } from './data.js';
 import { sbInsert } from './db.js';
 import { DAYS } from './config.js';
-import { kw, fmtIng, srcHTML, toast, showTab } from './ui.js';
+import { kw, fmtIng, srcHTML, toast } from './ui.js';
 import { renderShop } from './shopping.js';
 
 export let expandedDays = new Set();
