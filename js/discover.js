@@ -8,6 +8,9 @@ let allPublicRecipes = [];
 let discoverSearch = '';
 let discoverCat = '';
 let discoverAuf = '';
+let discoverExpanded = null;
+const PAGE_SIZE = 20;
+let discoverPage = 1;
 
 // ── Open / Close ──────────────────────────────────────────────────────────────
 export function openDiscover() {
@@ -19,21 +22,34 @@ export function closeDiscover() {
   document.getElementById('discover-modal').style.display = 'none';
 }
 
+export function toggleDiscoverR(dbId) {
+  discoverExpanded = discoverExpanded === dbId ? null : dbId;
+  renderDiscoverList();
+}
+
 export function filterDiscover() {
   discoverSearch = document.getElementById('discover-search')?.value.toLowerCase().trim() || '';
+  discoverPage = 1;
   renderDiscoverList();
 }
 
 export function setDiscoverCat(val) {
   discoverCat = discoverCat === val ? '' : val;
+  discoverPage = 1;
   renderDiscoverFilters();
   renderDiscoverList();
 }
 
 export function setDiscoverAuf(val) {
   discoverAuf = discoverAuf === val ? '' : val;
+  discoverPage = 1;
   renderDiscoverFilters();
   renderDiscoverList();
+}
+
+export function discoverLoadMore() {
+  discoverPage++;
+  renderDiscoverList(true);
 }
 
 // ── Load public recipes from other families ───────────────────────────────────
@@ -42,7 +58,7 @@ async function loadPublicRecipes() {
   el.innerHTML = '<div class="empty-state"><div class="empty-state-icon">⏳</div><div class="empty-state-title">Laden…</div></div>';
 
   const recs = await sbGet('recipes_v2',
-    `select=id,recipe_id,data,public,family_id&public=eq.true&family_id=neq.${D.familyId}&order=created_at.desc&limit=100`
+    `select=id,recipe_id,data,public,family_id&public=eq.true&family_id=neq.${D.familyId}&order=created_at.desc&limit=500`
   );
 
   if (!recs || !recs.length) {
@@ -83,6 +99,62 @@ function renderDiscoverFilters() {
   el.innerHTML = cats + aufs;
 }
 
+// ── Render single card ───────────────────────────────────────────────────────
+function renderDiscoverCard(row, alreadyImported) {
+  const r = row.data;
+  const isOpen = discoverExpanded === row.id;
+
+  const ingsHtml = (r.ings || []).map(ing => {
+    const amt = ing.m ? `${ing.m}${ing.u ? ' ' + ing.u : ''}` : '';
+    return `<div class="ing-row"><span class="ing-amt">${amt ? `<b>${amt}</b> ` : ''}${ing.n}</span></div>`;
+  }).join('');
+
+  const stepsHtml = (r.steps || []).map((st, i) =>
+    `<li class="step-item">
+      <span class="step-num">${i + 1}</span>
+      <span class="step-text">${st}</span>
+    </li>`
+  ).join('');
+
+  return `
+    <div class="discover-card">
+      ${r.img ? `<div class="discover-img" style="background-image:url('${r.img}')"></div>` : ''}
+      <div class="discover-body">
+        <div class="discover-card-top" onclick="toggleDiscoverR('${row.id}')" style="cursor:pointer">
+          <div class="discover-meta">
+            <span class="discover-family">🏠 ${row.familyName}</span>
+            ${r.time ? `<span class="discover-time">⏱ ${r.time} min</span>` : ''}
+            <span style="margin-left:auto;font-size:11px;color:var(--text3)">${isOpen ? '▲' : '▼'}</span>
+          </div>
+          <div class="discover-name">${r.name}</div>
+          <div class="row" style="gap:5px;margin-top:6px">
+            <span class="tag tag-${r.cat}">${getCatLabel(r.cat)}</span>
+            <span class="tag tag-${r.auf}">${getAufLabel(r.auf)}</span>
+          </div>
+        </div>
+        ${isOpen ? `
+          <div class="recipe-detail" style="margin-top:10px">
+            <div class="detail-grid">
+              <div>
+                <div class="section-title">Zutaten${r.portions ? ` (${r.portions} Port.)` : ''}</div>
+                <div class="ing-list">${ingsHtml}</div>
+              </div>
+              <div>
+                <div class="section-title">Zubereitung</div>
+                <ol class="steps-list">${stepsHtml}</ol>
+              </div>
+            </div>
+          </div>` : ''}
+        <div style="margin-top:10px">
+          ${alreadyImported
+            ? '<div class="discover-imported">✓ Bereits importiert</div>'
+            : `<button class="btn btn-p btn-sm" onclick="importRecipe('${row.id}')">+ Importieren</button>`
+          }
+        </div>
+      </div>
+    </div>`;
+}
+
 // ── Render list ───────────────────────────────────────────────────────────────
 function renderDiscoverList() {
   const el = document.getElementById('discover-list');
@@ -110,29 +182,20 @@ function renderDiscoverList() {
     return;
   }
 
-  el.innerHTML = filtered.map(row => {
-    const r = row.data;
+  const total = filtered.length;
+  const paged = filtered.slice(0, discoverPage * PAGE_SIZE);
+  const hasMore = paged.length < total;
+
+  const cards = paged.map(row => {
     const alreadyImported = importedIds.has(row.id);
-    return `
-      <div class="discover-card">
-        ${r.img ? `<div class="discover-img" style="background-image:url('${r.img}')"></div>` : ''}
-        <div class="discover-body">
-          <div class="discover-meta">
-            <span class="discover-family">🏠 ${row.familyName}</span>
-            ${r.time ? `<span class="discover-time">⏱ ${r.time} min</span>` : ''}
-          </div>
-          <div class="discover-name">${r.name}</div>
-          <div class="row" style="gap:5px;margin-top:6px">
-            <span class="tag tag-${r.cat}">${getCatLabel(r.cat)}</span>
-            <span class="tag tag-${r.auf}">${getAufLabel(r.auf)}</span>
-          </div>
-          ${alreadyImported
-            ? '<div class="discover-imported">✓ Bereits importiert</div>'
-            : `<button class="btn btn-p btn-sm" style="margin-top:10px" onclick="importRecipe('${row.id}')">+ Importieren</button>`
-          }
-        </div>
-      </div>`;
+    return renderDiscoverCard(row, alreadyImported);
   }).join('');
+
+  const footer = hasMore
+    ? `<div class="discover-more"><button class="btn" onclick="discoverLoadMore()">Mehr laden (${total - paged.length} weitere)</button></div>`
+    : `<div class="discover-more" style="color:var(--text3);font-size:12px">Alle ${total} Rezepte geladen</div>`;
+
+  el.innerHTML = cards + footer;
 }
 
 // ── Import recipe ─────────────────────────────────────────────────────────────

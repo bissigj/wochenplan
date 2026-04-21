@@ -6,7 +6,7 @@ import { renderWeek, openDrawModal, closeDrawModal, toggleDrawPill, setTimePill,
 import { renderShop, setShopView } from './shopping.js';
 import { renderArchiv, viewArchiveWeek } from './archive.js';
 import { exportPDF, exportRecipePDF, exportShopPDF } from './pdf.js';
-import { openDiscover, closeDiscover, importRecipe, filterDiscover, setDiscoverCat, setDiscoverAuf } from './discover.js';
+import { openDiscover, closeDiscover, importRecipe, filterDiscover, setDiscoverCat, setDiscoverAuf, toggleDiscoverR, discoverLoadMore } from './discover.js';
 import { renderSettings, toggleAcc, addCat, updateCat, updateCatColor, updateCatBg, deleteCat, addAuf, updateAuf, updateAufColor, updateAufBg, deleteAuf, addEinh, deleteEinh, saveFamilyName, createInvitation, joinFamily } from './settings.js';
 
 // ── Global functions (needed for onclick="" in HTML) ──────────────────────────
@@ -76,6 +76,8 @@ window.importRecipe      = importRecipe;
 window.filterDiscover    = filterDiscover;
 window.setDiscoverCat    = setDiscoverCat;
 window.setDiscoverAuf    = setDiscoverAuf;
+window.toggleDiscoverR   = toggleDiscoverR;
+window.discoverLoadMore  = discoverLoadMore;
 window.renderSettings    = renderSettings;
 window.toggleAcc         = toggleAcc;
 window.applyTagStyles    = applyTagStyles;
