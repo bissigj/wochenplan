@@ -608,3 +608,220 @@ textarea{resize:vertical;min-height:60px;line-height:1.5}
   background:var(--bg2);border-radius:var(--rpill);
   border:1px solid var(--bd);color:var(--text2);
 }
+
+/* ── Floating Action Button ───────────────────────────────────────────────── */
+.fab{
+  position:fixed;
+  bottom:calc(60px + 1rem);
+  right:1.25rem;
+  z-index:49;
+  width:52px;height:52px;
+  border-radius:50%;
+  background:var(--meadow);
+  color:#fff;
+  border:none;
+  cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 2px 8px rgba(77,122,40,0.35), 0 6px 20px rgba(77,122,40,0.20);
+  transition:transform .15s, box-shadow .15s, opacity .15s;
+}
+.fab:hover{
+  transform:scale(1.08);
+  box-shadow:0 4px 12px rgba(77,122,40,0.45), 0 8px 24px rgba(77,122,40,0.25);
+}
+.fab:active{transform:scale(0.95)}
+
+/* Hide FAB when not on rezepte tab */
+.fab.hidden{opacity:0;pointer-events:none;transform:scale(0.8)}
+
+/* ── Primary Button (week header) ─────────────────────────────────────────── */
+.btn-primary{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:8px 16px;
+  font-size:13px;font-family:var(--font-body);font-weight:500;
+  background:var(--meadow);color:#fff;
+  border:none;border-radius:var(--rs);
+  cursor:pointer;white-space:nowrap;
+  box-shadow:0 1px 3px rgba(77,122,40,0.3);
+  transition:all .15s;
+}
+.btn-primary:hover{opacity:.88}
+.btn-primary:active{transform:scale(0.97)}
+
+/* ── Icon-only Button ─────────────────────────────────────────────────────── */
+.btn-icon{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:34px;height:34px;
+  border-radius:var(--rs);
+  border:1px solid var(--bd2);
+  background:var(--bg);
+  color:var(--text2);
+  cursor:pointer;
+  transition:all .15s;
+  flex-shrink:0;
+}
+.btn-icon:hover{background:var(--bg2);color:var(--text)}
+
+/* ── Segment Control ──────────────────────────────────────────────────────── */
+.shop-header{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:1rem;gap:10px;
+}
+.segment-control{
+  display:flex;
+  border:1px solid var(--bd2);
+  border-radius:var(--rs);
+  overflow:hidden;
+  background:var(--bg2);
+}
+.segment{
+  padding:6px 14px;
+  font-size:13px;font-weight:500;font-family:var(--font-body);
+  background:transparent;border:none;
+  color:var(--text2);cursor:pointer;
+  transition:all .15s;
+}
+.segment.on{
+  background:var(--bg);
+  color:var(--text);
+  box-shadow:var(--shadow-sm);
+}
+
+/* ── Accordion ────────────────────────────────────────────────────────────── */
+.acc-wrap{display:flex;flex-direction:column;gap:8px}
+.acc-item{
+  background:var(--bg);
+  border:1px solid var(--bd);
+  border-radius:var(--r);
+  overflow:hidden;
+  box-shadow:var(--shadow-sm);
+}
+.acc-header{
+  width:100%;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 16px;
+  background:transparent;border:none;
+  font-family:var(--font-body);font-size:14px;font-weight:600;
+  color:var(--text);cursor:pointer;
+  transition:background .15s;
+  text-align:left;
+}
+.acc-header:hover{background:var(--bg2)}
+.acc-chevron{
+  color:var(--text3);flex-shrink:0;
+  transition:transform .2s;
+}
+.acc-item.open .acc-chevron{transform:rotate(180deg)}
+.acc-body{
+  display:none;
+  padding:0 16px 16px;
+  border-top:1px solid var(--bd);
+}
+.acc-item.open .acc-body{display:block}
+
+/* ── Empty States ─────────────────────────────────────────────────────────── */
+.empty-state{
+  text-align:center;
+  padding:3rem 1.5rem;
+  color:var(--text3);
+}
+.empty-state-icon{
+  font-size:36px;
+  margin-bottom:.75rem;
+  display:block;
+  opacity:0.7;
+}
+.empty-state-title{
+  font-family:var(--font-display);
+  font-size:16px;font-weight:500;
+  color:var(--text2);
+  margin-bottom:.4rem;
+}
+.empty-state-sub{
+  font-size:13px;
+  color:var(--text3);
+  line-height:1.5;
+}
+
+/* ── Recipe detail animation ──────────────────────────────────────────────── */
+.recipe-detail{
+  margin-top:12px;padding-top:12px;
+  border-top:1px solid var(--bd);
+  animation:fadeSlideIn .18s ease;
+}
+@keyframes fadeSlideIn{
+  from{opacity:0;transform:translateY(-6px)}
+  to{opacity:1;transform:translateY(0)}
+}
+
+/* ── Day card recipe name – display font ──────────────────────────────────── */
+.day-recipe-name{
+  font-family:var(--font-display);
+  font-size:14px;font-weight:500;
+  margin-bottom:6px;line-height:1.3;
+}
+
+/* ── Weekend dot accent ───────────────────────────────────────────────────── */
+.day-lbl-dot{
+  width:5px;height:5px;
+  border-radius:50%;
+  background:var(--moss);
+  display:inline-block;
+  margin-right:2px;
+  vertical-align:middle;
+}
+
+/* ── Custom Checkbox ──────────────────────────────────────────────────────── */
+.shop-item input[type=checkbox]{
+  appearance:none;-webkit-appearance:none;
+  width:17px;height:17px;
+  border:1.5px solid var(--bd2);
+  border-radius:5px;
+  background:var(--bg);
+  cursor:pointer;
+  flex-shrink:0;
+  margin-top:2px;
+  transition:all .15s;
+  position:relative;
+}
+.shop-item input[type=checkbox]:checked{
+  background:var(--meadow);
+  border-color:var(--meadow);
+}
+.shop-item input[type=checkbox]:checked::after{
+  content:'';
+  position:absolute;
+  left:4px;top:1px;
+  width:5px;height:9px;
+  border:2px solid #fff;
+  border-top:none;border-left:none;
+  transform:rotate(45deg);
+}
+.shop-item input[type=checkbox]:hover:not(:checked){
+  border-color:var(--meadow);
+}
+
+/* ── Draw modal pill refinement ───────────────────────────────────────────── */
+#draw-diff-pills .pill,
+#draw-time-pills .pill{
+  padding:5px 14px;
+  font-size:12px;
+}
+
+/* ── Archive list refinement ──────────────────────────────────────────────── */
+.archive-item{
+  padding:12px 0;
+  transition:opacity .15s;
+}
+.archive-item:hover{opacity:.8}
+.archive-kw{
+  font-family:var(--font-display);
+  font-size:14px;font-weight:500;
+  min-width:100px;
+}
+
+/* ── Dark mode tag color adjustments ─────────────────────────────────────── */
+@media(prefers-color-scheme:dark){
+  .tag{opacity:0.9}
+  .pill.on{background:var(--bg4)}
+}
