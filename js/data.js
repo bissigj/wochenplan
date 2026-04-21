@@ -29,6 +29,10 @@ export async function loadData() {
     if (recs && recs.length) {
       D.recipes = recs.map(r => ({ ...r.data, _dbid: r.id, public: r.public }));
       D.nextId = Math.max(...D.recipes.map(r => r.id)) + 1;
+      // Mark image ownership – only delete images we uploaded ourselves
+      D.recipes.forEach(r => {
+        if (r.img && r.img_owned === undefined) r.img_owned = true;
+      });
     } else {
       // First load – insert default recipes
       D.recipes = [];

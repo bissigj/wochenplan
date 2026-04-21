@@ -1,11 +1,12 @@
 import { showTab, toast } from './ui.js';
 import { D, applyTagStyles } from './data.js';
 import { doLogin, doRegister, doLogout, showLogin, showRegister, tryRestoreSession, obCreateFamily, obJoinFamily } from './auth.js';
-import { renderRFilters, renderRecipes, toggleRF, toggleER, delR, addIng, delIng, addStep, delStep, updR, setSrcType, updSrc, openQE, closeQE, saveQE, setSortOrder, uploadRecipeImage, removeRecipeImage } from './recipes.js';
+import { renderRFilters, renderRecipes, toggleRF, toggleER, delR, addIng, delIng, addStep, delStep, updR, setSrcType, updSrc, openQE, closeQE, saveQE, setSortOrder, uploadRecipeImage, removeRecipeImage, togglePublic } from './recipes.js';
 import { renderWeek, openDrawModal, closeDrawModal, toggleDrawPill, setTimePill, drawWeek, backToCurrent, toggleDay, toggleDayActive, rerollDay, setPortions, setNote } from './week.js';
 import { renderShop, setShopView } from './shopping.js';
 import { renderArchiv, viewArchiveWeek } from './archive.js';
 import { exportPDF, exportRecipePDF, exportShopPDF } from './pdf.js';
+import { openDiscover, closeDiscover, importRecipe } from './discover.js';
 import { renderSettings, toggleAcc, addCat, updateCat, updateCatColor, updateCatBg, deleteCat, addAuf, updateAuf, updateAufColor, updateAufBg, deleteAuf, addEinh, deleteEinh, saveFamilyName, createInvitation, joinFamily } from './settings.js';
 
 // ── Global functions (needed for onclick="" in HTML) ──────────────────────────
@@ -33,8 +34,8 @@ window.showTab = (t) => {
   const titleEl = document.getElementById('page-title');
   if (titleEl) titleEl.textContent = PAGE_TITLES[t] || 'Wochenplan';
   // Show FAB only on rezepte tab
-  const fab = document.getElementById('fab-add');
-  if (fab) fab.classList.toggle('hidden', t !== 'rezepte');
+  const fabGroup = document.getElementById('fab-group');
+  if (fabGroup) fabGroup.classList.toggle('hidden', t !== 'rezepte');
 };
 window.toggleRF          = toggleRF;
 window.toggleER          = toggleER;
@@ -67,7 +68,11 @@ window.exportRecipePDF   = exportRecipePDF;
 window.setSortOrder      = setSortOrder;
 window.uploadRecipeImage  = uploadRecipeImage;
 window.removeRecipeImage  = removeRecipeImage;
+window.togglePublic      = togglePublic;
 window.exportShopPDF     = exportShopPDF;
+window.openDiscover      = openDiscover;
+window.closeDiscover     = closeDiscover;
+window.importRecipe      = importRecipe;
 window.renderSettings    = renderSettings;
 window.toggleAcc         = toggleAcc;
 window.applyTagStyles    = applyTagStyles;

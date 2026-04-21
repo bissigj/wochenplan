@@ -138,8 +138,12 @@ export function renderRecipes(searchQuery = '') {
             ${r.img ? `<button class="btn btn-d btn-sm" onclick="removeRecipeImage(${r.id})">Foto entfernen</button>` : ''}
           </div>
         </div>
-        <div class="row" style="margin-top:12px">
-        <button class="btn btn-sm" onclick="exportRecipePDF(${r.id})">↓ PDF exportieren</button>
+        <div class="row" style="margin-top:12px;justify-content:space-between">
+          <button class="btn btn-sm" onclick="exportRecipePDF(${r.id})">↓ PDF exportieren</button>
+          <button class="btn btn-sm ${r.public === false ? 'btn-private' : 'btn-public'}"
+            onclick="togglePublic(${r.id})" title="${r.public === false ? 'Privat – nur für dich sichtbar' : 'Öffentlich – für andere sichtbar'}">
+            ${r.public === false ? '🔒 Privat' : '👁 Öffentlich'}
+          </button>
         </div>
       </div></div>` : ''}
     </div>`;
@@ -154,7 +158,7 @@ export function toggleER(id) {
 
 export async function removeRecipeImage(id) {
   const r = D.recipes.find(r => r.id === id);
-  if (r.img) await sbDeleteImage(r.img);
+  if (r.img && r.img_owned !== false) await sbDeleteImage(r.img);
   r.img = null;
   await saveRecipeNow(r);
   rerender();
@@ -184,7 +188,7 @@ export async function delR(id) {
   const deleted = D.recipes.find(r => r.id === id);
   if (!confirm(`"${deleted.name}" wirklich löschen?`)) return;
   const deletedDays = (D.weekPlan.days || []).filter(d => d.recipeId === id);
-  if (deleted.img) await sbDeleteImage(deleted.img);
+  if (deleted.img && deleted.img_owned !== false) await sbDeleteImage(deleted.img);
   await deleteRecipeFromDB(deleted);
   D.recipes = D.recipes.filter(r => r.id !== id);
   D.weekPlan.days = (D.weekPlan.days || []).filter(d => d.recipeId !== id);
@@ -282,6 +286,7 @@ export async function uploadRecipeImage(id, input) {
   if (url) {
     const ri = D.recipes.find(r => r.id === id);
     ri.img = url;
+    ri.img_owned = true;
     await saveRecipeNow(ri);
     rerender();
     toast('Bild gespeichert');
@@ -289,6 +294,14 @@ export async function uploadRecipeImage(id, input) {
     if (label) label.textContent = 'Fehler beim Hochladen';
     if (previewEl) previewEl.style.display = 'none';
   }
+}
+
+export async function togglePublic(id) {
+  const r = D.recipes.find(r => r.id === id);
+  r.public = !r.public;
+  await saveRecipeNow(r);
+  rerender();
+  toast(r.public ? 'Rezept ist jetzt öffentlich' : 'Rezept ist jetzt privat');
 }
 
 export async function setSrcType(id, type) {
