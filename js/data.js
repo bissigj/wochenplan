@@ -11,7 +11,7 @@ export let D = {
   familyId: null,
   familyName: '',
   userId: null,
-  userEmail: ''
+  userEmail: '',
   recipeFilter: ''
 };
 
