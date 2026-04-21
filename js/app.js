@@ -124,7 +124,7 @@ function populateQESelects() {
 
 // ── Search ───────────────────────────────────────────────────────────────────
 window.setRecipeFilter = (q) => {
-  D.recipeFilter = q.toLowerCase().trim();
+  D.recipeFilter = q;
   renderRecipes();
 };
 
