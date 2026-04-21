@@ -632,7 +632,7 @@ textarea{resize:vertical;min-height:60px;line-height:1.5}
 .fab:active{transform:scale(0.95)}
 
 /* Hide FAB when not on rezepte tab */
-.fab.hidden{opacity:0;pointer-events:none;transform:scale(0.8)}
+/* fab hidden handled by .fab-group.hidden */
 
 /* ── Primary Button (week header) ─────────────────────────────────────────── */
 .btn-primary{
