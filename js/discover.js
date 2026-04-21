@@ -28,6 +28,13 @@ async function loadPublicRecipes() {
     return;
   }
 
+  // Collect all already-imported original IDs for fast lookup
+  const importedIds = new Set(
+    D.recipes
+      .filter(r => r.src?.type === 'import' && r.src?.originalId)
+      .map(r => r.src.originalId)
+  );
+
   // Load family names
   const familyIds = [...new Set(recs.map(r => r.family_id))];
   const families = {};
@@ -39,9 +46,7 @@ async function loadPublicRecipes() {
   el.innerHTML = recs.map(row => {
     const r = row.data;
     const famName = families[row.family_id] || 'Unbekannte Familie';
-    const alreadyImported = D.recipes.some(
-      own => own.src?.type === 'import' && own.src?.originalId === row.id
-    );
+    const alreadyImported = importedIds.has(row.id);
     return `
       <div class="discover-card">
         ${r.img ? `<div class="discover-img" style="background-image:url('${r.img}')"></div>` : ''}
