@@ -1,19 +1,10 @@
 import { sbGet, sbInsert, sbUpdate, sbDelete } from './db.js';
 import { DEFAULT_SETTINGS, DEFAULT_EINHEITEN } from './config.js';
 import { setSyncStatus } from './ui.js';
+import { state } from './state.js';
 
-export let D = {
-  recipes: [],
-  weekPlan: { kw: '', year: 0, days: [], portions: 2 },
-  archive: [],
-  nextId: 1,
-  settings: { cats: [], aufwand: [], einheiten: [] },
-  familyId: null,
-  familyName: '',
-  userId: null,
-  userEmail: '',
-  recipeFilter: ''
-};
+export const D = state;
+
 
 export let dbSettingsId = null;
 export let dbWeekId = null;
