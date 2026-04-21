@@ -132,6 +132,10 @@ registerRenderApp(renderApp);
   if (!restored) {
     document.getElementById('login-screen').style.display = 'flex';
   }
+  // Ensure main-screen is hidden if not logged in
+  if (!restored) {
+    document.getElementById('main-screen').style.display = 'none';
+  }
 })();
 
 function renderApp() {

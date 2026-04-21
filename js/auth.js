@@ -95,7 +95,6 @@ export function doLogout() {
   session = null;
   setToken(SUPA_KEY);
   localStorage.removeItem('wp_session');
-  hideLoading();
   document.getElementById('main-screen').style.display = 'none';
   document.getElementById('login-screen').style.display = 'flex';
 }
@@ -153,7 +152,6 @@ export async function obJoinFamily() {
 }
 
 async function finishLogin() {
-  hideLoading();
   document.getElementById('main-screen').style.display = '';
   setSyncStatus('spin', 'Lade…');
   await loadData();
@@ -169,7 +167,6 @@ export async function onLoggedIn() {
   D.userEmail = session.user.email;
   const hasFamily = await resolveFamily(session.user.id);
   if (!hasFamily) {
-    hideLoading();
     document.getElementById('onboarding-screen').style.display = 'flex';
     return;
   }
@@ -193,13 +190,6 @@ export async function tryRestoreSession() {
     }
   } catch (e) {
     console.error('tryRestoreSession error', e);
-  } finally {
-    hideLoading();
   }
   return false;
-}
-
-function hideLoading() {
-  const el = document.getElementById('loading-screen');
-  if (el) el.style.display = 'none';
 }
