@@ -16,16 +16,19 @@ window.obCreateFamily    = obCreateFamily;
 window.obJoinFamily      = obJoinFamily;
 window.showLogin         = showLogin;
 window.showRegister      = showRegister;
-const PAGE_TITLES = { rezepte: 'Rezepte', woche: 'Wochenplan', einkauf: 'Einkauf', archiv: 'Archiv', einstellungen: 'Einstellungen' };
+const PAGE_TITLES = { rezepte: 'Rezepte', woche: 'Wochenplan', einkauf: 'Einkauf', archiv: 'Archiv' };
 window.showTab = (t) => {
   showTab(t);
   if (t === 'einkauf') renderShop();
   if (t === 'archiv') renderArchiv();
   if (t === 'einstellungen') renderSettings();
-  // Update bottom nav active state
+  // Update bottom nav + header gear active state
   document.querySelectorAll('.nav-item').forEach(el => {
     el.classList.toggle('active', el.id === 'nav-' + t);
   });
+  // Gear icon in header
+  const gear = document.getElementById('nav-einstellungen');
+  if (gear) gear.style.color = t === 'einstellungen' ? 'var(--meadow)' : '';
   // Update page title
   const titleEl = document.getElementById('page-title');
   if (titleEl) titleEl.textContent = PAGE_TITLES[t] || 'Wochenplan';

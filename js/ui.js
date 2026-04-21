@@ -2,7 +2,7 @@ export function setSyncStatus(s, l) {
   const dot = document.getElementById('sync-dot');
   if (!dot) return;
   dot.className = 'dot' + (s === 'ok' ? ' ok' : s === 'err' ? ' err' : s === 'spin' ? ' spin' : '');
-  document.getElementById('sync-label').textContent = l;
+  dot.title = l;
 }
 
 export function toast(msg) {
@@ -13,7 +13,7 @@ export function toast(msg) {
 }
 
 export function showTab(t) {
-  ['rezepte', 'woche', 'einkauf', 'archiv', 'einstellungen'].forEach(id => {
+  ['rezepte', 'woche', 'einkauf', 'archiv', 'einstellungen', 'woche'].forEach(id => {
     const el = document.getElementById('tab-' + id);
     if (el) el.style.display = id === t ? '' : 'none';
   });
