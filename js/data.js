@@ -116,17 +116,12 @@ export async function deleteRecipeFromDB(recipe) {
 }
 
 export function saveRecipesDebounced(recipe) {
-  // If specific recipe passed, save just that one after debounce
+  if (!recipe) { console.warn('saveRecipesDebounced called without recipe'); return; }
   clearTimeout(saveTimer);
   saveTimer = setTimeout(async () => {
     setSyncStatus('spin', 'Speichern…');
     try {
-      if (recipe) {
-        await saveRecipeNow(recipe);
-      } else {
-        // Save all (fallback)
-        for (const r of D.recipes) await saveRecipeNow(r);
-      }
+      await saveRecipeNow(recipe);
       setSyncStatus('ok', 'Synchronisiert');
     } catch (e) {
       setSyncStatus('err', 'Fehler beim Speichern');
