@@ -99,6 +99,9 @@ export function renderAll() {
   renderRecipes();
   renderWeek();
   populateQESelects();
+  // Show FAB on initial load (rezepte is default tab)
+  const fabGroup = document.getElementById('fab-group');
+  if (fabGroup) fabGroup.classList.remove('hidden');
 }
 
 function populateQESelects() {
