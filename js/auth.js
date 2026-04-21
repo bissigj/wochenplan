@@ -185,9 +185,16 @@ export async function tryRestoreSession() {
         scheduleRefresh(session);
         setToken(s.access_token);
         await onLoggedIn();
+        hideLoading();
         return true;
       }
     }
   } catch (e) {}
+  hideLoading();
   return false;
+}
+
+function hideLoading() {
+  const el = document.getElementById('loading-screen');
+  if (el) el.style.display = 'none';
 }
