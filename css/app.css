@@ -921,3 +921,9 @@ textarea{resize:vertical;min-height:60px;line-height:1.5}
   background:var(--bg2);
   border-color:var(--bd);
 }
+
+/* ── Tag dark mode – invert to low-opacity color on dark bg ───────────────── */
+@media(prefers-color-scheme:dark){
+  .tag{ filter: brightness(1.3) saturate(0.8); }
+  .pill.on{ filter: brightness(1.2) saturate(0.8); }
+}
