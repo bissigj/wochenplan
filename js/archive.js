@@ -4,7 +4,7 @@ import { viewingArchive, renderWeek, expandedDays } from './week.js';
 
 export function renderArchiv() {
   const el = document.getElementById('archiv-view');
-  if (!D.archive.length) { el.innerHTML = '<div class="empty">Noch keine archivierten Wochen.</div>'; return; }
+  if (!D.archive.length) { el.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📦</div><div class="empty-state-title">Noch kein Archiv</div><div class="empty-state-sub">Archivierte Wochen erscheinen hier.</div></div>'; return; }
   el.innerHTML = '<div class="card">' + [...D.archive].reverse().map((w, i) => {
     const names = (w.days || [])
       .filter(d => d.active && d.recipeId)

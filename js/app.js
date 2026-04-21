@@ -6,7 +6,7 @@ import { renderWeek, openDrawModal, closeDrawModal, toggleDrawPill, setTimePill,
 import { renderShop, setShopView } from './shopping.js';
 import { renderArchiv, viewArchiveWeek } from './archive.js';
 import { exportPDF, exportRecipePDF, exportShopPDF } from './pdf.js';
-import { renderSettings, addCat, updateCat, updateCatColor, updateCatBg, deleteCat, addAuf, updateAuf, updateAufColor, updateAufBg, deleteAuf, addEinh, deleteEinh, saveFamilyName, createInvitation, joinFamily } from './settings.js';
+import { renderSettings, toggleAcc, addCat, updateCat, updateCatColor, updateCatBg, deleteCat, addAuf, updateAuf, updateAufColor, updateAufBg, deleteAuf, addEinh, deleteEinh, saveFamilyName, createInvitation, joinFamily } from './settings.js';
 
 // ── Global functions (needed for onclick="" in HTML) ──────────────────────────
 window.doLogin           = doLogin;
@@ -29,6 +29,9 @@ window.showTab = (t) => {
   // Update page title
   const titleEl = document.getElementById('page-title');
   if (titleEl) titleEl.textContent = PAGE_TITLES[t] || 'Wochenplan';
+  // Show FAB only on rezepte tab
+  const fab = document.getElementById('fab-add');
+  if (fab) fab.classList.toggle('hidden', t !== 'rezepte');
 };
 window.toggleRF          = toggleRF;
 window.toggleER          = toggleER;
@@ -63,6 +66,7 @@ window.uploadRecipeImage  = uploadRecipeImage;
 window.removeRecipeImage  = removeRecipeImage;
 window.exportShopPDF     = exportShopPDF;
 window.renderSettings    = renderSettings;
+window.toggleAcc         = toggleAcc;
 window.applyTagStyles    = applyTagStyles;
 window.addCat            = addCat;
 window.updateCat         = updateCat;

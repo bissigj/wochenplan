@@ -134,7 +134,7 @@ export function renderWeek() {
     btnGen.style.display = '';
     btnBack.style.display = 'none';
     if (!D.weekPlan.days || !D.weekPlan.days.length) {
-      document.getElementById('week-view').innerHTML = '<div class="empty">Noch keine Woche generiert.</div>';
+      document.getElementById('week-view').innerHTML = '<div class="empty-state"><div class="empty-state-icon">🗓</div><div class="empty-state-title">Noch keine Woche geplant</div><div class="empty-state-sub">Tippe auf «Neu generieren» um loszulegen.</div></div>';
     } else {
       renderWeekPlan(D.weekPlan, false);
     }
@@ -197,6 +197,7 @@ function renderDayCard(d, i, plan, readonly) {
       ${r.img && d.active ? `<div class="day-card-img" style="background-image:url('${r.img}')"></div>` : ''}
       <div class="day-card-top" onclick="toggleDay(${i})">
         <div class="day-lbl ${isWeekend ? 'day-lbl-weekend' : ''}">
+          ${isWeekend ? '<span class="day-lbl-dot"></span>' : ''}
           ${d.day}
           ${!d.active ? '<span style="font-size:10px;background:var(--bg3);padding:1px 6px;border-radius:99px;margin-left:4px">ausgeblendet</span>' : ''}
         </div>

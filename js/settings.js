@@ -5,6 +5,21 @@ import { renderRFilters, renderRecipes } from './recipes.js';
 import { renderWeek } from './week.js';
 
 // ── Render Settings Tab ───────────────────────────────────────────────────────
+function accordion(id, title, content, open = false) {
+  return `<div class="acc-item ${open ? 'open' : ''}">
+    <button class="acc-header" onclick="toggleAcc('${id}')">
+      <span>${title}</span>
+      <svg class="acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="6 9 12 15 18 9"/></svg>
+    </button>
+    <div class="acc-body" id="acc-${id}">${content}</div>
+  </div>`;
+}
+
+export function toggleAcc(id) {
+  const item = document.getElementById('acc-' + id).closest('.acc-item');
+  item.classList.toggle('open');
+}
+
 export function renderSettings() {
   const el = document.getElementById('tab-einstellungen');
   if (!el) return;
@@ -12,10 +27,8 @@ export function renderSettings() {
   const cats = D.settings.cats;
   const auf = D.settings.aufwand;
 
-  el.innerHTML = `
-    <div class="card" style="margin-bottom:1rem">
-      <div class="section-title" style="margin-top:0">Familie</div>
-      <div id="family-section">
+  el.innerHTML = `<div class="acc-wrap">
+    ${accordion('familie', 'Familie', `<div id="family-section">
         <div class="settings-row">
           <input type="text" id="family-name-input" class="settings-input" value="${D.familyName || ''}" placeholder="Familienname" />
           <button class="btn btn-sm" onclick="saveFamilyName()">Speichern</button>
@@ -43,12 +56,8 @@ export function renderSettings() {
           </div>
           <div id="join-result" style="margin-top:8px;font-size:13px"></div>
         </div>
-      </div>
-    </div>
-
-    <div class="card" style="margin-bottom:1rem">
-      <div class="section-title" style="margin-top:0">Kategorien</div>
-      <div id="cats-list">
+    </div>\`, true)}
+    ${accordion('kategorien', 'Kategorien', `<div id="cats-list">
         ${cats.map(c => `
           <div class="settings-row">
             <input type="color" value="${c.color}" class="settings-color"
@@ -66,11 +75,8 @@ export function renderSettings() {
           onkeydown="if(event.key==='Enter')addCat()" />
         <button class="btn btn-sm" onclick="addCat()">+</button>
       </div>
-    </div>
-
-    <div class="card" style="margin-bottom:1rem">
-      <div class="section-title" style="margin-top:0">Aufwand</div>
-      <div id="auf-list">
+    </div>\`)}
+    ${accordion('aufwand', 'Aufwand', `<div id="auf-list">
         ${auf.map(a => `
           <div class="settings-row">
             <input type="color" value="${a.color}" class="settings-color"
@@ -88,11 +94,8 @@ export function renderSettings() {
           onkeydown="if(event.key==='Enter')addAuf()" />
         <button class="btn btn-sm" onclick="addAuf()">+</button>
       </div>
-    </div>
-
-    <div class="card">
-      <div class="section-title" style="margin-top:0">Einheiten</div>
-      <div id="einh-list" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">
+    </div>\`)}
+    ${accordion('einheiten', 'Einheiten', `<div id="einh-list" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">
         ${D.settings.einheiten.map(e => `
           <div class="einh-tag">
             <span>${e}</span>
@@ -104,8 +107,8 @@ export function renderSettings() {
           onkeydown="if(event.key==='Enter')addEinh()" />
         <button class="btn btn-sm" onclick="addEinh()">+</button>
       </div>
-    </div>
-  `;
+    </div>\`)}
+  </div>`;
   loadFamilyMembers();
 }
 

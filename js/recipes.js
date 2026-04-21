@@ -64,7 +64,13 @@ export function renderRecipes(searchQuery = '') {
   else if (sortOrder === 'cat') vis.sort((a, b) => a.cat.localeCompare(b.cat) || a.name.localeCompare(b.name));
   else if (sortOrder === 'time') vis.sort((a, b) => (a.time || 999) - (b.time || 999));
   
-  if (!vis.length) { el.innerHTML = '<div class="empty">Keine Rezepte gefunden.</div>'; return; }
+  if (!vis.length) {
+    const isSearch = searchQuery.length > 0 || rFilters.size > 0;
+    el.innerHTML = isSearch
+      ? '<div class="empty-state"><div class="empty-state-icon">🔍</div><div class="empty-state-title">Keine Treffer</div><div class="empty-state-sub">Versuche einen anderen Suchbegriff oder Filter.</div></div>'
+      : '<div class="empty-state"><div class="empty-state-icon">🍳</div><div class="empty-state-title">Noch keine Rezepte</div><div class="empty-state-sub">Tippe auf + um dein erstes Rezept hinzuzufügen.</div></div>';
+    return;
+  }
   el.innerHTML = vis.map(r => {
     const isOpen = expandedR === r.id;
     return `<div class="card">
@@ -73,9 +79,9 @@ export function renderRecipes(searchQuery = '') {
         <span class="recipe-meta">${r.time ? r.time + ' min' : ''}</span>
         <span class="tag tag-${r.cat}">${getCatLabel(r.cat)}</span>
         <span class="tag tag-${r.auf}">${getAufLabel(r.auf)}</span>
-        <button class="btn btn-d btn-sm" onclick="event.stopPropagation();delR(${r.id})" style="margin-left:8px;border-left:1px solid var(--bd2);padding-left:12px">×</button>
+        <button class="xbtn" onclick="event.stopPropagation();delR(${r.id})" style="margin-left:6px;padding:4px 6px;font-size:16px;opacity:0.4" onmouseover="this.style.opacity=1;this.style.color='var(--red)'" onmouseout="this.style.opacity=0.4;this.style.color=''">×</button>
       </div>
-      ${isOpen ? `<div class="recipe-detail">
+      ${isOpen ? `<div class="recipe-detail recipe-detail-open">
       ${r.img ? `<div class="recipe-img" style="background-image:url('${r.img}');margin-bottom:1rem"></div>` : ''}
       <div class="detail-grid">
         <div>
