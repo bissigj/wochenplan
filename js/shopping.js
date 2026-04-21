@@ -36,7 +36,7 @@ export function renderShop() {
   const el = document.getElementById('shop-view');
   const plan = getActivePlan();
   if (!plan.days || !plan.days.some(d => d.active && d.recipeId)) {
-    el.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🛒</div><div class="empty-state-title">Keine aktiven Tage</div><div class="empty-state-sub">Generiere zuerst einen Wochenplan.</div></div>';
+    el.innerHTML = '<div class="empty">Keine aktiven Tage.</div>';
     return;
   }
   const activeDays = plan.days.filter(d => d.active && d.recipeId);
@@ -53,10 +53,10 @@ export function renderShop() {
           <label for="sri-${d.day}-${i}">${fmtIng(ing, factor)}</label>
         </div>`).join('')}
       </div>`;
-    }).join('') || '<div class="empty">Keine Zutaten hinterlegt.</div>';
+    }).join('') || '<div class="empty-state"><div class="empty-state-icon">🥗</div><div class="empty-state-title">Keine Zutaten hinterlegt</div></div>';
   } else {
     const items = aggregateIngredients(plan);
-    if (!items.length) { el.innerHTML = '<div class="empty">Keine Zutaten hinterlegt.</div>'; return; }
+    if (!items.length) { el.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🥗</div><div class="empty-state-title">Keine Zutaten hinterlegt</div></div>'; return; }
     el.innerHTML = '<div class="card">' + items.map((it, i) => {
       const m = Number.isInteger(it.m) ? it.m : Math.round(it.m * 10) / 10;
       return `<div class="shop-item">

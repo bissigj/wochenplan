@@ -1,4 +1,4 @@
-import { D, getCatLabel, getAufLabel, applyTagStyles, saveRecipesDebounced, saveRecipeNow, deleteRecipeFromDB, saveWeekNow } from './data.js';
+import { D, getCatLabel, getAufLabel, saveRecipesDebounced, saveRecipeNow, deleteRecipeFromDB, saveWeekNow } from './data.js';
 import { parseIngredient } from 'https://esm.sh/@jlucaspains/sharp-recipe-parser@1.3.6';
 import { sbUploadImage, sbDeleteImage } from './db.js';
 
@@ -24,7 +24,7 @@ export function renderRFilters() {
 
 function rerender() {
   const q = document.getElementById('recipe-search')?.value || '';
-  renderRecipes(q.toLowerCase().trim());
+  renderRecipes(q);
 }
 
 export function toggleRF(f) {
@@ -38,7 +38,7 @@ export function setSortOrder(v) {
   rerender();
 }
 
-export function renderRecipes(searchQuery = '') {
+export function renderRecipes() {
   const el = document.getElementById('r-list');
 
   let vis = D.recipes;
@@ -64,7 +64,7 @@ export function renderRecipes(searchQuery = '') {
   // ─────────────────────────────
   // SEARCH (STATE-BASED)
   // ─────────────────────────────
-  const q = (searchQuery || '').toLowerCase().trim();
+  const q = (D.recipeFilter || '').toLowerCase().trim();
 
   if (q) {
     vis = vis.filter(r =>
@@ -90,7 +90,7 @@ export function renderRecipes(searchQuery = '') {
   // EMPTY STATE
   // ─────────────────────────────
   if (!vis.length) {
-    const isSearch = (searchQuery || '').length > 0 || rFilters.size > 0;
+    const isSearch = q.length > 0 || rFilters.size > 0;
 
     el.innerHTML = isSearch
       ? `
@@ -300,23 +300,7 @@ export function renderRecipes(searchQuery = '') {
 
                 <div style="margin-top:6px">${srcHTML(r.src)}</div>
 
-                <div class="section-title" style="margin-top:12px">Foto</div>
-                <div id="img-preview-${r.id}" style="width:100%;height:140px;background-size:cover;background-position:center;border-radius:var(--rs);margin-bottom:8px;${r.img ? `background-image:url('${r.img}')` : 'display:none'}"></div>
-                <div class="img-upload-wrap">
-                  <label class="btn btn-sm" style="cursor:pointer">
-                    <span class="img-upload-label">${r.img ? 'Foto ersetzen' : '+ Foto hochladen'}</span>
-                    <input type="file" accept="image/*,image/heic" style="display:none" onchange="uploadRecipeImage(${r.id},this)" />
-                  </label>
-                  ${r.img ? `<button class="btn btn-d btn-sm" onclick="removeRecipeImage(${r.id})">Foto entfernen</button>` : ''}
-                </div>
               </div>
-            </div>
-            <div class="row" style="margin-top:12px;justify-content:space-between">
-              <button class="btn btn-sm" onclick="exportRecipePDF(${r.id})">↓ PDF exportieren</button>
-              <button class="btn btn-sm ${r.public === false ? 'btn-private' : 'btn-public'}"
-                onclick="togglePublic(${r.id})">
-                ${r.public === false ? '🔒 Privat' : '👁 Öffentlich'}
-              </button>
             </div>
           </div>
           ` : ''

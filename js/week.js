@@ -1,13 +1,13 @@
 import { D, saveWeekNow, getCatLabel, getAufLabel } from './data.js';
 import { sbInsert } from './db.js';
 import { DAYS } from './config.js';
-import { kw, fmtIng, srcHTML, toast } from './ui.js';
+import { kw, fmtIng, srcHTML, toast, showTab } from './ui.js';
 import { renderShop } from './shopping.js';
 
 export let expandedDays = new Set();
 export let viewingArchive = null;
 export function setViewingArchive(w) { viewingArchive = w; }
-export let drawDiff = new Set(['auf_einfach', 'auf_mittel', 'auf_schwer']);
+export let drawDiff = new Set(); // populated dynamically from D.settings.aufwand in openDrawModal
 export let drawMaxTime = 0;
 
 // ── Draw Modal ────────────────────────────────────────────────────────────────
@@ -20,6 +20,8 @@ const TIME_OPTIONS = [
 ];
 
 export function openDrawModal() {
+  // Initialize drawDiff with all aufwand IDs if empty
+  if (drawDiff.size === 0) D.settings.aufwand.forEach(a => drawDiff.add(a.id));
   // Aufwand-Pills – dynamisch aus Settings
   document.getElementById('draw-diff-pills').innerHTML = D.settings.aufwand.map(a =>
     `<button class="pill ${drawDiff.has(a.id) ? 'on' : ''} tag-${a.id}"
@@ -134,7 +136,7 @@ export function renderWeek() {
     btnGen.style.display = '';
     btnBack.style.display = 'none';
     if (!D.weekPlan.days || !D.weekPlan.days.length) {
-      document.getElementById('week-view').innerHTML = '<div class="empty-state"><div class="empty-state-icon">🗓</div><div class="empty-state-title">Noch keine Woche geplant</div><div class="empty-state-sub">Tippe auf «Neu generieren» um loszulegen.</div></div>';
+      document.getElementById('week-view').innerHTML = '<div class="empty">Noch keine Woche generiert.</div>';
     } else {
       renderWeekPlan(D.weekPlan, false);
     }
@@ -218,7 +220,7 @@ function renderDayCard(d, i, plan, readonly) {
 function renderWeekPlan(plan, readonly = false) {
   const el = document.getElementById('week-view');
   if (!plan || !plan.days || !plan.days.length) {
-    el.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🗓</div><div class="empty-state-title">Keine Tage</div></div>';
+    el.innerHTML = '<div class="empty">Keine Tage.</div>';
     return;
   }
   el.innerHTML = '<div class="week-grid">' +

@@ -1,4 +1,4 @@
-import { D, applyTagStyles } from './data.js'; 
+import { applyTagStyles } from './data.js'; 
 import { doLogin, doRegister, doLogout, showLogin, showRegister, tryRestoreSession, obCreateFamily, obJoinFamily } from './auth.js';
 import { renderRFilters, renderRecipes, toggleRF, toggleER, delR, addIng, delIng, addStep, delStep, updR, setSrcType, updSrc, openQE, closeQE, saveQE, setSortOrder, uploadRecipeImage, removeRecipeImage, togglePublic } from './recipes.js';
 import { renderWeek, openDrawModal, closeDrawModal, toggleDrawPill, setTimePill, drawWeek, backToCurrent, toggleDay, toggleDayActive, rerollDay, setPortions, setNote } from './week.js';
@@ -16,36 +16,9 @@ window.obCreateFamily    = obCreateFamily;
 window.obJoinFamily      = obJoinFamily;
 window.showLogin         = showLogin;
 window.showRegister      = showRegister;
-const PAGE_TITLES_MAP = { rezepte: 'Rezepte', woche: 'Wochenplan', einkauf: 'Einkauf', archiv: 'Archiv' };
-
+const PAGE_TITLES = { rezepte: 'Rezepte', woche: 'Wochenplan', einkauf: 'Einkauf', archiv: 'Archiv' };
 window.showTab = (t) => {
-  // Show/hide panes
-  ['rezepte', 'woche', 'einkauf', 'archiv', 'einstellungen'].forEach(id => {
-    const el = document.getElementById('tab-' + id);
-    if (el) el.style.display = id === t ? '' : 'none';
-  });
-  // Nav active state
-  document.querySelectorAll('.nav-item').forEach(el => {
-    el.classList.toggle('active', el.id === 'nav-' + t);
-  });
-  // Gear icon
-  const gear = document.getElementById('nav-einstellungen');
-  if (gear) gear.style.color = t === 'einstellungen' ? 'var(--meadow)' : '';
-  // Title
-  const titleEl = document.getElementById('page-title');
-  if (titleEl) titleEl.textContent = PAGE_TITLES_MAP[t] || 'Wochenplan';
-  // FAB
-  const fabGroup = document.getElementById('fab-group');
-  if (fabGroup) fabGroup.classList.toggle('hidden', t !== 'rezepte');
-  // Render content
-  if (t === 'einkauf') renderShop();
-  if (t === 'archiv') renderArchiv();
-  if (t === 'einstellungen') renderSettings();
-  if (t === 'rezepte') {
-    const searchEl = document.getElementById('recipe-search');
-    if (searchEl) renderRecipes(searchEl.value);
-  }
-  if (t === 'woche') renderWeek();
+  setState({ activeTab: t });
 };
 window.toggleRF          = toggleRF;
 window.toggleER          = toggleER;
@@ -112,11 +85,7 @@ window.joinFamily        = joinFamily;
 export function renderAll() {
   applyTagStyles();
   populateQESelects();
-  renderRFilters();
-  renderRecipes();
-  renderWeek();
-  // Show default tab (rezepte)
-  window.showTab('rezepte');
+  window.showTab('rezepte'); // renders content + sets nav state
 }
 
 function populateQESelects() {
@@ -134,7 +103,8 @@ function populateQESelects() {
 
 // ── Search ───────────────────────────────────────────────────────────────────
 window.setRecipeFilter = (q) => {
-  renderRecipes(q.toLowerCase().trim());
+  D.recipeFilter = q;
+  renderRecipes();
 };
 
 // ── Init ──────────────────────────────────────────────────────────────────────
@@ -145,5 +115,4 @@ window.setRecipeFilter = (q) => {
     document.getElementById('login-screen').style.display = 'flex';
   }
 })();
-
 
