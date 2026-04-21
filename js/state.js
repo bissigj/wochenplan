@@ -12,10 +12,13 @@ export const state = {
   recipeFilter: ''
 };
 
-const listeners = [];
+let _renderApp = null;
+
+export function registerRenderApp(fn) {
+  _renderApp = fn;
+}
 
 export function setState(patch) {
   Object.assign(state, patch);
-  listeners.forEach(fn => fn(state));
-  renderApp(); // 🔥 wichtig
+  if (_renderApp) _renderApp(state);
 }

@@ -1,4 +1,4 @@
-import { state, setState } from './state.js';
+import { state, setState, registerRenderApp } from './state.js';
 import { applyTagStyles } from './data.js'; 
 import { doLogin, doRegister, doLogout, showLogin, showRegister, tryRestoreSession, obCreateFamily, obJoinFamily } from './auth.js';
 import { renderRFilters, renderRecipes, toggleRF, toggleER, delR, addIng, delIng, addStep, delStep, updR, setSrcType, updSrc, openQE, closeQE, saveQE, setSortOrder, uploadRecipeImage, removeRecipeImage, togglePublic } from './recipes.js';
@@ -123,6 +123,9 @@ window.setRecipeFilter = (q) => {
 };
 
 // ── Init ──────────────────────────────────────────────────────────────────────
+
+// Register renderApp with state so setState can call it
+registerRenderApp(renderApp);
 
 (async () => {
   const restored = await tryRestoreSession();
