@@ -1,4 +1,4 @@
-import { applyTagStyles } from './data.js'; 
+import { D, applyTagStyles } from './data.js'; 
 import { doLogin, doRegister, doLogout, showLogin, showRegister, tryRestoreSession, obCreateFamily, obJoinFamily } from './auth.js';
 import { renderRFilters, renderRecipes, toggleRF, toggleER, delR, addIng, delIng, addStep, delStep, updR, setSrcType, updSrc, openQE, closeQE, saveQE, setSortOrder, uploadRecipeImage, removeRecipeImage, togglePublic } from './recipes.js';
 import { renderWeek, openDrawModal, closeDrawModal, toggleDrawPill, setTimePill, drawWeek, backToCurrent, toggleDay, toggleDayActive, rerollDay, setPortions, setNote } from './week.js';
@@ -17,9 +17,7 @@ window.obJoinFamily      = obJoinFamily;
 window.showLogin         = showLogin;
 window.showRegister      = showRegister;
 const PAGE_TITLES = { rezepte: 'Rezepte', woche: 'Wochenplan', einkauf: 'Einkauf', archiv: 'Archiv' };
-window.showTab = (t) => {
-  setState({ activeTab: t });
-};
+window.showTab = showTab;
 window.toggleRF          = toggleRF;
 window.toggleER          = toggleER;
 window.delR              = delR;
