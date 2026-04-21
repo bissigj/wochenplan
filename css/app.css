@@ -485,11 +485,12 @@ textarea{resize:vertical;min-height:60px;line-height:1.5}
 
 /* ── Login / Onboarding ───────────────────────────────────────────────────── */
 .login-wrap{
-  min-height:100vh;
+  position:fixed;
+  inset:0;
+  z-index:200;
   display:flex;align-items:center;justify-content:center;
   padding:1rem;
   background:var(--bg3);
-  /* subtle texture */
   background-image:
     radial-gradient(circle at 20% 20%, rgba(77,122,40,0.06) 0%, transparent 50%),
     radial-gradient(circle at 80% 80%, rgba(143,168,40,0.05) 0%, transparent 50%);
