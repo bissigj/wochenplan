@@ -43,22 +43,28 @@
 <div class="login-wrap" id="onboarding-screen" style="display:none">
   <div class="login-box">
     <h2>Willkommen!</h2>
-    <p>Möchtest du eine neue Familie erstellen oder einer bestehenden beitreten?</p>
+    <p>Erstelle eine neue Familie oder tritt einer bestehenden bei.</p>
     <div id="ob-err" class="login-err"></div>
 
-    <div class="login-field" style="margin-top:1rem">
-      <label>Neue Familie erstellen</label>
-      <input type="text" id="ob-family-name" placeholder="Familienname z.B. Schnüsig" />
+    <div class="ob-section">
+      <div class="ob-section-label">Neue Familie erstellen</div>
+      <div class="login-field">
+        <label>Familienname</label>
+        <input type="text" id="ob-family-name" placeholder="z.B. Schnüsig" />
+      </div>
+      <button class="btn btn-p btn-full" onclick="obCreateFamily()">Familie erstellen</button>
     </div>
-    <button class="btn btn-p btn-full" style="margin-top:4px" onclick="obCreateFamily()">Familie erstellen</button>
 
-    <div style="text-align:center;color:var(--text3);margin:1rem 0;font-size:13px">— oder —</div>
+    <div class="ob-divider"><span>oder</span></div>
 
-    <div class="login-field">
-      <label>Bestehender Familie beitreten</label>
-      <input type="text" id="ob-invite-code" placeholder="Einladungscode" style="text-transform:uppercase" />
+    <div class="ob-section">
+      <div class="ob-section-label">Bestehender Familie beitreten</div>
+      <div class="login-field">
+        <label>Einladungscode</label>
+        <input type="text" id="ob-invite-code" placeholder="z.B. A3F9KL" style="text-transform:uppercase;letter-spacing:0.1em;font-weight:500" />
+      </div>
+      <button class="btn btn-full" onclick="obJoinFamily()">Beitreten</button>
     </div>
-    <button class="btn btn-full" style="margin-top:4px" onclick="obJoinFamily()">Beitreten</button>
   </div>
 </div>
 
@@ -70,8 +76,10 @@
     <div class="app-header-inner">
       <span class="app-title" id="page-title">Rezepte</span>
       <div class="sync-bar">
-        <span class="dot" id="sync-dot"></span>
-        <span id="sync-label">Verbinden…</span>
+        <span class="dot" id="sync-dot" title="Verbinden…"></span>
+        <button class="btn-icon" onclick="showTab('einstellungen')" id="nav-einstellungen" title="Einstellungen">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+        </button>
         <button class="btn btn-sm" onclick="doLogout()">Abmelden</button>
       </div>
     </div>
@@ -88,7 +96,7 @@
       <div class="row" style="margin-bottom:1rem;gap:6px">
         <span class="badge" id="r-count">0</span>
         <div class="pills" id="r-filters" style="flex:1"></div>
-        <select onchange="setSortOrder(this.value)" style="width:auto;flex-shrink:0">
+        <select class="sort-select" onchange="setSortOrder(this.value)">
           <option value="name">A–Z</option>
           <option value="cat">Kategorie</option>
           <option value="time">Kochzeit</option>
@@ -167,10 +175,7 @@
       <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
       <span class="nav-label">Archiv</span>
     </button>
-    <button class="nav-item" id="nav-einstellungen" onclick="showTab('einstellungen')">
-      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
-      <span class="nav-label">Einstellungen</span>
-    </button>
+
   </nav>
 
 </div>
@@ -185,8 +190,11 @@
     <p class="label" style="margin-bottom:6px">Max. Kochzeit</p>
     <div class="pills" id="draw-time-pills" style="margin-bottom:1rem"></div>
     <p class="label" style="margin-bottom:6px">Standardportionen</p>
-    <input type="number" id="draw-portions" value="4" min="1" max="20" style="width:80px;margin-bottom:1rem" />
-    <div id="draw-pool-info" style="font-size:12px;color:var(--text3);margin-bottom:.5rem"></div>
+    <div class="draw-portions-row">
+      <input type="number" id="draw-portions" value="4" min="1" max="20" />
+      <span class="label" style="margin:0">Personen</span>
+    </div>
+    <div id="draw-pool-info" class="draw-pool-info"></div>
     <div class="modal-footer">
       <button class="btn" onclick="closeDrawModal()">Abbrechen</button>
       <button class="btn btn-p" onclick="drawWeek()">Generieren</button>
