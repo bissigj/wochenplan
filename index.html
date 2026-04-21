@@ -13,8 +13,16 @@
 </head>
 <body>
 
+<!-- Loading overlay -->
+<div id="loading-screen" style="position:fixed;inset:0;z-index:300;background:var(--bg3);display:flex;align-items:center;justify-content:center">
+  <div style="text-align:center">
+    <div style="font-size:32px;margin-bottom:12px">🌿</div>
+    <div style="font-family:var(--font-display,serif);font-size:20px;color:var(--text,#2d2c28)">Wochenplan</div>
+  </div>
+</div>
+
 <!-- Login -->
-<div class="login-wrap" id="login-screen" style="display:flex">
+<div class="login-wrap" id="login-screen" style="display:none">
   <div class="login-box">
     <h2>Wochenplan</h2>
     <p>Melde dich an um loszulegen.</p>
