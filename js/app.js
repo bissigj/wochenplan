@@ -123,8 +123,9 @@ function populateQESelects() {
 }
 
 // ── Search ───────────────────────────────────────────────────────────────────
-window.filterRecipes = (q) => {
-  renderRecipes(q.toLowerCase().trim());
+window.setRecipeFilter = (q) => {
+  D.recipeFilter = q.toLowerCase().trim();
+  renderRecipes();
 };
 
 // ── Init ──────────────────────────────────────────────────────────────────────
