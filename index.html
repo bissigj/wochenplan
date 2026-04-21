@@ -263,6 +263,11 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
     </div>
+    <div class="discover-toolbar">
+      <input type="text" id="discover-search" class="search-input"
+        placeholder="Suchen…" oninput="filterDiscover()" />
+      <div class="pills" id="discover-filters" style="margin-top:8px"></div>
+    </div>
     <div id="discover-list" class="discover-list"></div>
   </div>
 </div>
