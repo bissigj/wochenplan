@@ -28,6 +28,14 @@ export async function sbInsert(table, body) {
   return r.json();
 }
 
+export async function sbDelete(table, id) {
+  const r = await fetch(`${SUPA_URL}/rest/v1/${table}?id=eq.${id}`, {
+    method: 'DELETE',
+    headers: H
+  });
+  if (!r.ok) { console.error('sbDelete', table, r.status, await r.text()); }
+}
+
 export async function sbUpdate(table, id, body) {
   const r = await fetch(`${SUPA_URL}/rest/v1/${table}?id=eq.${id}`, {
     method: 'PATCH',

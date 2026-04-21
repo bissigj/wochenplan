@@ -1,6 +1,6 @@
 import { D, getCatLabel, getAufLabel, applyTagStyles } from './data.js';
 import { parseIngredient } from 'https://esm.sh/@jlucaspains/sharp-recipe-parser@1.3.6';
-import { saveRecipesDebounced, saveWeekNow } from './data.js';
+import { saveRecipesDebounced, saveRecipeNow, deleteRecipeFromDB, saveWeekNow } from './data.js';
 import { sbUploadImage, sbDeleteImage } from './db.js';
 
 import { fmtIng, srcHTML, toast } from './ui.js';
@@ -156,7 +156,7 @@ export async function removeRecipeImage(id) {
   const r = D.recipes.find(r => r.id === id);
   if (r.img) await sbDeleteImage(r.img);
   r.img = null;
-  await saveRecipesDebounced();
+  await saveRecipeNow(r);
   rerender();
   toast('Foto entfernt');
 }
@@ -175,7 +175,7 @@ function initSortable() {
       const moved = r.steps.splice(evt.oldIndex, 1)[0];
       r.steps.splice(evt.newIndex, 0, moved);
       listEl.querySelectorAll('.step-num').forEach((el, i) => el.textContent = i + 1);
-      await saveRecipesDebounced();
+      await saveRecipeNow(r);
     }
   });
 }
@@ -184,11 +184,11 @@ export async function delR(id) {
   const deleted = D.recipes.find(r => r.id === id);
   if (!confirm(`"${deleted.name}" wirklich löschen?`)) return;
   const deletedDays = (D.weekPlan.days || []).filter(d => d.recipeId === id);
-  // Delete image from storage if exists
-  if (deleted && deleted.img) await sbDeleteImage(deleted.img);
+  if (deleted.img) await sbDeleteImage(deleted.img);
+  await deleteRecipeFromDB(deleted);
   D.recipes = D.recipes.filter(r => r.id !== id);
   D.weekPlan.days = (D.weekPlan.days || []).filter(d => d.recipeId !== id);
-  await saveRecipesDebounced();
+  await saveWeekNow();
   renderRFilters();
   rerender();
   renderWeek();
@@ -202,7 +202,8 @@ export async function delR(id) {
     undone = true;
     D.recipes.push(deleted);
     deletedDays.forEach(d => D.weekPlan.days.push(d));
-    await saveRecipesDebounced();
+    await saveRecipeNow(deleted);
+    await saveWeekNow();
     renderRFilters();
     rerender();
     renderWeek();
@@ -219,13 +220,14 @@ export async function addIng(id) {
   D.recipes.find(r => r.id === id).ings.push({ m, u, n });
   document.getElementById('im-' + id).value = '';
   document.getElementById('in-' + id).value = '';
-  await saveRecipesDebounced();
+  saveRecipesDebounced(D.recipes.find(r => r.id === id));
   rerender();
 }
 
 export async function delIng(id, i) {
-  D.recipes.find(r => r.id === id).ings.splice(i, 1);
-  await saveRecipesDebounced();
+  const r = D.recipes.find(r => r.id === id);
+  r.ings.splice(i, 1);
+  saveRecipesDebounced(r);
   rerender();
 }
 
@@ -233,21 +235,24 @@ export async function addStep(id) {
   const inp = document.getElementById('st-' + id);
   const v = inp.value.trim();
   if (!v) return;
-  D.recipes.find(r => r.id === id).steps.push(v);
+  const rs = D.recipes.find(r => r.id === id);
+  rs.steps.push(v);
   inp.value = '';
-  await saveRecipesDebounced();
+  saveRecipesDebounced(rs);
   rerender();
 }
 
 export async function delStep(id, i) {
-  D.recipes.find(r => r.id === id).steps.splice(i, 1);
-  await saveRecipesDebounced();
+  const r = D.recipes.find(r => r.id === id);
+  r.steps.splice(i, 1);
+  saveRecipesDebounced(r);
   rerender();
 }
 
 export async function updR(id, key, val) {
-  D.recipes.find(r => r.id === id)[key] = val;
-  await saveRecipesDebounced();
+  const r = D.recipes.find(r => r.id === id);
+  r[key] = val;
+  saveRecipesDebounced(r);
 }
 
 export async function uploadRecipeImage(id, input) {
@@ -275,8 +280,9 @@ export async function uploadRecipeImage(id, input) {
   URL.revokeObjectURL(previewUrl);
 
   if (url) {
-    D.recipes.find(r => r.id === id).img = url;
-    await saveRecipesDebounced();
+    const ri = D.recipes.find(r => r.id === id);
+    ri.img = url;
+    await saveRecipeNow(ri);
     rerender();
     toast('Bild gespeichert');
   } else {
@@ -286,8 +292,9 @@ export async function uploadRecipeImage(id, input) {
 }
 
 export async function setSrcType(id, type) {
-  D.recipes.find(r => r.id === id).src = { type, val: '', seite: '' };
-  await saveRecipesDebounced();
+  const r = D.recipes.find(r => r.id === id);
+  r.src = { type, val: '', seite: '' };
+  saveRecipesDebounced(r);
   rerender();
 }
 
@@ -295,7 +302,7 @@ export async function updSrc(id, key, val) {
   const r = D.recipes.find(r => r.id === id);
   if (!r.src) r.src = { type: 'url', val: '', seite: '' };
   r.src[key] = val;
-  await saveRecipesDebounced();
+  saveRecipesDebounced(r);
   rerender();
 }
 
@@ -374,9 +381,10 @@ export async function saveQE() {
   const steps = splitSteps(stepsText);
   const time = parseInt(document.getElementById('qe-time').value) || null;
   const portions = parseInt(document.getElementById('qe-portions').value) || 2;
-  D.recipes.push({ id: D.nextId++, name, cat: document.getElementById('qe-cat').value, auf: document.getElementById('qe-auf').value, time, portions, ings, steps, src: null });
+  const newR = { id: D.nextId++, name, cat: document.getElementById('qe-cat').value, auf: document.getElementById('qe-auf').value, time, portions, ings, steps, src: null, public: true };
+  D.recipes.push(newR);
   closeQE();
-  await saveRecipesDebounced();
+  await saveRecipeNow(newR);
   renderRFilters();
   rerender();
   toast('Rezept hinzugefügt');

@@ -1,4 +1,4 @@
-import { sbGet, sbInsert, sbUpdate } from './db.js';
+import { sbGet, sbInsert, sbUpdate, sbDelete } from './db.js';
 import { DEFAULTS, DEFAULT_SETTINGS, DEFAULT_EINHEITEN } from './config.js';
 import { setSyncStatus } from './ui.js';
 
@@ -13,28 +13,40 @@ export let D = {
   userId: null,
   userEmail: ''
 };
-export let dbSettingsId = null;
 
-export let dbRecipeId = null;
+export let dbSettingsId = null;
 export let dbWeekId = null;
 let saveTimer = null;
 
 export async function loadData() {
   try {
     const fid = D.familyId;
-    // Recipes
-    const recs = await sbGet('recipes', `select=id,data&family_id=eq.${fid}`);
+
+    // ── Recipes – one row per recipe ─────────────────────────────────────────
+    const recs = await sbGet('recipes_v2',
+      `select=id,recipe_id,data,public&family_id=eq.${fid}&order=recipe_id.asc`);
+
     if (recs && recs.length) {
-      dbRecipeId = recs[0].id;
-      D.recipes = recs[0].data.recipes || [];
-      D.nextId = recs[0].data.nextId || 1;
+      D.recipes = recs.map(r => ({ ...r.data, _dbid: r.id, public: r.public }));
+      D.nextId = Math.max(...D.recipes.map(r => r.id)) + 1;
     } else {
-      D.recipes = DEFAULTS.map(r => ({ ...r }));
+      // First load – insert default recipes
+      D.recipes = [];
+      for (const r of DEFAULTS) {
+        const rec = { ...r };
+        const ins = await sbInsert('recipes_v2', {
+          family_id: fid,
+          recipe_id: rec.id,
+          data: rec,
+          public: true
+        });
+        if (ins && ins[0]) rec._dbid = ins[0].id;
+        D.recipes.push(rec);
+      }
       D.nextId = DEFAULTS.length + 1;
-      const ins = await sbInsert('recipes', { data: { recipes: D.recipes, nextId: D.nextId }, family_id: D.familyId });
-      if (ins && ins[0]) dbRecipeId = ins[0].id;
     }
-    // Week plan – always exactly one row
+
+    // ── Week plan ─────────────────────────────────────────────────────────────
     const weeks = await sbGet('week_plan', `select=id,data,updated_at&family_id=eq.${fid}`);
     if (weeks && weeks.length) {
       weeks.sort((a, b) => new Date(b.updated_at || 0) - new Date(a.updated_at || 0));
@@ -42,16 +54,16 @@ export async function loadData() {
       const wp = weeks[0].data;
       if (wp && wp.days && wp.days.length) D.weekPlan = wp;
     }
-    // Archive – multiple rows
+
+    // ── Archive ───────────────────────────────────────────────────────────────
     const arch = await sbGet('archive', `select=id,data,kw,created_at&family_id=eq.${fid}`);
     D.archive = Array.isArray(arch) ? arch.map(a => ({ ...a.data, _dbid: a.id })) : [];
 
-    // Settings – categories and aufwand
+    // ── Settings ──────────────────────────────────────────────────────────────
     const sets = await sbGet('settings', `select=id,data&family_id=eq.${fid}`);
     if (sets && sets.length) {
       dbSettingsId = sets[0].id;
       D.settings = sets[0].data;
-      // Migrate: add einheiten if missing (existing installs)
       if (!D.settings.einheiten) {
         D.settings.einheiten = [...DEFAULT_EINHEITEN];
         saveSettingsNow();
@@ -59,29 +71,78 @@ export async function loadData() {
     } else {
       D.settings = JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
       D.settings.einheiten = [...DEFAULT_EINHEITEN];
-      const ins = await sbInsert('settings', { data: D.settings, family_id: D.familyId });
+      const ins = await sbInsert('settings', { data: D.settings, family_id: fid });
       if (ins && ins[0]) dbSettingsId = ins[0].id;
     }
 
-    // Migrate old recipes: cat/auf as string label → id
-    let needsSave = false;
+    // ── Migrate cat/auf string labels → ids ───────────────────────────────────
+    let needsSave = [];
     D.recipes.forEach(r => {
+      let changed = false;
       if (r.cat && !r.cat.startsWith('cat_')) {
         const found = D.settings.cats.find(c => c.label === r.cat);
-        if (found) { r.cat = found.id; needsSave = true; }
+        if (found) { r.cat = found.id; changed = true; }
       }
       if (r.auf && !r.auf.startsWith('auf_')) {
         const found = D.settings.aufwand.find(a => a.label === r.auf);
-        if (found) { r.auf = found.id; needsSave = true; }
+        if (found) { r.auf = found.id; changed = true; }
       }
+      if (changed) needsSave.push(r);
     });
-    if (needsSave) saveRecipesDebounced();
+    for (const r of needsSave) await saveRecipeNow(r);
+
   } catch (e) {
     setSyncStatus('err', 'Offline');
     console.error(e);
   }
 }
 
+// ── Recipe persistence ────────────────────────────────────────────────────────
+export async function saveRecipeNow(recipe) {
+  const { _dbid, public: pub, ...data } = recipe;
+  try {
+    if (_dbid) {
+      await sbUpdate('recipes_v2', _dbid, { data, public: pub ?? true });
+    } else {
+      const ins = await sbInsert('recipes_v2', {
+        family_id: D.familyId,
+        recipe_id: recipe.id,
+        data,
+        public: pub ?? true
+      });
+      if (ins && ins[0]) recipe._dbid = ins[0].id;
+    }
+  } catch (e) { console.error('saveRecipe error', e); }
+}
+
+export async function deleteRecipeFromDB(recipe) {
+  if (!recipe._dbid) return;
+  try {
+    await sbDelete('recipes_v2', recipe._dbid);
+  } catch (e) { console.error('deleteRecipe error', e); }
+}
+
+export function saveRecipesDebounced(recipe) {
+  // If specific recipe passed, save just that one after debounce
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(async () => {
+    setSyncStatus('spin', 'Speichern…');
+    try {
+      if (recipe) {
+        await saveRecipeNow(recipe);
+      } else {
+        // Save all (fallback)
+        for (const r of D.recipes) await saveRecipeNow(r);
+      }
+      setSyncStatus('ok', 'Synchronisiert');
+    } catch (e) {
+      setSyncStatus('err', 'Fehler beim Speichern');
+      console.error(e);
+    }
+  }, 800);
+}
+
+// ── Week plan ─────────────────────────────────────────────────────────────────
 export async function saveWeekNow() {
   setSyncStatus('spin', 'Speichern…');
   try {
@@ -98,6 +159,7 @@ export async function saveWeekNow() {
   }
 }
 
+// ── Settings ──────────────────────────────────────────────────────────────────
 export async function saveSettingsNow() {
   try {
     if (dbSettingsId) {
@@ -107,26 +169,6 @@ export async function saveSettingsNow() {
       if (ins && ins[0]) dbSettingsId = ins[0].id;
     }
   } catch (e) { console.error('saveSettings error', e); }
-}
-
-export function saveRecipesDebounced() {
-  clearTimeout(saveTimer);
-  saveTimer = setTimeout(async () => {
-    setSyncStatus('spin', 'Speichern…');
-    try {
-      const payload = { recipes: D.recipes, nextId: D.nextId };
-      if (dbRecipeId) {
-        await sbUpdate('recipes', dbRecipeId, { data: payload });
-      } else {
-        const ins = await sbInsert('recipes', { data: payload });
-        if (ins && ins[0]) dbRecipeId = ins[0].id;
-      }
-      setSyncStatus('ok', 'Synchronisiert');
-    } catch (e) {
-      setSyncStatus('err', 'Fehler beim Speichern');
-      console.error(e);
-    }
-  }, 800);
 }
 
 // ── Label lookup helpers ──────────────────────────────────────────────────────
@@ -145,25 +187,14 @@ export function getAufLabel(id) {
 // ── Dynamic tag styles ────────────────────────────────────────────────────────
 export function applyTagStyles() {
   let css = '';
-
-  const allEntries = [
-    ...D.settings.cats,
-    ...D.settings.aufwand
-  ];
+  const allEntries = [...D.settings.cats, ...D.settings.aufwand];
 
   allEntries.forEach(e => {
-    // Tag – always filled background, consistent in both modes
     css += `.tag-${e.id}{background:${e.bg};color:${e.color};}\n`;
-
-    // Pill inactive – transparent bg, colored border (25% opacity) + text
-    const borderAlpha = e.color + '60'; // ~38% opacity
+    const borderAlpha = e.color + '60';
     css += `.pill.tag-${e.id}{background:transparent;color:${e.color};border-color:${borderAlpha};}\n`;
-
-    // Pill active – same as tag
     css += `.pill.tag-${e.id}.on{background:${e.bg};border-color:${e.color};}\n`;
   });
-
-
 
   let el = document.getElementById('dynamic-tag-styles');
   if (!el) {
