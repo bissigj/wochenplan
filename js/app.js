@@ -82,15 +82,25 @@ window.createInvitation  = createInvitation;
 window.joinFamily        = joinFamily;
 
 // ── renderAll (used by auth after login) ─────────────────────────────────────
+
 export function renderAll() {
   applyTagStyles();
   renderRFilters();
   renderRecipes();
   renderWeek();
   populateQESelects();
-  // Show FAB on initial load (rezepte is default tab)
+
+  const t = state.activeTab;
+
+  document.querySelectorAll('.tab-pane').forEach(el => {
+    el.style.display = 'none';
+  });
+
+  const active = document.getElementById(`tab-${t}`);
+  if (active) active.style.display = 'block';
+
   const fabGroup = document.getElementById('fab-group');
-  if (fabGroup) fabGroup.classList.remove('hidden');
+  if (fabGroup) fabGroup.classList.toggle('hidden', t !== 'rezepte');
 }
 
 function populateQESelects() {
