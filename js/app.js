@@ -1,4 +1,4 @@
-import { D, applyTagStyles } from './data.js'; 
+import { applyTagStyles, D } from './data.js'; 
 import { doLogin, doRegister, doLogout, showLogin, showRegister, tryRestoreSession, obCreateFamily, obJoinFamily } from './auth.js';
 import { renderRFilters, renderRecipes, toggleRF, toggleER, delR, addIng, delIng, addStep, delStep, updR, setSrcType, updSrc, openQE, closeQE, saveQE, setSortOrder, uploadRecipeImage, removeRecipeImage, togglePublic } from './recipes.js';
 import { renderWeek, openDrawModal, closeDrawModal, toggleDrawPill, setTimePill, drawWeek, backToCurrent, toggleDay, toggleDayActive, rerollDay, setPortions, setNote } from './week.js';
@@ -17,7 +17,9 @@ window.obJoinFamily      = obJoinFamily;
 window.showLogin         = showLogin;
 window.showRegister      = showRegister;
 const PAGE_TITLES = { rezepte: 'Rezepte', woche: 'Wochenplan', einkauf: 'Einkauf', archiv: 'Archiv' };
-window.showTab = showTab;
+window.showTab = (t) => {
+  setState({ activeTab: t });
+};
 window.toggleRF          = toggleRF;
 window.toggleER          = toggleER;
 window.delR              = delR;
@@ -113,4 +115,3 @@ window.setRecipeFilter = (q) => {
     document.getElementById('login-screen').style.display = 'flex';
   }
 })();
-
