@@ -27,88 +27,99 @@ export function renderSettings() {
   const cats = D.settings.cats;
   const auf = D.settings.aufwand;
 
-  el.innerHTML = `<div class="acc-wrap">
-    ${accordion('familie', 'Familie', `<div id="family-section">
+  // Build sections separately to avoid nested template literal issues
+  const familyContent = `
+    <div id="family-section">
+      <div class="settings-row">
+        <input type="text" id="family-name-input" class="settings-input" value="${D.familyName || ''}" placeholder="Familienname" />
+        <button class="btn btn-sm" onclick="saveFamilyName()">Speichern</button>
+      </div>
+      <div style="margin-top:12px">
+        <div class="section-title">Mitglieder</div>
+        <div id="members-list" style="font-size:13px;color:var(--text2)">Wird geladen…</div>
+      </div>
+      <div style="margin-top:12px">
+        <div class="section-title">Einladen</div>
+        <div class="row" style="gap:6px;margin-bottom:6px">
+          <select id="invite-role" style="width:auto">
+            <option value="member">Member</option>
+            <option value="admin">Admin</option>
+          </select>
+          <button class="btn btn-sm" onclick="createInvitation()">Einladungscode erstellen</button>
+        </div>
+        <div id="invitation-result" style="margin-top:8px;font-size:13px"></div>
+      </div>
+      <div style="margin-top:12px">
+        <div class="section-title">Familie beitreten</div>
+        <div class="row" style="gap:6px">
+          <input type="text" id="invite-code-input" placeholder="Einladungscode…" style="flex:1;max-width:200px" />
+          <button class="btn btn-sm" onclick="joinFamily()">Beitreten</button>
+        </div>
+        <div id="join-result" style="margin-top:8px;font-size:13px"></div>
+      </div>
+    </div>`;
+
+  const catsContent = `
+    <div id="cats-list">
+      ${cats.map(c => `
         <div class="settings-row">
-          <input type="text" id="family-name-input" class="settings-input" value="${D.familyName || ''}" placeholder="Familienname" />
-          <button class="btn btn-sm" onclick="saveFamilyName()">Speichern</button>
-        </div>
-        <div style="margin-top:12px">
-          <div class="section-title">Mitglieder</div>
-          <div id="members-list" style="font-size:13px;color:var(--text2)">Wird geladen…</div>
-        </div>
-        <div style="margin-top:12px">
-          <div class="section-title">Einladen</div>
-          <div class="row" style="gap:6px;margin-bottom:6px">
-            <select id="invite-role" style="width:auto">
-              <option value="member">Member</option>
-              <option value="admin">Admin</option>
-            </select>
-            <button class="btn btn-sm" onclick="createInvitation()">Einladungscode erstellen</button>
-          </div>
-          <div id="invitation-result" style="margin-top:8px;font-size:13px"></div>
-        </div>
-        <div style="margin-top:12px">
-          <div class="section-title">Familie beitreten</div>
-          <div class="row" style="gap:6px">
-            <input type="text" id="invite-code-input" placeholder="Einladungscode…" style="flex:1;max-width:200px" />
-            <button class="btn btn-sm" onclick="joinFamily()">Beitreten</button>
-          </div>
-          <div id="join-result" style="margin-top:8px;font-size:13px"></div>
-        </div>
-    </div>\`, true)}
-    ${accordion('kategorien', 'Kategorien', `<div id="cats-list">
-        ${cats.map(c => `
-          <div class="settings-row">
-            <input type="color" value="${c.color}" class="settings-color"
-              onchange="updateCatColor('${c.id}', this.value)" title="Textfarbe" />
-            <input type="color" value="${c.bg}" class="settings-color settings-color-bg"
-              onchange="updateCatBg('${c.id}', this.value)" title="Hintergrundfarbe" />
-            <input type="text" value="${c.label}" class="settings-input"
-              onchange="updateCat('${c.id}', this.value)" />
-            <span class="tag tag-${c.id}" style="flex-shrink:0">${c.label}</span>
-            <button class="btn btn-d btn-sm" onclick="deleteCat('${c.id}')">×</button>
-          </div>`).join('')}
-      </div>
-      <div class="row" style="gap:6px;margin-top:8px">
-        <input type="text" id="new-cat-input" placeholder="Neue Kategorie…" style="flex:1"
-          onkeydown="if(event.key==='Enter')addCat()" />
-        <button class="btn btn-sm" onclick="addCat()">+</button>
-      </div>
-    </div>\`)}
-    ${accordion('aufwand', 'Aufwand', `<div id="auf-list">
-        ${auf.map(a => `
-          <div class="settings-row">
-            <input type="color" value="${a.color}" class="settings-color"
-              onchange="updateAufColor('${a.id}', this.value)" title="Textfarbe" />
-            <input type="color" value="${a.bg}" class="settings-color settings-color-bg"
-              onchange="updateAufBg('${a.id}', this.value)" title="Hintergrundfarbe" />
-            <input type="text" value="${a.label}" class="settings-input"
-              onchange="updateAuf('${a.id}', this.value)" />
-            <span class="tag tag-${a.id}" style="flex-shrink:0">${a.label}</span>
-            <button class="btn btn-d btn-sm" onclick="deleteAuf('${a.id}')">×</button>
-          </div>`).join('')}
-      </div>
-      <div class="row" style="gap:6px;margin-top:8px">
-        <input type="text" id="new-auf-input" placeholder="Neuer Aufwand…" style="flex:1"
-          onkeydown="if(event.key==='Enter')addAuf()" />
-        <button class="btn btn-sm" onclick="addAuf()">+</button>
-      </div>
-    </div>\`)}
-    ${accordion('einheiten', 'Einheiten', `<div id="einh-list" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">
-        ${D.settings.einheiten.map(e => `
-          <div class="einh-tag">
-            <span>${e}</span>
-            <button class="xbtn" onclick="deleteEinh('${e}')">×</button>
-          </div>`).join('')}
-      </div>
-      <div class="row" style="gap:6px">
-        <input type="text" id="new-einh-input" placeholder="Neue Einheit…" style="flex:1;max-width:160px"
-          onkeydown="if(event.key==='Enter')addEinh()" />
-        <button class="btn btn-sm" onclick="addEinh()">+</button>
-      </div>
-    </div>\`)}
+          <input type="color" value="${c.color}" class="settings-color"
+            onchange="updateCatColor('${c.id}', this.value)" title="Textfarbe" />
+          <input type="color" value="${c.bg}" class="settings-color settings-color-bg"
+            onchange="updateCatBg('${c.id}', this.value)" title="Hintergrundfarbe" />
+          <input type="text" value="${c.label}" class="settings-input"
+            onchange="updateCat('${c.id}', this.value)" />
+          <span class="tag tag-${c.id}" style="flex-shrink:0">${c.label}</span>
+          <button class="btn btn-d btn-sm" onclick="deleteCat('${c.id}')">×</button>
+        </div>`).join('')}
+    </div>
+    <div class="row" style="gap:6px;margin-top:8px">
+      <input type="text" id="new-cat-input" placeholder="Neue Kategorie…" style="flex:1"
+        onkeydown="if(event.key==='Enter')addCat()" />
+      <button class="btn btn-sm" onclick="addCat()">+</button>
+    </div>`;
+
+  const aufContent = `
+    <div id="auf-list">
+      ${auf.map(a => `
+        <div class="settings-row">
+          <input type="color" value="${a.color}" class="settings-color"
+            onchange="updateAufColor('${a.id}', this.value)" title="Textfarbe" />
+          <input type="color" value="${a.bg}" class="settings-color settings-color-bg"
+            onchange="updateAufBg('${a.id}', this.value)" title="Hintergrundfarbe" />
+          <input type="text" value="${a.label}" class="settings-input"
+            onchange="updateAuf('${a.id}', this.value)" />
+          <span class="tag tag-${a.id}" style="flex-shrink:0">${a.label}</span>
+          <button class="btn btn-d btn-sm" onclick="deleteAuf('${a.id}')">×</button>
+        </div>`).join('')}
+    </div>
+    <div class="row" style="gap:6px;margin-top:8px">
+      <input type="text" id="new-auf-input" placeholder="Neuer Aufwand…" style="flex:1"
+        onkeydown="if(event.key==='Enter')addAuf()" />
+      <button class="btn btn-sm" onclick="addAuf()">+</button>
+    </div>`;
+
+  const einhContent = `
+    <div id="einh-list" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">
+      ${D.settings.einheiten.map(e => `
+        <div class="einh-tag">
+          <span>${e}</span>
+          <button class="xbtn" onclick="deleteEinh('${e}')">×</button>
+        </div>`).join('')}
+    </div>
+    <div class="row" style="gap:6px">
+      <input type="text" id="new-einh-input" placeholder="Neue Einheit…" style="flex:1;max-width:160px"
+        onkeydown="if(event.key==='Enter')addEinh()" />
+      <button class="btn btn-sm" onclick="addEinh()">+</button>
+    </div>`;
+
+  el.innerHTML = `<div class="acc-wrap">
+    ${accordion('familie', 'Familie', familyContent, true)}
+    ${accordion('kategorien', 'Kategorien', catsContent)}
+    ${accordion('aufwand', 'Aufwand', aufContent)}
+    ${accordion('einheiten', 'Einheiten', einhContent)}
   </div>`;
+
   loadFamilyMembers();
 }
 
