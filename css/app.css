@@ -820,11 +820,7 @@ textarea{resize:vertical;min-height:60px;line-height:1.5}
   min-width:100px;
 }
 
-/* ── Dark mode tag color adjustments ─────────────────────────────────────── */
-@media(prefers-color-scheme:dark){
-  .tag{opacity:0.9}
-  .pill.on{background:var(--bg4)}
-}
+/* Tag + pill dark mode handled dynamically via applyTagStyles() */
 
 /* ── Onboarding ───────────────────────────────────────────────────────────── */
 .ob-section{
