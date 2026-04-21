@@ -120,6 +120,13 @@ window.setRecipeFilter = (q) => {
 function renderApp() {
   const t = state.activeTab;
 
+  // Show/hide tab panes
+  ['rezepte', 'woche', 'einkauf', 'archiv', 'einstellungen'].forEach(id => {
+    const el = document.getElementById('tab-' + id);
+    if (el) el.style.display = id === t ? '' : 'none';
+  });
+
+  // Nav active state
   document.querySelectorAll('.nav-item').forEach(el => {
     el.classList.toggle('active', el.id === 'nav-' + t);
   });
