@@ -137,6 +137,13 @@ registerRenderApp(renderApp);
 function renderApp() {
   const t = state.activeTab;
 
+  // Show/hide tab panes
+  ['rezepte', 'woche', 'einkauf', 'archiv', 'einstellungen'].forEach(id => {
+    const el = document.getElementById('tab-' + id);
+    if (el) el.style.display = id === t ? '' : 'none';
+  });
+
+  // Nav active state
   document.querySelectorAll('.nav-item').forEach(el => {
     el.classList.toggle('active', el.id === 'nav-' + t);
   });
@@ -150,6 +157,7 @@ function renderApp() {
   const fabGroup = document.getElementById('fab-group');
   if (fabGroup) fabGroup.classList.toggle('hidden', t !== 'rezepte');
 
+  // Render active tab content
   if (t === 'einkauf') renderShop();
   if (t === 'archiv') renderArchiv();
   if (t === 'einstellungen') renderSettings();
