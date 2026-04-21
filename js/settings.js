@@ -274,6 +274,7 @@ export async function deleteEinh(val) {
 
 // ── Family Management ─────────────────────────────────────────────────────────
 export async function saveFamilyName() {
+  _membersLoaded = false;
   const name = document.getElementById('family-name-input').value.trim();
   if (!name) return;
   await sbUpdate('families', D.familyId, { name });
@@ -281,9 +282,12 @@ export async function saveFamilyName() {
   toast(`Familie umbenannt zu "${name}"`);
 }
 
+let _membersLoaded = false;
 async function loadFamilyMembers() {
   const el = document.getElementById('members-list');
   if (!el) return;
+  if (_membersLoaded) return; // don't reload every tab switch
+  _membersLoaded = true;
   const members = await sbGet('family_members', `family_id=eq.${D.familyId}&select=user_id,role,email`);
   if (!members || !members.length) { el.textContent = 'Keine Mitglieder gefunden.'; return; }
   el.innerHTML = members.map(m =>

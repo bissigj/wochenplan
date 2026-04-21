@@ -23,8 +23,7 @@ export function renderRFilters() {
 }
 
 function rerender() {
-  const q = document.getElementById('recipe-search')?.value || '';
-  renderRecipes(q);
+  renderRecipes();
 }
 
 export function toggleRF(f) {
@@ -300,7 +299,23 @@ export function renderRecipes() {
 
                 <div style="margin-top:6px">${srcHTML(r.src)}</div>
 
+                <div class="section-title" style="margin-top:12px">Foto</div>
+                <div id="img-preview-${r.id}" style="width:100%;height:140px;background-size:cover;background-position:center;border-radius:var(--rs);margin-bottom:8px;${r.img ? `background-image:url('${r.img}')` : 'display:none'}"></div>
+                <div class="img-upload-wrap">
+                  <label class="btn btn-sm" style="cursor:pointer">
+                    <span class="img-upload-label">${r.img ? 'Foto ersetzen' : '+ Foto hochladen'}</span>
+                    <input type="file" accept="image/*,image/heic" style="display:none" onchange="uploadRecipeImage(${r.id},this)" />
+                  </label>
+                  ${r.img ? `<button class="btn btn-d btn-sm" onclick="removeRecipeImage(${r.id})">Foto entfernen</button>` : ''}
+                </div>
               </div>
+            </div>
+            <div class="row" style="margin-top:12px;justify-content:space-between">
+              <button class="btn btn-sm" onclick="exportRecipePDF(${r.id})">↓ PDF exportieren</button>
+              <button class="btn btn-sm ${r.public === false ? 'btn-private' : 'btn-public'}"
+                onclick="togglePublic(${r.id})">
+                ${r.public === false ? '🔒 Privat' : '👁 Öffentlich'}
+              </button>
             </div>
           </div>
           ` : ''

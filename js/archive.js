@@ -1,6 +1,6 @@
 import { D } from './data.js';
 import { showTab } from './ui.js';
-import { viewingArchive, renderWeek, expandedDays } from './week.js';
+import { setViewingArchive, renderWeek, expandedDays } from './week.js';
 
 export function getArchiveViewModel(archive, recipes) {
   return [...archive].reverse().map((w, i) => {
@@ -52,12 +52,8 @@ export function renderArchiv() {
 }
 
 export function viewArchiveWeek(idx) {
-  // viewingArchive is exported from week.js but needs to be set there
-  // We use a setter pattern via the week module
-  import('./week.js').then(w => {
-    w.setViewingArchive(D.archive[idx]);
-    expandedDays.clear();
-    showTab('woche');
-    renderWeek();
-  });
+  setViewingArchive(D.archive[idx]);
+  expandedDays.clear();
+  showTab('woche');
+  renderWeek();
 }

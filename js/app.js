@@ -1,5 +1,5 @@
-import { state, setState, registerRenderApp } from './state.js';
-import { applyTagStyles } from './data.js'; 
+import { state, setState } from './state.js';
+import { D, applyTagStyles } from './data.js'; 
 import { doLogin, doRegister, doLogout, showLogin, showRegister, tryRestoreSession, obCreateFamily, obJoinFamily } from './auth.js';
 import { renderRFilters, renderRecipes, toggleRF, toggleER, delR, addIng, delIng, addStep, delStep, updR, setSrcType, updSrc, openQE, closeQE, saveQE, setSortOrder, uploadRecipeImage, removeRecipeImage, togglePublic } from './recipes.js';
 import { renderWeek, openDrawModal, closeDrawModal, toggleDrawPill, setTimePill, drawWeek, backToCurrent, toggleDay, toggleDayActive, rerollDay, setPortions, setNote } from './week.js';
@@ -85,22 +85,8 @@ window.joinFamily        = joinFamily;
 
 export function renderAll() {
   applyTagStyles();
-  renderRFilters();
-  renderRecipes();
-  renderWeek();
   populateQESelects();
-
-  const t = state.activeTab;
-
-  document.querySelectorAll('.tab-pane').forEach(el => {
-    el.style.display = 'none';
-  });
-
-  const active = document.getElementById(`tab-${t}`);
-  if (active) active.style.display = 'block';
-
-  const fabGroup = document.getElementById('fab-group');
-  if (fabGroup) fabGroup.classList.toggle('hidden', t !== 'rezepte');
+  renderApp(); // handles tab visibility + content rendering
 }
 
 function populateQESelects() {
@@ -124,30 +110,16 @@ window.setRecipeFilter = (q) => {
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 
-// Register renderApp with state so setState can call it
-registerRenderApp(renderApp);
-
 (async () => {
   const restored = await tryRestoreSession();
   if (!restored) {
     document.getElementById('login-screen').style.display = 'flex';
-  }
-  // Ensure main-screen is hidden if not logged in
-  if (!restored) {
-    document.getElementById('main-screen').style.display = 'none';
   }
 })();
 
 function renderApp() {
   const t = state.activeTab;
 
-  // Show/hide tab panes
-  ['rezepte', 'woche', 'einkauf', 'archiv', 'einstellungen'].forEach(id => {
-    const el = document.getElementById('tab-' + id);
-    if (el) el.style.display = id === t ? '' : 'none';
-  });
-
-  // Nav active state
   document.querySelectorAll('.nav-item').forEach(el => {
     el.classList.toggle('active', el.id === 'nav-' + t);
   });
@@ -161,10 +133,16 @@ function renderApp() {
   const fabGroup = document.getElementById('fab-group');
   if (fabGroup) fabGroup.classList.toggle('hidden', t !== 'rezepte');
 
-  // Render active tab content
   if (t === 'einkauf') renderShop();
   if (t === 'archiv') renderArchiv();
   if (t === 'einstellungen') renderSettings();
-  if (t === 'rezepte') renderRecipes();
+  if (t === 'rezepte') {
+    // Sync search input with state
+    const searchEl = document.getElementById('recipe-search');
+    if (searchEl && searchEl.value !== (D.recipeFilter || '')) {
+      searchEl.value = D.recipeFilter || '';
+    }
+    renderRecipes();
+  }
   if (t === 'woche') renderWeek();
 }

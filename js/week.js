@@ -134,7 +134,7 @@ export function renderWeek() {
     btnGen.style.display = '';
     btnBack.style.display = 'none';
     if (!D.weekPlan.days || !D.weekPlan.days.length) {
-      document.getElementById('week-view').innerHTML = '<div class="empty">Noch keine Woche generiert.</div>';
+      document.getElementById('week-view').innerHTML = '<div class="empty-state"><div class="empty-state-icon">🗓</div><div class="empty-state-title">Noch keine Woche geplant</div><div class="empty-state-sub">Tippe auf «Neu generieren» um loszulegen.</div></div>';
     } else {
       renderWeekPlan(D.weekPlan, false);
     }
@@ -218,7 +218,7 @@ function renderDayCard(d, i, plan, readonly) {
 function renderWeekPlan(plan, readonly = false) {
   const el = document.getElementById('week-view');
   if (!plan || !plan.days || !plan.days.length) {
-    el.innerHTML = '<div class="empty">Keine Tage.</div>';
+    el.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🗓</div><div class="empty-state-title">Keine Tage</div></div>';
     return;
   }
   el.innerHTML = '<div class="week-grid">' +

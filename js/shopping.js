@@ -36,7 +36,7 @@ export function renderShop() {
   const el = document.getElementById('shop-view');
   const plan = getActivePlan();
   if (!plan.days || !plan.days.some(d => d.active && d.recipeId)) {
-    el.innerHTML = '<div class="empty">Keine aktiven Tage.</div>';
+    el.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🛒</div><div class="empty-state-title">Keine aktiven Tage</div><div class="empty-state-sub">Generiere zuerst einen Wochenplan.</div></div>';
     return;
   }
   const activeDays = plan.days.filter(d => d.active && d.recipeId);
