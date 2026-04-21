@@ -445,7 +445,7 @@ textarea{resize:vertical;min-height:60px;line-height:1.5}
   background:rgba(20,18,14,0.55);
   backdrop-filter:blur(4px);
   display:flex;align-items:center;justify-content:center;
-  z-index:100;padding:1rem;
+  z-index:100;padding:.5rem;
 }
 .modal{
   background:var(--bg);
@@ -968,8 +968,10 @@ textarea{resize:vertical;min-height:60px;line-height:1.5}
 
 /* ── Discover Modal ───────────────────────────────────────────────────────── */
 .discover-modal-inner{
-  max-width:600px;
-  max-height:85vh;
+  max-width:780px;
+  width:95vw;
+  max-height:92vh;
+  height:92vh;
   display:flex;
   flex-direction:column;
   padding:0;
