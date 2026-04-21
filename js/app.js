@@ -1,5 +1,5 @@
-import { showTab, toast } from './ui.js';
-import { D, applyTagStyles } from './data.js';
+import { state, setState } from './state.js';
+import { applyTagStyles } from './data.js'; 
 import { doLogin, doRegister, doLogout, showLogin, showRegister, tryRestoreSession, obCreateFamily, obJoinFamily } from './auth.js';
 import { renderRFilters, renderRecipes, toggleRF, toggleER, delR, addIng, delIng, addStep, delStep, updR, setSrcType, updSrc, openQE, closeQE, saveQE, setSortOrder, uploadRecipeImage, removeRecipeImage, togglePublic } from './recipes.js';
 import { renderWeek, openDrawModal, closeDrawModal, toggleDrawPill, setTimePill, drawWeek, backToCurrent, toggleDay, toggleDayActive, rerollDay, setPortions, setNote } from './week.js';
@@ -19,23 +19,7 @@ window.showLogin         = showLogin;
 window.showRegister      = showRegister;
 const PAGE_TITLES = { rezepte: 'Rezepte', woche: 'Wochenplan', einkauf: 'Einkauf', archiv: 'Archiv' };
 window.showTab = (t) => {
-  showTab(t);
-  if (t === 'einkauf') renderShop();
-  if (t === 'archiv') renderArchiv();
-  if (t === 'einstellungen') renderSettings();
-  // Update bottom nav + header gear active state
-  document.querySelectorAll('.nav-item').forEach(el => {
-    el.classList.toggle('active', el.id === 'nav-' + t);
-  });
-  // Gear icon in header
-  const gear = document.getElementById('nav-einstellungen');
-  if (gear) gear.style.color = t === 'einstellungen' ? 'var(--meadow)' : '';
-  // Update page title
-  const titleEl = document.getElementById('page-title');
-  if (titleEl) titleEl.textContent = PAGE_TITLES[t] || 'Wochenplan';
-  // Show FAB only on rezepte tab
-  const fabGroup = document.getElementById('fab-group');
-  if (fabGroup) fabGroup.classList.toggle('hidden', t !== 'rezepte');
+  setState({ activeTab: t });
 };
 window.toggleRF          = toggleRF;
 window.toggleER          = toggleER;
@@ -136,3 +120,26 @@ window.setRecipeFilter = (q) => {
     document.getElementById('login-screen').style.display = 'flex';
   }
 })();
+
+function renderApp() {
+  const t = state.activeTab;
+
+  document.querySelectorAll('.nav-item').forEach(el => {
+    el.classList.toggle('active', el.id === 'nav-' + t);
+  });
+
+  const gear = document.getElementById('nav-einstellungen');
+  if (gear) gear.style.color = t === 'einstellungen' ? 'var(--meadow)' : '';
+
+  const titleEl = document.getElementById('page-title');
+  if (titleEl) titleEl.textContent = PAGE_TITLES[t] || 'Wochenplan';
+
+  const fabGroup = document.getElementById('fab-group');
+  if (fabGroup) fabGroup.classList.toggle('hidden', t !== 'rezepte');
+
+  if (t === 'einkauf') renderShop();
+  if (t === 'archiv') renderArchiv();
+  if (t === 'einstellungen') renderSettings();
+  if (t === 'rezepte') renderRecipes();
+  if (t === 'woche') renderWeek();
+}
