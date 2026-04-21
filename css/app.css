@@ -931,18 +931,22 @@ textarea{resize:vertical;min-height:60px;line-height:1.5}
 /* ── FAB Group ────────────────────────────────────────────────────────────── */
 .fab-group{
   position:fixed;
+  z-index:49;
+}
+.fab-group.hidden .fab,
+.fab-group.hidden .fab-discover{
+  opacity:0;pointer-events:none;transform:scale(0.8);
+}
+/* Position each FAB separately */
+.fab-group .fab{
+  position:fixed;
   bottom:calc(60px + 1rem);
   right:1.25rem;
-  z-index:49;
-  display:flex;
-  flex-direction:column-reverse;
-  gap:12px;
-  align-items:center;
 }
-.fab-group.hidden{
-  opacity:0;pointer-events:none;
-  transform:scale(0.8);
-  transition:all .2s;
+.fab-group .fab-discover{
+  position:fixed;
+  bottom:calc(60px + 1rem + 52px + 12px);
+  right:calc(1.25rem + 4px);
 }
 
 /* Discover FAB – secondary style */
