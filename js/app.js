@@ -8,6 +8,7 @@ import { renderArchiv, viewArchiveWeek } from './archive.js';
 import { exportPDF, exportRecipePDF, exportShopPDF } from './pdf.js';
 import { openDiscover, closeDiscover, importRecipe, filterDiscover, setDiscoverCat, setDiscoverAuf, toggleDiscoverR, discoverLoadMore } from './discover.js';
 import { renderSettings, toggleAcc, changeTheme, addCat, updateCat, updateCatColor, updateCatBg, deleteCat, addAuf, updateAuf, updateAufColor, updateAufBg, deleteAuf, addEinh, deleteEinh, saveFamilyName, createInvitation, joinFamily } from './settings.js';
+import { openUrlImport, closeUrlImport, parseRecipeUrl } from './parser.js';
 
 // ── Apply saved theme before first paint ──────────────────────────────────────
 initTheme();
@@ -97,6 +98,9 @@ window.addEinh           = addEinh;
 window.deleteEinh        = deleteEinh;
 window.saveFamilyName    = saveFamilyName;
 window.createInvitation  = createInvitation;
+window.openUrlImport    = openUrlImport;
+window.closeUrlImport   = closeUrlImport;
+window.parseRecipeUrl   = parseRecipeUrl;
 window.joinFamily        = joinFamily;
 
 // ── renderAll (used by auth after login) ─────────────────────────────────────

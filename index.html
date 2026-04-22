@@ -210,7 +210,10 @@
 <!-- Quick Entry Modal -->
 <div class="modal-wrap" id="qe-modal" style="display:none">
   <div class="modal" style="max-width:520px">
-    <h3>Rezept erfassen</h3>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--s-6)">
+      <h3 style="margin:0">Rezept erfassen</h3>
+      <button class="btn btn--sm btn--ghost" onclick="openUrlImport()" title="Aus URL importieren">🔗 Von URL laden</button>
+    </div>
     <div class="qe-grid">
       <div style="grid-column:1/-1">
         <span class="label">Rezeptname</span>
@@ -248,6 +251,26 @@
     <div class="modal-footer">
       <button class="btn" onclick="closeQE()">Abbrechen</button>
       <button class="btn btn--primary" onclick="saveQE()">Rezept hinzufügen</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- URL Import Modal -->
+<div class="modal-wrap" id="url-import-modal" style="display:none">
+  <div class="modal" style="max-width:420px">
+    <h3>Rezept von URL laden</h3>
+    <p style="font-size:13px;color:var(--text2);margin-bottom:var(--s-6);line-height:1.5">
+      Füge die URL einer Rezeptseite ein. Unterstützt werden Seiten mit strukturierten Daten (z.B. Chefkoch, BBC Good Food, Allrecipes).
+    </p>
+    <span class="label">Rezept-URL</span>
+    <input type="url" id="url-import-input" placeholder="https://www.chefkoch.de/rezepte/..."
+      style="margin-bottom:var(--s-3)"
+      onkeydown="if(event.key==='Enter')parseRecipeUrl()" />
+    <div id="url-import-err" style="font-size:12px;color:var(--red);min-height:18px;margin-bottom:var(--s-4)"></div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeUrlImport()">Abbrechen</button>
+      <button class="btn btn--primary" id="url-import-btn" onclick="parseRecipeUrl()">Rezept laden</button>
     </div>
   </div>
 </div>
