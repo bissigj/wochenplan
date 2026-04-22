@@ -21,7 +21,7 @@
     <div class="login-field"><label>E-Mail</label><input type="email" id="l-email" placeholder="name@beispiel.ch" /></div>
     <div class="login-field"><label>Passwort</label><input type="password" id="l-pw" placeholder="Passwort" onkeydown="if(event.key==='Enter')doLogin()" /></div>
     <div class="login-err" id="l-err"></div>
-    <button class="btn btn-p btn-full" style="margin-top:4px" onclick="doLogin()">Anmelden</button>
+    <button class="btn btn--primary btn--full" style="margin-top:4px" onclick="doLogin()">Anmelden</button>
     <div class="login-switch">Noch kein Konto? <a onclick="showRegister()">Registrieren</a></div>
   </div>
 </div>
@@ -34,7 +34,7 @@
     <div class="login-field"><label>E-Mail</label><input type="email" id="r-email" placeholder="name@beispiel.ch" /></div>
     <div class="login-field"><label>Passwort</label><input type="password" id="r-pw" placeholder="Mindestens 6 Zeichen" onkeydown="if(event.key==='Enter')doRegister()" /></div>
     <div class="login-err" id="r-err"></div>
-    <button class="btn btn-p btn-full" style="margin-top:4px" onclick="doRegister()">Konto erstellen</button>
+    <button class="btn btn--primary btn--full" style="margin-top:4px" onclick="doRegister()">Konto erstellen</button>
     <div class="login-switch">Bereits registriert? <a onclick="showLogin()">Anmelden</a></div>
   </div>
 </div>
@@ -52,7 +52,7 @@
         <label>Familienname</label>
         <input type="text" id="ob-family-name" placeholder="z.B. Schnüsig" />
       </div>
-      <button class="btn btn-p btn-full" onclick="obCreateFamily()">Familie erstellen</button>
+      <button class="btn btn--primary btn--full" onclick="obCreateFamily()">Familie erstellen</button>
     </div>
 
     <div class="ob-divider"><span>oder</span></div>
@@ -63,7 +63,7 @@
         <label>Einladungscode</label>
         <input type="text" id="ob-invite-code" placeholder="z.B. A3F9KL" style="text-transform:uppercase;letter-spacing:0.1em;font-weight:500" />
       </div>
-      <button class="btn btn-full" onclick="obJoinFamily()">Beitreten</button>
+      <button class="btn btn--full" onclick="obJoinFamily()">Beitreten</button>
     </div>
   </div>
 </div>
@@ -80,7 +80,7 @@
         <button class="btn-icon" onclick="showTab('einstellungen')" id="nav-einstellungen" title="Einstellungen">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
         </button>
-        <button class="btn btn-sm" onclick="doLogout()">Abmelden</button>
+        <button class="btn btn--sm" onclick="doLogout()">Abmelden</button>
       </div>
     </div>
   </div>
@@ -110,11 +110,11 @@
       <div class="week-header">
         <span class="week-title" id="week-title">Wochenplan</span>
         <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
-          <button class="btn btn-sm" id="btn-zurueck" onclick="backToCurrent()" style="display:none">← Aktuelle Woche</button>
+          <button class="btn btn--sm" id="btn-zurueck" onclick="backToCurrent()" style="display:none">← Aktuelle Woche</button>
           <button class="btn-icon" onclick="exportPDF()" title="PDF exportieren">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           </button>
-          <button class="btn-primary" id="btn-generieren" onclick="openDrawModal()">
+          <button class="btn--primary" id="btn-generieren" onclick="openDrawModal()">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
             Neu generieren
           </button>
@@ -202,7 +202,7 @@
     <div id="draw-pool-info" class="draw-pool-info"></div>
     <div class="modal-footer">
       <button class="btn" onclick="closeDrawModal()">Abbrechen</button>
-      <button class="btn btn-p" onclick="drawWeek()">Generieren</button>
+      <button class="btn btn--primary" onclick="drawWeek()">Generieren</button>
     </div>
   </div>
 </div>
@@ -247,7 +247,7 @@
     </div>
     <div class="modal-footer">
       <button class="btn" onclick="closeQE()">Abbrechen</button>
-      <button class="btn btn-p" onclick="saveQE()">Rezept hinzufügen</button>
+      <button class="btn btn--primary" onclick="saveQE()">Rezept hinzufügen</button>
     </div>
   </div>
 </div>
