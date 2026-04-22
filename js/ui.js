@@ -58,3 +58,29 @@ export function srcHTML(src) {
   }
   return `<span class="src-display">📖 ${esc(src.val)}${src.seite ? ', S. ' + esc(src.seite) : ''}</span>`;
 }
+
+// ── Theme (Light / Dark / System) ────────────────────────────────────────────
+const THEME_KEY = 'wp_theme';
+
+export function getTheme() {
+  const stored = localStorage.getItem(THEME_KEY);
+  return stored === 'light' || stored === 'dark' ? stored : 'system';
+}
+
+export function setTheme(t) {
+  if (t === 'system') {
+    localStorage.removeItem(THEME_KEY);
+    document.documentElement.removeAttribute('data-theme');
+  } else {
+    localStorage.setItem(THEME_KEY, t);
+    document.documentElement.setAttribute('data-theme', t);
+  }
+}
+
+// Call on boot to apply saved theme before first paint if possible
+export function initTheme() {
+  const t = getTheme();
+  if (t !== 'system') {
+    document.documentElement.setAttribute('data-theme', t);
+  }
+}

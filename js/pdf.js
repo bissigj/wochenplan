@@ -1,4 +1,5 @@
 import { D, getCatLabel, getAufLabel } from './data.js';
+import { TAG_FALLBACK } from './config.js';
 import { fmtIng, toast, esc, formatAmount } from './ui.js';
 import { getActivePlan, aggregateIngredients } from './shopping.js';
 
@@ -18,11 +19,11 @@ const PDF = {
   font:     '-apple-system,"Helvetica Neue",Arial,sans-serif',
 };
 
-// ── Shared color helpers ──────────────────────────────────────────────────────
-const catColor = (id) => { const c = D.settings.cats.find(c => c.id === id); return c ? c.color : PDF.muted; };
-const aufColor = (id) => { const a = D.settings.aufwand.find(a => a.id === id); return a ? a.color : PDF.muted; };
-const catBg    = (id) => { const c = D.settings.cats.find(c => c.id === id); return c ? c.bg : PDF.line; };
-const aufBg    = (id) => { const a = D.settings.aufwand.find(a => a.id === id); return a ? a.bg : PDF.line; };
+// ── Shared color helpers (single source of truth via TAG_FALLBACK) ────────────
+const catColor = (id) => (D.settings.cats.find(c => c.id === id) || TAG_FALLBACK).color;
+const aufColor = (id) => (D.settings.aufwand.find(a => a.id === id) || TAG_FALLBACK).color;
+const catBg    = (id) => (D.settings.cats.find(c => c.id === id) || TAG_FALLBACK).bg;
+const aufBg    = (id) => (D.settings.aufwand.find(a => a.id === id) || TAG_FALLBACK).bg;
 
 // ── URL escape helper (für background-image etc.) ─────────────────────────────
 const escUrl = (u) => String(u ?? '').replace(/'/g, '%27').replace(/"/g, '%22');

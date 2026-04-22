@@ -1,5 +1,5 @@
-import { showTab, toast } from './ui.js';
-import { D, applyTagStyles } from './data.js';
+import { showTab, toast, initTheme } from './ui.js';
+import { D } from './data.js';
 import { doLogin, doRegister, doLogout, showLogin, showRegister, tryRestoreSession, obCreateFamily, obJoinFamily } from './auth.js';
 import { renderRFilters, renderRecipes, toggleRF, toggleER, delR, addIng, delIng, addStep, delStep, updR, setSrcType, updSrc, openQE, closeQE, saveQE, setSortOrder, uploadRecipeImage, removeRecipeImage, togglePublic } from './recipes.js';
 import { renderWeek, openDrawModal, closeDrawModal, toggleDrawPill, setTimePill, drawWeek, backToCurrent, toggleDay, toggleDayActive, rerollDay, setPortions, setNote } from './week.js';
@@ -7,7 +7,10 @@ import { renderShop, setShopView } from './shopping.js';
 import { renderArchiv, viewArchiveWeek } from './archive.js';
 import { exportPDF, exportRecipePDF, exportShopPDF } from './pdf.js';
 import { openDiscover, closeDiscover, importRecipe, filterDiscover, setDiscoverCat, setDiscoverAuf, toggleDiscoverR, discoverLoadMore } from './discover.js';
-import { renderSettings, toggleAcc, addCat, updateCat, updateCatColor, updateCatBg, deleteCat, addAuf, updateAuf, updateAufColor, updateAufBg, deleteAuf, addEinh, deleteEinh, saveFamilyName, createInvitation, joinFamily } from './settings.js';
+import { renderSettings, toggleAcc, changeTheme, addCat, updateCat, updateCatColor, updateCatBg, deleteCat, addAuf, updateAuf, updateAufColor, updateAufBg, deleteAuf, addEinh, deleteEinh, saveFamilyName, createInvitation, joinFamily } from './settings.js';
+
+// ── Apply saved theme before first paint ──────────────────────────────────────
+initTheme();
 
 // ── Global functions (needed for onclick="" in HTML) ──────────────────────────
 window.doLogin           = doLogin;
@@ -25,17 +28,13 @@ window.showTab = (t) => {
   if (t === 'einkauf') renderShop();
   if (t === 'archiv') renderArchiv();
   if (t === 'einstellungen') renderSettings();
-  // Update bottom nav + header gear active state
   document.querySelectorAll('.nav-item').forEach(el => {
     el.classList.toggle('active', el.id === 'nav-' + t);
   });
-  // Gear icon in header
   const gear = document.getElementById('nav-einstellungen');
   if (gear) gear.style.color = t === 'einstellungen' ? 'var(--meadow)' : '';
-  // Update page title
   const titleEl = document.getElementById('page-title');
   if (titleEl) titleEl.textContent = PAGE_TITLES[t] || 'Wochenplan';
-  // Show FAB only on rezepte tab
   const fabGroup = document.getElementById('fab-group');
   if (fabGroup) fabGroup.classList.toggle('hidden', t !== 'rezepte');
 };
@@ -83,7 +82,7 @@ window.toggleDiscoverR   = toggleDiscoverR;
 window.discoverLoadMore  = discoverLoadMore;
 window.renderSettings    = renderSettings;
 window.toggleAcc         = toggleAcc;
-window.applyTagStyles    = applyTagStyles;
+window.changeTheme       = changeTheme;
 window.addCat            = addCat;
 window.updateCat         = updateCat;
 window.updateCatColor    = updateCatColor;
@@ -102,12 +101,10 @@ window.joinFamily        = joinFamily;
 
 // ── renderAll (used by auth after login) ─────────────────────────────────────
 export function renderAll() {
-  applyTagStyles();
   renderRFilters();
   renderRecipes();
   renderWeek();
   populateQESelects();
-  // Show FAB on initial load (rezepte is default tab)
   const fabGroup = document.getElementById('fab-group');
   if (fabGroup) fabGroup.classList.remove('hidden');
 }
@@ -125,7 +122,6 @@ function populateQESelects() {
   }
 }
 
-// ── Search ───────────────────────────────────────────────────────────────────
 window.filterRecipes = (q) => {
   renderRecipes(q.toLowerCase().trim());
 };

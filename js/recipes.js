@@ -1,4 +1,4 @@
-import { D, getCatLabel, getAufLabel, applyTagStyles } from './data.js';
+import { D, getCatLabel, getAufLabel, tagStyle } from './data.js';
 import { parseIngredient } from 'https://esm.sh/@jlucaspains/sharp-recipe-parser@1.3.6';
 import { saveRecipesDebounced, saveRecipeNow, deleteRecipeFromDB, saveWeekNow } from './data.js';
 import { sbUploadImage, sbDeleteImage } from './db.js';
@@ -15,11 +15,11 @@ window.undoDelR = () => { if (window._undoDelR) window._undoDelR(); };
 export function renderRFilters() {
   document.getElementById('r-count').textContent = D.recipes.length + ' Rezepte';
   const allFilters = [
-    ...D.settings.cats.map(c => ({ id: c.id, label: c.label, type: 'cat' })),
-    ...D.settings.aufwand.map(a => ({ id: a.id, label: a.label, type: 'auf' }))
+    ...D.settings.cats.map(c => ({ id: c.id, label: c.label })),
+    ...D.settings.aufwand.map(a => ({ id: a.id, label: a.label }))
   ];
   document.getElementById('r-filters').innerHTML = allFilters.map(f =>
-    `<button class="pill tag-${esc(f.id)} ${rFilters.has(f.id) ? 'on' : ''}" onclick="toggleRF('${esc(f.id)}')">${esc(f.label)}</button>`
+    `<button class="pill ${rFilters.has(f.id) ? 'on' : ''}" style="${tagStyle(f.id)}" onclick="toggleRF('${esc(f.id)}')">${esc(f.label)}</button>`
   ).join('');
 }
 
@@ -79,12 +79,12 @@ export function renderRecipes(searchQuery = '') {
       <div class="recipe-row" onclick="toggleER(${r.id})" style="cursor:pointer">
         <span class="recipe-name-col">${esc(r.name)}</span>
         <span class="recipe-meta">${r.time ? r.time + ' min' : ''}</span>
-        <span class="tag tag-${esc(r.cat)}">${esc(getCatLabel(r.cat))}</span>
-        <span class="tag tag-${esc(r.auf)}">${esc(getAufLabel(r.auf))}</span>
+        <span class="tag" style="${tagStyle(r.cat)}">${esc(getCatLabel(r.cat))}</span>
+        <span class="tag" style="${tagStyle(r.auf)}">${esc(getAufLabel(r.auf))}</span>
         <button class="xbtn" onclick="event.stopPropagation();delR(${r.id})" style="margin-left:6px;padding:4px 6px;font-size:16px;opacity:0.4" onmouseover="this.style.opacity=1;this.style.color='var(--red)'" onmouseout="this.style.opacity=0.4;this.style.color=''">×</button>
       </div>
-      ${isOpen ? `<div class="recipe-detail recipe-detail-open">
-      ${r.img ? `<div class="recipe-img" style="background-image:url('${esc(r.img)}');margin-bottom:1rem"></div>` : ''}
+      ${isOpen ? `<div class="recipe-detail">
+      ${r.img ? `<div class="recipe-img" style="background-image:url('${esc(r.img)}')"></div>` : ''}
       <div class="detail-grid">
         <div>
           <div class="section-title">Eckdaten</div>
@@ -110,7 +110,7 @@ export function renderRecipes(searchQuery = '') {
             <input type="number" id="im-${r.id}" placeholder="Menge" min="0" step="0.1" style="width:70px" />
             <select id="iu-${r.id}" style="width:80px">${einheiten.map(u => `<option>${esc(u)}</option>`).join('')}</select>
             <input type="text" id="in-${r.id}" placeholder="Zutatname" style="flex:1" onkeydown="if(event.key==='Enter')addIng(${r.id})" />
-            <button class="btn btn-sm" onclick="addIng(${r.id})">+</button>
+            <button class="btn btn--sm" onclick="addIng(${r.id})">+</button>
           </div>
         </div>
         <div>
@@ -118,7 +118,7 @@ export function renderRecipes(searchQuery = '') {
           <ol class="steps-list" id="steps-${r.id}">${(r.steps || []).map((s, i) => `<li class="step-item" data-idx="${i}"><span class="drag-handle">⠿</span><span class="step-num">${i + 1}</span><span class="step-text">${esc(s)}</span><button class="xbtn" onclick="delStep(${r.id},${i})" style="margin-top:3px">×</button></li>`).join('')}</ol>
           <div class="row" style="gap:6px">
             <input type="text" id="st-${r.id}" placeholder="Schritt hinzufügen…" style="flex:1" onkeydown="if(event.key==='Enter')addStep(${r.id})" />
-            <button class="btn btn-sm" onclick="addStep(${r.id})">+</button>
+            <button class="btn btn--sm" onclick="addStep(${r.id})">+</button>
           </div>
           <div class="section-title" style="margin-top:12px">Quelle</div>
           <div class="row" style="gap:6px;margin-bottom:8px">
@@ -133,16 +133,16 @@ export function renderRecipes(searchQuery = '') {
           <div class="section-title" style="margin-top:12px">Foto</div>
           <div id="img-preview-${r.id}" style="width:100%;height:140px;background-size:cover;background-position:center;border-radius:var(--rs);margin-bottom:8px;${r.img ? `background-image:url('${esc(r.img)}')` : 'display:none'}"></div>
           <div class="img-upload-wrap">
-            <label class="btn btn-sm" style="cursor:pointer">
+            <label class="btn btn--sm" style="cursor:pointer">
               <span class="img-upload-label">${r.img ? 'Foto ersetzen' : '+ Foto hochladen'}</span>
               <input type="file" accept="image/*,image/heic" style="display:none" onchange="uploadRecipeImage(${r.id},this)" />
             </label>
-            ${r.img ? `<button class="btn btn-d btn-sm" onclick="removeRecipeImage(${r.id})">Foto entfernen</button>` : ''}
+            ${r.img ? `<button class="btn btn--danger btn--sm" onclick="removeRecipeImage(${r.id})">Foto entfernen</button>` : ''}
           </div>
         </div>
         <div class="row" style="margin-top:12px;justify-content:space-between">
-          <button class="btn btn-sm" onclick="exportRecipePDF(${r.id})">↓ PDF exportieren</button>
-          <button class="btn btn-sm ${r.public === false ? 'btn-private' : 'btn-public'}"
+          <button class="btn btn--sm" onclick="exportRecipePDF(${r.id})">↓ PDF exportieren</button>
+          <button class="btn btn--sm ${r.public === false ? 'btn-private' : 'btn-public'}"
             onclick="togglePublic(${r.id})" title="${r.public === false ? 'Privat – nur für dich sichtbar' : 'Öffentlich – für andere sichtbar'}">
             ${r.public === false ? '🔒 Privat' : '👁 Öffentlich'}
           </button>

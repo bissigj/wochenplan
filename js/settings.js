@@ -1,6 +1,7 @@
-import { D, saveSettingsNow, applyTagStyles } from './data.js';
+import { D, saveSettingsNow, tagStyle } from './data.js';
+import { CAT_PALETTE, AUF_PALETTE } from './config.js';
 import { sbGet, sbInsert, sbUpdate } from './db.js';
-import { toast, esc } from './ui.js';
+import { toast, esc, getTheme, setTheme } from './ui.js';
 import { renderRFilters, renderRecipes } from './recipes.js';
 import { renderWeek } from './week.js';
 import { joinFamilyByCode } from './auth.js';
@@ -27,7 +28,7 @@ function rerenderSettings() {
   restoreOpenAccordions(open);
 }
 
-// ── Render Settings Tab ───────────────────────────────────────────────────────
+// ── Accordion helper ──────────────────────────────────────────────────────────
 function accordion(id, title, content, open = false) {
   return `<div class="acc-item ${open ? 'open' : ''}">
     <button class="acc-header" onclick="toggleAcc('${esc(id)}')">
@@ -43,18 +44,30 @@ export function toggleAcc(id) {
   item.classList.toggle('open');
 }
 
+// ── Theme Toggle (setTheme aus ui.js) ─────────────────────────────────────────
+export function changeTheme(t) {
+  setTheme(t);
+  // Neu rendern damit der aktive State im UI updated
+  const openIds = getOpenAccordions();
+  rerenderSettings();
+  restoreOpenAccordions(openIds);
+  toast(t === 'system' ? 'Theme: System' : (t === 'dark' ? 'Theme: Dunkel' : 'Theme: Hell'));
+}
+
+// ── Render Settings Tab ───────────────────────────────────────────────────────
 export function renderSettings() {
   const el = document.getElementById('tab-einstellungen');
   if (!el) return;
 
   const cats = D.settings.cats;
   const auf = D.settings.aufwand;
+  const theme = getTheme();
 
   const familyContent = `
     <div id="family-section">
       <div class="settings-row">
         <input type="text" id="family-name-input" class="settings-input" value="${esc(D.familyName || '')}" placeholder="Familienname" />
-        <button class="btn btn-sm" onclick="saveFamilyName()">Speichern</button>
+        <button class="btn btn--sm" onclick="saveFamilyName()">Speichern</button>
       </div>
       <div style="margin-top:12px">
         <div class="section-title">Mitglieder</div>
@@ -67,7 +80,7 @@ export function renderSettings() {
             <option value="member">Member</option>
             <option value="admin">Admin</option>
           </select>
-          <button class="btn btn-sm" onclick="createInvitation()">Einladungscode erstellen</button>
+          <button class="btn btn--sm" onclick="createInvitation()">Einladungscode erstellen</button>
         </div>
         <div id="invitation-result" style="margin-top:8px;font-size:13px"></div>
       </div>
@@ -75,10 +88,18 @@ export function renderSettings() {
         <div class="section-title">Familie beitreten</div>
         <div class="row" style="gap:6px">
           <input type="text" id="invite-code-input" placeholder="Einladungscode…" style="flex:1;max-width:200px" />
-          <button class="btn btn-sm" onclick="joinFamily()">Beitreten</button>
+          <button class="btn btn--sm" onclick="joinFamily()">Beitreten</button>
         </div>
         <div id="join-result" style="margin-top:8px;font-size:13px"></div>
       </div>
+    </div>`;
+
+  const themeContent = `
+    <div class="section-title" style="margin-top:0">Erscheinungsbild</div>
+    <div class="theme-segment">
+      <button class="${theme === 'system' ? 'on' : ''}" onclick="changeTheme('system')">Auto</button>
+      <button class="${theme === 'light' ? 'on' : ''}" onclick="changeTheme('light')">Hell</button>
+      <button class="${theme === 'dark' ? 'on' : ''}" onclick="changeTheme('dark')">Dunkel</button>
     </div>`;
 
   const catsContent = `
@@ -91,14 +112,14 @@ export function renderSettings() {
             onchange="updateCatBg('${esc(c.id)}', this.value)" title="Hintergrundfarbe" />
           <input type="text" value="${esc(c.label)}" class="settings-input"
             onchange="updateCat('${esc(c.id)}', this.value)" />
-          <span class="tag tag-${esc(c.id)}" style="flex-shrink:0">${esc(c.label)}</span>
-          <button class="btn btn-d btn-sm" onclick="deleteCat('${esc(c.id)}')">×</button>
+          <span class="tag" style="${tagStyle(c.id)};flex-shrink:0">${esc(c.label)}</span>
+          <button class="btn btn--danger btn--sm" onclick="deleteCat('${esc(c.id)}')">×</button>
         </div>`).join('')}
     </div>
     <div class="row" style="gap:6px;margin-top:8px">
       <input type="text" id="new-cat-input" placeholder="Neue Kategorie…" style="flex:1"
         onkeydown="if(event.key==='Enter')addCat()" />
-      <button class="btn btn-sm" onclick="addCat()">+</button>
+      <button class="btn btn--sm" onclick="addCat()">+</button>
     </div>`;
 
   const aufContent = `
@@ -111,14 +132,14 @@ export function renderSettings() {
             onchange="updateAufBg('${esc(a.id)}', this.value)" title="Hintergrundfarbe" />
           <input type="text" value="${esc(a.label)}" class="settings-input"
             onchange="updateAuf('${esc(a.id)}', this.value)" />
-          <span class="tag tag-${esc(a.id)}" style="flex-shrink:0">${esc(a.label)}</span>
-          <button class="btn btn-d btn-sm" onclick="deleteAuf('${esc(a.id)}')">×</button>
+          <span class="tag" style="${tagStyle(a.id)};flex-shrink:0">${esc(a.label)}</span>
+          <button class="btn btn--danger btn--sm" onclick="deleteAuf('${esc(a.id)}')">×</button>
         </div>`).join('')}
     </div>
     <div class="row" style="gap:6px;margin-top:8px">
       <input type="text" id="new-auf-input" placeholder="Neuer Aufwand…" style="flex:1"
         onkeydown="if(event.key==='Enter')addAuf()" />
-      <button class="btn btn-sm" onclick="addAuf()">+</button>
+      <button class="btn btn--sm" onclick="addAuf()">+</button>
     </div>`;
 
   // Fix #10: Einheiten via data-Attribut statt im onclick-String (Sonderzeichen-sicher)
@@ -133,11 +154,12 @@ export function renderSettings() {
     <div class="row" style="gap:6px">
       <input type="text" id="new-einh-input" placeholder="Neue Einheit…" style="flex:1;max-width:160px"
         onkeydown="if(event.key==='Enter')addEinh()" />
-      <button class="btn btn-sm" onclick="addEinh()">+</button>
+      <button class="btn btn--sm" onclick="addEinh()">+</button>
     </div>`;
 
   el.innerHTML = `<div class="acc-wrap">
     ${accordion('familie', 'Familie', familyContent, true)}
+    ${accordion('theme', 'Erscheinungsbild', themeContent)}
     ${accordion('kategorien', 'Kategorien', catsContent)}
     ${accordion('aufwand', 'Aufwand', aufContent)}
     ${accordion('einheiten', 'Einheiten', einhContent)}
@@ -147,20 +169,9 @@ export function renderSettings() {
 }
 
 
-// ── Color palette for new entries ────────────────────────────────────────────
-const PALETTE = [
-  { color: '#1a6b4a', bg: '#e0f0e8' },
-  { color: '#6b4a1a', bg: '#f0e8e0' },
-  { color: '#1a4a6b', bg: '#e0e8f0' },
-  { color: '#6b1a4a', bg: '#f0e0e8' },
-  { color: '#4a6b1a', bg: '#e8f0e0' },
-  { color: '#4a1a6b', bg: '#e8e0f0' },
-  { color: '#6b6b1a', bg: '#f0f0e0' },
-];
-
-function nextColor(arr) {
-  return PALETTE[arr.length % PALETTE.length];
-}
+// ── Color palette for new entries (from config.js – single source of truth) ─
+function nextCatColor(arr) { return CAT_PALETTE[arr.length % CAT_PALETTE.length]; }
+function nextAufColor(arr) { return AUF_PALETTE[arr.length % AUF_PALETTE.length]; }
 
 export async function addCat() {
   const input = document.getElementById('new-cat-input');
@@ -168,11 +179,10 @@ export async function addCat() {
   if (!label) return;
   if (D.settings.cats.find(c => c.label === label)) { toast('Kategorie existiert bereits'); return; }
   const id = 'cat_' + Date.now();
-  const { color, bg } = nextColor(D.settings.cats);
+  const { color, bg } = nextCatColor(D.settings.cats);
   D.settings.cats.push({ id, label, color, bg });
   input.value = '';
   await saveSettingsNow();
-  applyTagStyles();
   rerenderSettings();
   renderRFilters();
   toast(`"${label}" hinzugefügt`);
@@ -184,25 +194,29 @@ export async function updateCat(id, newLabel) {
   const cat = D.settings.cats.find(c => c.id === id);
   if (cat) cat.label = newLabel;
   await saveSettingsNow();
-  applyTagStyles();
   renderRFilters();
   renderRecipes();
   rerenderSettings();
 }
 
-// Fix #14: Bei Farb-Änderung reicht applyTagStyles, kein Re-Render nötig
+// Fix #14: Bei Farb-Änderung reicht es, die betroffenen Views neu zu rendern
+// (kein applyTagStyles mehr nötig, Farben sind inline)
 export async function updateCatColor(id, color) {
   const cat = D.settings.cats.find(c => c.id === id);
   if (cat) cat.color = color;
   await saveSettingsNow();
-  applyTagStyles();
+  renderRFilters();
+  renderRecipes();
+  renderWeek();
 }
 
 export async function updateCatBg(id, bg) {
   const cat = D.settings.cats.find(c => c.id === id);
   if (cat) cat.bg = bg;
   await saveSettingsNow();
-  applyTagStyles();
+  renderRFilters();
+  renderRecipes();
+  renderWeek();
 }
 
 export async function deleteCat(id) {
@@ -212,7 +226,6 @@ export async function deleteCat(id) {
   if (inUse && !confirm(`"${cat.label}" wird von Rezepten verwendet. Trotzdem löschen?`)) return;
   D.settings.cats = D.settings.cats.filter(c => c.id !== id);
   await saveSettingsNow();
-  applyTagStyles();
   rerenderSettings();
   renderRFilters();
   renderRecipes();
@@ -225,11 +238,10 @@ export async function addAuf() {
   if (!label) return;
   if (D.settings.aufwand.find(a => a.label === label)) { toast('Aufwand existiert bereits'); return; }
   const id = 'auf_' + Date.now();
-  const { color, bg } = nextColor(D.settings.aufwand);
+  const { color, bg } = nextAufColor(D.settings.aufwand);
   D.settings.aufwand.push({ id, label, color, bg });
   input.value = '';
   await saveSettingsNow();
-  applyTagStyles();
   rerenderSettings();
   toast(`"${label}" hinzugefügt`);
 }
@@ -241,9 +253,9 @@ export async function updateAuf(id, newLabel) {
   const auf = D.settings.aufwand.find(a => a.id === id);
   if (auf) auf.label = newLabel;
   await saveSettingsNow();
-  applyTagStyles();
   renderWeek();
   renderRecipes();
+  renderRFilters();
   rerenderSettings();
 }
 
@@ -251,14 +263,18 @@ export async function updateAufColor(id, color) {
   const auf = D.settings.aufwand.find(a => a.id === id);
   if (auf) auf.color = color;
   await saveSettingsNow();
-  applyTagStyles();
+  renderRFilters();
+  renderRecipes();
+  renderWeek();
 }
 
 export async function updateAufBg(id, bg) {
   const auf = D.settings.aufwand.find(a => a.id === id);
   if (auf) auf.bg = bg;
   await saveSettingsNow();
-  applyTagStyles();
+  renderRFilters();
+  renderRecipes();
+  renderWeek();
 }
 
 export async function deleteAuf(id) {
@@ -268,7 +284,6 @@ export async function deleteAuf(id) {
   if (inUse && !confirm(`"${auf.label}" wird von Rezepten verwendet. Trotzdem löschen?`)) return;
   D.settings.aufwand = D.settings.aufwand.filter(a => a.id !== id);
   await saveSettingsNow();
-  applyTagStyles();
   rerenderSettings();
   renderRFilters();
   renderRecipes();

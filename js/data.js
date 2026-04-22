@@ -1,5 +1,5 @@
 import { sbGet, sbInsert, sbUpdate, sbDelete } from './db.js';
-import { DEFAULT_SETTINGS, DEFAULT_EINHEITEN } from './config.js';
+import { DEFAULT_SETTINGS, DEFAULT_EINHEITEN, TAG_FALLBACK } from './config.js';
 import { setSyncStatus } from './ui.js';
 
 export let D = {
@@ -173,36 +173,32 @@ export async function saveSettingsNow() {
   } catch (e) { console.error('saveSettings error', e); }
 }
 
-// ── Label lookup helpers ──────────────────────────────────────────────────────
+// ── Tag lookups ───────────────────────────────────────────────────────────────
+export function getCat(id) {
+  if (!id) return null;
+  return D.settings.cats.find(c => c.id === id) || null;
+}
+
+export function getAuf(id) {
+  if (!id) return null;
+  return D.settings.aufwand.find(a => a.id === id) || null;
+}
+
 export function getCatLabel(id) {
-  if (!id) return '';
-  const found = D.settings.cats.find(c => c.id === id);
-  return found ? found.label : id;
+  const c = getCat(id);
+  return c ? c.label : (id || '');
 }
 
 export function getAufLabel(id) {
-  if (!id) return '';
-  const found = D.settings.aufwand.find(a => a.id === id);
-  return found ? found.label : id;
+  const a = getAuf(id);
+  return a ? a.label : (id || '');
 }
 
-// ── Dynamic tag styles ────────────────────────────────────────────────────────
-export function applyTagStyles() {
-  let css = '';
-  const allEntries = [...(D.settings.cats || []), ...(D.settings.aufwand || [])];
-
-  allEntries.forEach(e => {
-    css += `.tag-${e.id}{background:${e.bg};color:${e.color};}\n`;
-    const borderAlpha = e.color + '60';
-    css += `.pill.tag-${e.id}{background:transparent;color:${e.color};border-color:${borderAlpha};}\n`;
-    css += `.pill.tag-${e.id}.on{background:${e.bg};border-color:${e.color};}\n`;
-  });
-
-  let el = document.getElementById('dynamic-tag-styles');
-  if (!el) {
-    el = document.createElement('style');
-    el.id = 'dynamic-tag-styles';
-    document.head.appendChild(el);
-  }
-  el.textContent = css;
+// ── Tag style (used inline: style="${tagStyle(cat_id)}") ──────────────────────
+// Ersetzt das alte applyTagStyles() – keine globalen Injections mehr nötig.
+// Gibt einen style-String zurück der --tag-c und --tag-bg setzt,
+// die von .tag und .pill in CSS konsumiert werden.
+export function tagStyle(id) {
+  const entry = getCat(id) || getAuf(id) || TAG_FALLBACK;
+  return `--tag-c:${entry.color};--tag-bg:${entry.bg}`;
 }

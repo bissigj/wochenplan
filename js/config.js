@@ -2,21 +2,46 @@ export const SUPA_URL = 'https://qbodqcxhmlkqvmdxstrn.supabase.co';
 export const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFib2RxY3hobWxrcXZtZHhzdHJuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYwODM3NTIsImV4cCI6MjA5MTY1OTc1Mn0.Xh5vyf0A2fieS5weyho-kHBwL5Red64L40D2axTEBNY';
 
 export const DAYS = ['Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag','Sonntag'];
+
+// ── Color Palette (Single Source of Truth) ────────────────────────────────────
+// Wird verwendet für:
+//   - DEFAULT_SETTINGS beim ersten Start
+//   - nextColor() in settings.js für neue Kategorien
+//   - Fallback in pdf.js wenn Tag-ID nicht gefunden
+export const CAT_PALETTE = [
+  { color: '#8a6830', bg: '#f5f0e8' }, // warmbraun
+  { color: '#8a4028', bg: '#faeee8' }, // rot
+  { color: '#68829E', bg: '#e8f0f5' }, // blau
+  { color: '#598234', bg: '#eef3e0' }, // grün
+  { color: '#534AB7', bg: '#eeecf8' }, // violett
+  { color: '#7a4a8a', bg: '#f5eef8' }, // lila
+  { color: '#68686a', bg: '#f0f0ee' }, // grau
+];
+
+export const AUF_PALETTE = [
+  { color: '#598234', bg: '#eef5e8' }, // grün
+  { color: '#6a7a20', bg: '#f0f4e0' }, // oliv
+  { color: '#8a3838', bg: '#f5eeee' }, // rot
+];
+
+// Neutraler Fallback für unbekannte Tag-IDs (z.B. in PDFs, gelöschte Kategorien)
+export const TAG_FALLBACK = { color: '#888888', bg: '#f0f0f0' };
+
 // Default settings – used only on first load if no settings in DB
 export const DEFAULT_SETTINGS = {
   cats: [
-    { id: 'cat_pasta',       label: 'pasta',      color: '#8a6830', bg: '#f5f0e8' },
-    { id: 'cat_curry',       label: 'curry',      color: '#8a4028', bg: '#faeee8' },
-    { id: 'cat_suppe',       label: 'suppe',      color: '#68829E', bg: '#e8f0f5' },
-    { id: 'cat_salat',       label: 'salat',      color: '#598234', bg: '#eef3e0' },
-    { id: 'cat_auflauf',     label: 'auflauf',    color: '#534AB7', bg: '#eeecf8' },
-    { id: 'cat_fruehstueck', label: 'frühstück',  color: '#7a4a8a', bg: '#f5eef8' },
-    { id: 'cat_sonstiges',   label: 'sonstiges',  color: '#68686a', bg: '#f0f0ee' },
+    { id: 'cat_pasta',       label: 'pasta',      ...CAT_PALETTE[0] },
+    { id: 'cat_curry',       label: 'curry',      ...CAT_PALETTE[1] },
+    { id: 'cat_suppe',       label: 'suppe',      ...CAT_PALETTE[2] },
+    { id: 'cat_salat',       label: 'salat',      ...CAT_PALETTE[3] },
+    { id: 'cat_auflauf',     label: 'auflauf',    ...CAT_PALETTE[4] },
+    { id: 'cat_fruehstueck', label: 'frühstück',  ...CAT_PALETTE[5] },
+    { id: 'cat_sonstiges',   label: 'sonstiges',  ...CAT_PALETTE[6] },
   ],
   aufwand: [
-    { id: 'auf_einfach', label: 'einfach', color: '#598234', bg: '#eef5e8' },
-    { id: 'auf_mittel',  label: 'mittel',  color: '#6a7a20', bg: '#f0f4e0' },
-    { id: 'auf_schwer',  label: 'schwer',  color: '#8a3838', bg: '#f5eeee' },
+    { id: 'auf_einfach', label: 'einfach', ...AUF_PALETTE[0] },
+    { id: 'auf_mittel',  label: 'mittel',  ...AUF_PALETTE[1] },
+    { id: 'auf_schwer',  label: 'schwer',  ...AUF_PALETTE[2] },
   ]
 };
 export const DEFAULT_EINHEITEN = ['Stück','g','kg','dl','cl','ml','l','EL','TL','Prise','Bund','Dose','Pck.'];

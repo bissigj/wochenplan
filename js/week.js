@@ -1,4 +1,4 @@
-import { D } from './data.js';
+import { D, tagStyle } from './data.js';
 import { saveWeekNow } from './data.js';
 import { sbInsert } from './db.js';
 import { DAYS } from './config.js';
@@ -23,7 +23,7 @@ const TIME_OPTIONS = [
 export function openDrawModal() {
   // Aufwand-Pills – dynamisch aus Settings
   document.getElementById('draw-diff-pills').innerHTML = D.settings.aufwand.map(a =>
-    `<button class="pill ${drawDiff.has(a.id) ? 'on' : ''} tag-${a.id}"
+    `<button class="pill ${drawDiff.has(a.id) ? 'on' : ''}" style="${tagStyle(a.id)}"
       data-v="${esc(a.id)}" onclick="toggleDrawPill(this)">${esc(a.label)}</button>`
   ).join('');
   // Zeit-Pills – aus TIME_OPTIONS
@@ -215,7 +215,7 @@ function renderDayCard(d, i, plan, readonly) {
           ? `<div class="day-recipe-name">${esc(r.name)}</div>
              <div class="day-meta">${r.time ? r.time + ' min · ' : ''}${esc(getAufLabel(r.auf))}</div>
              <div class="row" style="gap:4px;flex-wrap:wrap">
-               <span class="tag tag-${esc(r.cat)}">${esc(getCatLabel(r.cat))}</span>
+               <span class="tag" style="${tagStyle(r.cat)}">${esc(getCatLabel(r.cat))}</span>
                <span style="font-size:11px;color:var(--text3);margin-left:auto">${isOpen ? '▲' : '▼'}</span>
              </div>`
           : '<div style="font-size:13px;color:var(--text3)">—</div>'}

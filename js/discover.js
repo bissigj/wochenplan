@@ -1,4 +1,4 @@
-import { D, getCatLabel, getAufLabel } from './data.js';
+import { D, getCatLabel, getAufLabel, tagStyle } from './data.js';
 import { saveRecipeNow } from './data.js';
 import { sbGet } from './db.js';
 import { toast, esc, formatAmount } from './ui.js';
@@ -89,12 +89,12 @@ function renderDiscoverFilters() {
   if (!el) return;
 
   const cats = D.settings.cats.map(c =>
-    `<button class="pill tag-${esc(c.id)} ${discoverCat === c.id ? 'on' : ''}"
+    `<button class="pill ${discoverCat === c.id ? 'on' : ''}" style="${tagStyle(c.id)}"
       onclick="setDiscoverCat('${esc(c.id)}')">${esc(c.label)}</button>`
   ).join('');
 
   const aufs = D.settings.aufwand.map(a =>
-    `<button class="pill tag-${esc(a.id)} ${discoverAuf === a.id ? 'on' : ''}"
+    `<button class="pill ${discoverAuf === a.id ? 'on' : ''}" style="${tagStyle(a.id)}"
       onclick="setDiscoverAuf('${esc(a.id)}')">${esc(a.label)}</button>`
   ).join('');
 
@@ -131,8 +131,8 @@ function renderDiscoverCard(row, alreadyImported) {
           </div>
           <div class="discover-name">${esc(r.name)}</div>
           <div class="row" style="gap:5px;margin-top:6px">
-            <span class="tag tag-${esc(r.cat)}">${esc(getCatLabel(r.cat))}</span>
-            <span class="tag tag-${esc(r.auf)}">${esc(getAufLabel(r.auf))}</span>
+            <span class="tag" style="${tagStyle(r.cat)}">${esc(getCatLabel(r.cat))}</span>
+            <span class="tag" style="${tagStyle(r.auf)}">${esc(getAufLabel(r.auf))}</span>
           </div>
         </div>
         ${isOpen ? `
@@ -151,7 +151,7 @@ function renderDiscoverCard(row, alreadyImported) {
         <div style="margin-top:10px">
           ${alreadyImported
             ? '<div class="discover-imported">✓ Bereits importiert</div>'
-            : `<button class="btn btn-p btn-sm" onclick="importRecipe('${esc(row.id)}')">+ Importieren</button>`
+            : `<button class="btn btn--primary btn--sm" onclick="importRecipe('${esc(row.id)}')">+ Importieren</button>`
           }
         </div>
       </div>
