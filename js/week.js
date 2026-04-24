@@ -171,7 +171,7 @@ function renderDayCard(d, i, plan, readonly) {
       <button class="btn btn--sm btn--ghost" onclick="toggleDayActive(${i},event)" title="${d.active ? 'Ausblenden' : 'Einblenden'}">
         ${d.active ? '👁 Ausblenden' : '👁 Einblenden'}
       </button>
-      <button class="btn btn--sm btn--ghost" onclick="rerollDay(${i},event)" title="Anderes Rezept">🎲 Neu</button>
+      <button class="btn btn--sm btn--ghost" onclick="rerollDay(${i},event)" title="Anderes Rezept">Anderes Rezept</button>
     </div>`;
 
   const detailHTML = isOpen ? `
