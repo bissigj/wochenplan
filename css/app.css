@@ -1503,8 +1503,8 @@ textarea { resize: vertical; min-block-size: 60px; line-height: 1.5; }
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
-   RECIPE DETAIL – neues kompaktes Layout (Mockup v2)
-   Ersetze/ergänze den bisherigen .recipe-detail / .detail-grid Block
+   RECIPE DETAIL – kompaktes Layout (Mockup v2)
+   Ersetzt den bisherigen .recipe-detail / .detail-grid Block in app.css
    ─────────────────────────────────────────────────────────────────────────── */
 
 /* Bild-Header ---------------------------------------------------------------- */
@@ -1537,7 +1537,6 @@ textarea { resize: vertical; min-block-size: 60px; line-height: 1.5; }
   flex-wrap: wrap;
 }
 
-/* Tags und Chips im Overlay: weiss/transparent */
 .rd-img-meta .tag {
   background: rgba(255,255,255,0.18) !important;
   color: #fff !important;
@@ -1616,25 +1615,37 @@ textarea { resize: vertical; min-block-size: 60px; line-height: 1.5; }
   margin-inline: var(--s-6);
 }
 
-/* Zweispalten-Body ----------------------------------------------------------- */
+/* ── Zweispalten-Body ─────────────────────────────────────────────────────────
+   Fix: rd-col-sep ist kein Grid-Kind mehr, sondern ein position:absolute Strich.
+   Das Grid hat exakt 2 Spalten: Zutaten links, Zubereitung rechts.
+   ────────────────────────────────────────────────────────────────────────── */
 .rd-body {
   display: grid;
-  grid-template-columns: 1fr 1.6fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr);
   gap: 0;
   padding: var(--s-6);
   align-items: start;
+  position: relative;           /* Anker für den vertikalen Separator */
 }
-@media (max-width: 560px) {
+@media (max-width: 600px) {
   .rd-body { grid-template-columns: 1fr; }
-  .rd-col-sep { display: none; }
+  .rd-body::after { display: none; }
 }
 
-.rd-col-sep {
+/* Vertikaler Separator als Pseudo-Element – kein DOM-Element nötig */
+.rd-body::after {
+  content: '';
+  position: absolute;
+  inset-block: var(--s-2);
+  inset-inline-start: calc(1fr + var(--s-6));   /* Fallback für ältere Browser */
+  /* Exakte Position: 1/(1+1.6) = ~38.5% der Breite minus halber Gap */
+  inset-inline-start: calc(38.5% + var(--s-6) / 2);
   inline-size: 1px;
-  align-self: stretch;
   background: var(--bd);
-  margin-inline: var(--s-5);
 }
+
+.rd-col-ings  { padding-inline-end: var(--s-6); }
+.rd-col-steps { padding-inline-start: var(--s-6); }
 
 .rd-col-title {
   font-size: 11px;
@@ -1645,7 +1656,7 @@ textarea { resize: vertical; min-block-size: 60px; line-height: 1.5; }
   margin-block-end: var(--s-4);
 }
 
-/* Zutaten-Liste: Menge linksbündig in fester Spalte -------------------------- */
+/* ── Zutaten-Tabelle: Menge in fester Spalte, Name linksbündig ────────────── */
 .rd-ing-list {
   display: flex;
   flex-direction: column;
@@ -1654,17 +1665,26 @@ textarea { resize: vertical; min-block-size: 60px; line-height: 1.5; }
 
 .rd-ing-row {
   display: grid;
-  grid-template-columns: 1fr 16px;
+  grid-template-columns: 72px 1fr 18px;   /* Menge | Name | ×-Button */
   align-items: center;
+  gap: var(--s-2);
   padding: 5px 0;
   border-block-end: 1px solid var(--bd);
-  gap: var(--s-2);
 }
 .rd-ing-row:last-child { border-block-end: none; }
 
 .rd-ing-qty {
+  font-size: 12px;
+  color: var(--text2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rd-ing-name {
   font-size: 13px;
   color: var(--text);
+  line-height: 1.3;
 }
 
 /* Zutat-Hinzufügen-Zeile ----------------------------------------------------- */
@@ -1675,10 +1695,10 @@ textarea { resize: vertical; min-block-size: 60px; line-height: 1.5; }
   margin-block-start: var(--s-3);
 }
 
-.rd-add-qty  { width: 54px !important; font-size: 12px; padding: 4px 6px; }
-.rd-add-unit { width: 72px !important; font-size: 12px; padding: 4px 5px; }
-.rd-add-name { flex: 1; font-size: 12px; padding: 4px 7px; }
-.rd-add-step { flex: 1; font-size: 12px; padding: 4px 7px; }
+.rd-add-qty  { width: 54px !important; font-size: 12px !important; padding: 4px 6px !important; }
+.rd-add-unit { width: 72px !important; font-size: 12px !important; padding: 4px 5px !important; }
+.rd-add-name { flex: 1 !important; font-size: 12px !important; padding: 4px 7px !important; }
+.rd-add-step { flex: 1 !important; font-size: 12px !important; padding: 4px 7px !important; }
 
 /* Footer: Quelle + Sichtbarkeit nebeneinander -------------------------------- */
 .rd-footer {
@@ -1695,7 +1715,7 @@ textarea { resize: vertical; min-block-size: 60px; line-height: 1.5; }
 .rd-footer-cell { display: flex; flex-direction: column; gap: 0; }
 .rd-footer-cell input { margin-block-end: 5px; }
 
-/* Alte Klassen rückwärtskompatibel halten (discover.js nutzt detail-grid) --- */
+/* Alte Klassen rückwärtskompatibel (discover.js nutzt detail-grid) ---------- */
 .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-6); }
 @media (max-width: 560px) { .detail-grid { grid-template-columns: 1fr; } }
 
