@@ -1303,3 +1303,12 @@ textarea { resize: vertical; min-block-size: 60px; line-height: 1.5; }
 }
 #draw-diff-pills .pill,
 #draw-time-pills .pill { padding: var(--s-2) var(--s-5); font-size: 12px; }
+
+/* Quelle Read-only Zeile */
+.rd-src-display {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  flex-wrap: wrap;
+}
+
