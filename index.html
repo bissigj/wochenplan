@@ -105,8 +105,10 @@
       <div id="r-list"></div>
     </div>
 
-    <!-- WOCHE -->
+<!-- WOCHE -->
     <div id="tab-woche" class="tab-pane" style="display:none">
+      <div class="week-header">
+        <span class="week-title" id="week-title">Wochenplan</span>
         <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
           <button class="btn btn--sm" id="btn-zurueck" onclick="backToCurrent()" style="display:none">← Aktuelle Woche</button>
           <button class="btn-icon" onclick="exportPDF()" title="PDF exportieren">
@@ -117,6 +119,7 @@
             Neu generieren
           </button>
         </div>
+      </div>
       <div id="archive-banner" class="archive-banner" style="display:none">
         <span>📁 Archivansicht</span>
         <span id="archive-banner-kw" style="color:var(--text2)"></span>
