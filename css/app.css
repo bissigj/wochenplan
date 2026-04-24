@@ -1501,3 +1501,201 @@ textarea { resize: vertical; min-block-size: 60px; line-height: 1.5; }
   padding: var(--s-2) var(--s-5);
   font-size: 12px;
 }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   RECIPE DETAIL – neues kompaktes Layout (Mockup v2)
+   Ersetze/ergänze den bisherigen .recipe-detail / .detail-grid Block
+   ─────────────────────────────────────────────────────────────────────────── */
+
+/* Bild-Header ---------------------------------------------------------------- */
+.rd-img-header {
+  inline-size: 100%;
+  aspect-ratio: 16 / 6;
+  background-size: cover;
+  background-position: center;
+  background-color: var(--bg3);
+  position: relative;
+  border-radius: var(--rs) var(--rs) 0 0;
+  overflow: hidden;
+}
+
+.rd-img-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, transparent 35%, rgba(45,44,40,0.58) 100%);
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: var(--s-5) var(--s-6);
+  gap: var(--s-4);
+}
+
+.rd-img-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+/* Tags und Chips im Overlay: weiss/transparent */
+.rd-img-meta .tag {
+  background: rgba(255,255,255,0.18) !important;
+  color: #fff !important;
+  border: 1px solid rgba(255,255,255,0.35);
+  font-size: 11px;
+}
+
+.rd-chip {
+  font-size: 11px;
+  color: rgba(255,255,255,0.82);
+  font-family: var(--font-body);
+}
+
+.rd-img-actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.rd-img-btn {
+  background: rgba(255,255,255,0.16) !important;
+  border: 1px solid rgba(255,255,255,0.40) !important;
+  color: #fff !important;
+  font-size: 11px;
+}
+.rd-img-btn:hover { background: rgba(255,255,255,0.28) !important; }
+.rd-img-btn.btn--danger { color: #ffb3b3 !important; }
+
+/* Name ----------------------------------------------------------------------- */
+.rd-name-row {
+  padding: var(--s-5) var(--s-6) var(--s-3);
+}
+
+.rd-name-input {
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 500;
+  letter-spacing: -0.2px;
+  color: var(--text);
+  background: transparent;
+  border: none;
+  border-block-end: 1.5px solid var(--bd2);
+  border-radius: 0;
+  inline-size: 100%;
+  padding: 2px 0 6px;
+  outline: none;
+  transition: border-color var(--t-fast);
+}
+.rd-name-input:focus { border-block-end-color: var(--meadow); }
+
+/* Eckdaten 4er-Zeile --------------------------------------------------------- */
+.rd-meta-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--s-3);
+  padding: var(--s-3) var(--s-6) var(--s-5);
+}
+@media (max-width: 560px) {
+  .rd-meta-row { grid-template-columns: repeat(2, 1fr); }
+}
+
+.rd-meta-cell { display: flex; flex-direction: column; gap: 4px; }
+
+.rd-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text2);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* Trennlinie ----------------------------------------------------------------- */
+.rd-divider {
+  block-size: 1px;
+  background: var(--bd);
+  margin-inline: var(--s-6);
+}
+
+/* Zweispalten-Body ----------------------------------------------------------- */
+.rd-body {
+  display: grid;
+  grid-template-columns: 1fr 1.6fr;
+  gap: 0;
+  padding: var(--s-6);
+  align-items: start;
+}
+@media (max-width: 560px) {
+  .rd-body { grid-template-columns: 1fr; }
+  .rd-col-sep { display: none; }
+}
+
+.rd-col-sep {
+  inline-size: 1px;
+  align-self: stretch;
+  background: var(--bd);
+  margin-inline: var(--s-5);
+}
+
+.rd-col-title {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text2);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-block-end: var(--s-4);
+}
+
+/* Zutaten-Liste: Menge linksbündig in fester Spalte -------------------------- */
+.rd-ing-list {
+  display: flex;
+  flex-direction: column;
+  margin-block-end: var(--s-4);
+}
+
+.rd-ing-row {
+  display: grid;
+  grid-template-columns: 1fr 16px;
+  align-items: center;
+  padding: 5px 0;
+  border-block-end: 1px solid var(--bd);
+  gap: var(--s-2);
+}
+.rd-ing-row:last-child { border-block-end: none; }
+
+.rd-ing-qty {
+  font-size: 13px;
+  color: var(--text);
+}
+
+/* Zutat-Hinzufügen-Zeile ----------------------------------------------------- */
+.rd-add-row {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  margin-block-start: var(--s-3);
+}
+
+.rd-add-qty  { width: 54px !important; font-size: 12px; padding: 4px 6px; }
+.rd-add-unit { width: 72px !important; font-size: 12px; padding: 4px 5px; }
+.rd-add-name { flex: 1; font-size: 12px; padding: 4px 7px; }
+.rd-add-step { flex: 1; font-size: 12px; padding: 4px 7px; }
+
+/* Footer: Quelle + Sichtbarkeit nebeneinander -------------------------------- */
+.rd-footer {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--s-7);
+  padding: var(--s-5) var(--s-6) var(--s-4);
+  align-items: start;
+}
+@media (max-width: 480px) {
+  .rd-footer { grid-template-columns: 1fr; }
+}
+
+.rd-footer-cell { display: flex; flex-direction: column; gap: 0; }
+.rd-footer-cell input { margin-block-end: 5px; }
+
+/* Alte Klassen rückwärtskompatibel halten (discover.js nutzt detail-grid) --- */
+.detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-6); }
+@media (max-width: 560px) { .detail-grid { grid-template-columns: 1fr; } }
+
