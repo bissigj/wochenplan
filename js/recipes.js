@@ -199,15 +199,32 @@ export function renderRecipes(searchQuery = '') {
         <div class="rd-footer">
           <div class="rd-footer-cell">
             <div class="rd-label" style="margin-bottom:6px">Quelle</div>
-            <div class="pills" style="gap:6px;margin-bottom:8px">
-              <button class="pill ${!r.src || r.src.type === 'url' ? 'on' : ''}" onclick="setSrcType(${r.id},'url')">🔗 URL</button>
-              <button class="pill ${r.src && r.src.type === 'buch' ? 'on' : ''}" onclick="setSrcType(${r.id},'buch')">📖 Buch</button>
-            </div>
-            ${(!r.src || r.src.type === 'url')
-              ? `<input type="url" value="${esc(r.src?.val || '')}" placeholder="https://…" onchange="updSrc(${r.id},'val',this.value)" />`
-              : `<input type="text" value="${esc(r.src?.val || '')}" placeholder="Kochbuchname" style="margin-bottom:6px" onchange="updSrc(${r.id},'val',this.value)" />
-                 <input type="text" value="${esc(r.src?.seite || '')}" placeholder="Seite (optional)" onchange="updSrc(${r.id},'seite',this.value)" />`}
-            <div style="margin-top:6px">${srcHTML(r.src)}</div>
+            ${r.src && r.src.val
+              ? /* Quelle gesetzt: Read-only Anzeige + Ändern-Button */ `
+                <div class="rd-src-display">
+                  ${srcHTML(r.src)}
+                  <button class="btn btn--sm btn--ghost" style="margin-left:var(--s-4);flex-shrink:0"
+                    onclick="openSrcEdit(${r.id})">Ändern</button>
+                </div>
+                <div class="rd-src-edit-panel" id="src-edit-${r.id}" style="display:none;margin-top:10px">
+                  <div class="pills" style="gap:6px;margin-bottom:8px">
+                    <button class="pill ${r.src.type === 'url' ? 'on' : ''}" onclick="setSrcType(${r.id},'url')">🔗 URL</button>
+                    <button class="pill ${r.src.type === 'buch' ? 'on' : ''}" onclick="setSrcType(${r.id},'buch')">📖 Buch</button>
+                  </div>
+                  ${r.src.type === 'url'
+                    ? `<input type="url" value="${esc(r.src.val)}" placeholder="https://…" onchange="updSrc(${r.id},'val',this.value)" />`
+                    : `<input type="text" value="${esc(r.src.val)}" placeholder="Kochbuchname" style="margin-bottom:6px" onchange="updSrc(${r.id},'val',this.value)" />
+                       <input type="text" value="${esc(r.src.seite||'')}" placeholder="Seite (optional)" onchange="updSrc(${r.id},'seite',this.value)" />`}
+                </div>`
+              : /* Kein Wert: direkt Eingabe */ `
+                <div class="pills" style="gap:6px;margin-bottom:8px">
+                  <button class="pill ${!r.src || r.src.type === 'url' ? 'on' : ''}" onclick="setSrcType(${r.id},'url')">🔗 URL</button>
+                  <button class="pill ${r.src && r.src.type === 'buch' ? 'on' : ''}" onclick="setSrcType(${r.id},'buch')">📖 Buch</button>
+                </div>
+                ${(!r.src || r.src.type === 'url')
+                  ? `<input type="url" value="" placeholder="https://…" onchange="updSrc(${r.id},'val',this.value)" />`
+                  : `<input type="text" value="" placeholder="Kochbuchname" style="margin-bottom:6px" onchange="updSrc(${r.id},'val',this.value)" />
+                     <input type="text" value="" placeholder="Seite (optional)" onchange="updSrc(${r.id},'seite',this.value)" />`}`}
           </div>
           <div class="rd-footer-cell" style="display:flex;flex-direction:column;align-items:flex-start;gap:8px">
             <div class="rd-label">Sichtbarkeit</div>
@@ -440,4 +457,12 @@ export async function saveQE() {
   renderRFilters();
   rerender();
   toast('Rezept hinzugefügt');
+}
+
+// ── Quelle: Edit-Panel togglen ────────────────────────────────────────────────
+export function openSrcEdit(id) {
+  const panel = document.getElementById('src-edit-' + id);
+  if (!panel) return;
+  const isOpen = panel.style.display !== 'none';
+  panel.style.display = isOpen ? 'none' : 'block';
 }
