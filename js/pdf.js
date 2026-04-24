@@ -4,30 +4,57 @@ import { fmtIng, toast, esc, formatAmount } from './ui.js';
 import { getActivePlan, aggregateIngredients } from './shopping.js';
 
 // ── PDF Design Tokens ─────────────────────────────────────────────────────────
-// Change these to restyle all PDF exports at once
 const PDF = {
-  brand:    '#598234',   // Meadow – accent bars, step numbers, col titles, links
-  moss:     '#AEBD38',   // Moss – note border
-  text:     '#1a1a1a',   // Main text
-  muted:    '#888',      // Subtitles, chip text, source text
-  subtle:   '#666',      // Secondary text, quantities
-  faint:    '#aaa',      // Recipe attribution in shopping list
-  line:     '#f0f0f0',   // Divider lines
-  noteBg:   '#f8f9f4',   // Note background
-  coverBg:  '#fafafa',   // Inactive day box background
-  activeBg: '#f8f9f4',   // Active day box background
+  brand:    '#598234',
+  moss:     '#AEBD38',
+  text:     '#1a1a1a',
+  muted:    '#888',
+  subtle:   '#666',
+  faint:    '#aaa',
+  line:     '#f0f0f0',
+  noteBg:   '#f8f9f4',
+  coverBg:  '#fafafa',
+  activeBg: '#f8f9f4',
   font:     '-apple-system,"Helvetica Neue",Arial,sans-serif',
 };
 
-// ── Shared color helpers (single source of truth via TAG_FALLBACK) ────────────
+// ── Shared color helpers ──────────────────────────────────────────────────────
 const catColor = (id) => (D.settings.cats.find(c => c.id === id) || TAG_FALLBACK).color;
 const aufColor = (id) => (D.settings.aufwand.find(a => a.id === id) || TAG_FALLBACK).color;
 const catBg    = (id) => (D.settings.cats.find(c => c.id === id) || TAG_FALLBACK).bg;
 const aufBg    = (id) => (D.settings.aufwand.find(a => a.id === id) || TAG_FALLBACK).bg;
 
-// ── URL escape helper (für background-image etc.) ─────────────────────────────
 const escUrl = (u) => String(u ?? '').replace(/'/g, '%27').replace(/"/g, '%22');
 
+// ── Fix 1: iOS-kompatibler Export ────────────────────────────────────────────
+// iOS Safari blockiert window.open nach async-Calls → Download-Link als Fallback
+function openOrDownload(html, filename) {
+  const blob = new Blob([html], { type: 'text/html' });
+  const url  = URL.createObjectURL(blob);
+  const isIOS = /iP(hone|ad|od)/.test(navigator.userAgent) && !window.MSStream;
+  if (isIOS) {
+    const a = document.createElement('a');
+    a.href     = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+  } else {
+    const pw = window.open(url, '_blank');
+    if (pw) {
+      pw.onload = () => { setTimeout(() => { pw.print(); URL.revokeObjectURL(url); }, 300); };
+    } else {
+      // Popup geblockt → Fallback
+      const a = document.createElement('a');
+      a.href = url; a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 2000);
+    }
+  }
+}
 
 export function exportShopPDF() {
   const plan = getActivePlan();
@@ -67,10 +94,7 @@ export function exportShopPDF() {
     }).join('')}</div>
   </div>
   </body></html>`;
-  const blob = new Blob([html], { type: 'text/html' });
-  const url = URL.createObjectURL(blob);
-  const pw = window.open(url, '_blank');
-  if (pw) { pw.onload = () => { setTimeout(() => { pw.print(); URL.revokeObjectURL(url); }, 300); }; }
+  openOrDownload(html, 'einkaufsliste.html');
 }
 
 export function exportPDF() {
@@ -78,7 +102,6 @@ export function exportPDF() {
   if (!plan.days || !plan.days.length) { toast('Keine Woche zum Exportieren.'); return; }
   const activeDays = plan.days.filter(d => d.active && d.recipeId);
   const shopItems = aggregateIngredients(plan);
-
 
   const recipePages = activeDays.map(d => {
     const r = D.recipes.find(r => r.id === d.recipeId);
@@ -115,7 +138,8 @@ export function exportPDF() {
         </div>
       </div>
       ${srcLine ? `<div class="src-line">${srcLine}</div>` : ''}
-      ${d.note ? `<div class="note">${esc(d.note)}</div>` : ''}
+      ${d.note ? `<div class="day-note">${esc(d.note)}</div>` : ''}
+      ${r.img ? '</div>' : ''}
     </div>`;
   }).join('');
 
@@ -124,7 +148,6 @@ export function exportPDF() {
     *{box-sizing:border-box;margin:0;padding:0}
     body{font-family:${PDF.font};font-size:11pt;color:${PDF.text};background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 
-    /* Page */
     .page{padding:2cm 2cm 1.5cm;min-height:100vh;page-break-after:always;position:relative}
     .page:last-child{page-break-after:avoid}
     @media print{
@@ -133,7 +156,6 @@ export function exportPDF() {
      body{margin:1.5cm}
     }
 
-    /* Cover page */
     .cover-accent{height:4px;background:${PDF.brand};border-radius:2px;margin-bottom:2cm}
     .cover-kw{font-size:28pt;font-weight:700;color:${PDF.text};letter-spacing:-1px;margin-bottom:4px}
     .cover-sub{font-size:11pt;color:${PDF.muted};margin-bottom:1.5cm}
@@ -146,7 +168,6 @@ export function exportPDF() {
     .day-note{font-size:8.5pt;color:${PDF.subtle};margin-top:5px;font-style:italic}
     .day-inactive{color:#ccc;font-size:10pt}
 
-    /* Recipe pages */
     .recipe-header{border-left:4px solid ${PDF.brand};padding-left:14px;margin-bottom:18px}
     .recipe-day{font-size:8pt;font-weight:700;color:${PDF.brand};text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px}
     .recipe-name{font-size:22pt;font-weight:700;color:${PDF.text};letter-spacing:-0.5px;line-height:1.1;margin-bottom:10px}
@@ -154,66 +175,51 @@ export function exportPDF() {
     .tag{font-size:8.5pt;padding:2px 9px;border-radius:99px;display:inline-block;font-weight:500}
     .chip{font-size:8.5pt;color:${PDF.subtle};padding:2px 0}
 
-    /* Two column layout */
     .two-col{display:grid;grid-template-columns:1fr 1.5fr;gap:28px;margin-top:22px}
     .col-title{font-size:8pt;font-weight:700;color:${PDF.brand};text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;padding-bottom:6px;border-bottom:1.5px solid ${PDF.brand}}
 
-    /* Ingredients */
     .ing-item{display:flex;justify-content:space-between;align-items:baseline;padding:5px 0;border-bottom:.5px solid ${PDF.line};font-size:10pt}
     .ing-name{color:${PDF.text}}
     .ing-qty{color:${PDF.subtle};font-size:9.5pt;text-align:right;padding-left:12px;white-space:nowrap}
 
-    /* Steps */
     .step{display:flex;gap:10px;align-items:flex-start;margin-bottom:10px}
     .snum{width:20px;height:20px;border-radius:50%;background:${PDF.brand};color:#fff;font-size:8pt;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
     .step-text{font-size:10pt;line-height:1.6;color:${PDF.text}}
 
-    /* Source + note */
     .src-line{font-size:8.5pt;color:${PDF.muted};margin-top:16px;padding-top:10px;border-top:.5px solid ${PDF.line}}
     .src-line a{color:${PDF.brand}}
-    .note{font-size:9pt;color:#555;background:${PDF.noteBg};border-left:3px solid ${PDF.moss};padding:8px 12px;margin-top:12px;border-radius:0 6px 6px 0}
-
-    /* Images */
     .recipe-img-full{width:100%;aspect-ratio:16/7;background-size:cover;background-position:center;border-radius:8px;margin-bottom:18px}
-    .cover-img{width:100%;aspect-ratio:16/7;background-size:cover;background-position:center}
 
-    /* Shopping list */
-    .shop-title{font-size:22pt;font-weight:700;color:${PDF.text};letter-spacing:-0.5px;margin-bottom:4px}
+    .shop-title{font-size:24pt;font-weight:700;margin-bottom:4px}
     .shop-sub{font-size:10pt;color:${PDF.muted};margin-bottom:1cm}
     .shop-grid{columns:2;gap:20px}
-    .shop-item-p{display:flex;justify-content:space-between;align-items:baseline;padding:5px 0;border-bottom:.5px solid ${PDF.line};font-size:10pt;break-inside:avoid}
+    .shop-item-p{display:flex;justify-content:space-between;align-items:baseline;padding:6px 0;border-bottom:.5px solid ${PDF.line};font-size:10.5pt;break-inside:avoid}
     .shop-name{color:${PDF.text}}
     .shop-recipes{font-size:8pt;color:${PDF.faint};margin-left:5px}
     .shop-qty{color:${PDF.brand};font-weight:600;font-size:9.5pt;white-space:nowrap;padding-left:10px}
   </style></head><body>
 
-  <!-- Cover -->
   <div class="page">
     <div class="cover-accent"></div>
-    <div class="cover-kw">${esc(plan.kw || 'Wochenplan')}</div>
-    <div class="cover-sub">${activeDays.length} Tage</div>
+    <div class="cover-kw">${esc(plan.kw)}</div>
+    <div class="cover-sub">${activeDays.length} Gerichte diese Woche</div>
     <div class="week-grid">${plan.days.map(d => {
-      if (!d.active || !d.recipeId) return `<div class="day-box"><div class="day-name">${esc(d.day)}</div><div class="day-inactive">—</div></div>`;
       const r = D.recipes.find(r => r.id === d.recipeId);
-      if (!r) return '';
-      return `<div class="day-box active" style="${r.img ? 'padding:0;overflow:hidden' : ''}">
-        ${r.img ? `<div class="cover-img" style="background-image:url('${escUrl(r.img)}')"></div><div style="padding:10px 14px">` : ''}
+      if (!d.active || !r) return `<div class="day-box"><div class="day-name">${esc(d.day)}</div><div class="day-inactive">—</div></div>`;
+      return `<div class="day-box active">
         <div class="day-name">${esc(d.day)}</div>
         <div class="day-recipe">${esc(r.name)}</div>
         <div class="day-tags">
-          <span class="tag" style="background:${catBg(r.cat)};color:${catColor(r.cat)}">${esc(getCatLabel(r.cat))}</span>
-          <span class="tag" style="background:${aufBg(r.auf)};color:${aufColor(r.auf)}">${esc(getAufLabel(r.auf))}</span>
+          <span class="tag" style="background:${catBg(r.cat)};color:${catColor(r.cat)};font-size:7.5pt">${esc(getCatLabel(r.cat))}</span>
+          <span class="tag" style="background:${aufBg(r.auf)};color:${aufColor(r.auf)};font-size:7.5pt">${esc(getAufLabel(r.auf))}</span>
         </div>
         ${d.note ? `<div class="day-note">${esc(d.note)}</div>` : ''}
-        ${r.img ? '</div>' : ''}
       </div>`;
     }).join('')}</div>
   </div>
 
-  <!-- Recipe pages -->
   ${recipePages}
 
-  <!-- Shopping list -->
   <div class="page">
     <div class="cover-accent"></div>
     <div class="shop-title">Einkaufsliste</div>
@@ -230,10 +236,7 @@ export function exportPDF() {
 
   </body></html>`;
 
-  const blob = new Blob([html], { type: 'text/html' });
-  const url = URL.createObjectURL(blob);
-  const pw = window.open(url, '_blank');
-  if (pw) { pw.onload = () => { setTimeout(() => { pw.print(); URL.revokeObjectURL(url); }, 300); }; }
+  openOrDownload(html, `wochenplan-${(plan.kw || 'plan').replace(/[\s/]/g, '-')}.html`);
 }
 
 export function exportRecipePDF(id) {
@@ -248,6 +251,7 @@ export function exportRecipePDF(id) {
   const srcLine = r.src && r.src.val
     ? (r.src.type === 'url' ? `<a href="${esc(r.src.val)}">${esc(r.src.val)}</a>` : `📖 ${esc(r.src.val)}${r.src.seite ? ', S. ' + esc(r.src.seite) : ''}`)
     : '';
+
   const html = `<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><title>${esc(r.name)}</title>
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
@@ -296,8 +300,6 @@ export function exportRecipePDF(id) {
     ${srcLine ? `<div class="src-line">${srcLine}</div>` : ''}
   </div>
   </body></html>`;
-  const blob = new Blob([html], { type: 'text/html' });
-  const url = URL.createObjectURL(blob);
-  const pw = window.open(url, '_blank');
-  if (pw) { pw.onload = () => { setTimeout(() => { pw.print(); URL.revokeObjectURL(url); }, 300); }; }
+
+  openOrDownload(html, `${r.name.replace(/[^a-z0-9äöüÄÖÜ]/gi, '-')}.html`);
 }

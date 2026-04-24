@@ -12,7 +12,6 @@ export let drawDiff = new Set(['auf_einfach', 'auf_mittel', 'auf_schwer']);
 export let drawMaxTime = 0;
 
 // ── Draw Modal ────────────────────────────────────────────────────────────────
-// Time filter options – change here to add/remove options
 const TIME_OPTIONS = [
   { label: 'Beliebig', v: 0 },
   { label: '≤ 30 min', v: 30 },
@@ -21,12 +20,10 @@ const TIME_OPTIONS = [
 ];
 
 export function openDrawModal() {
-  // Aufwand-Pills – dynamisch aus Settings
   document.getElementById('draw-diff-pills').innerHTML = D.settings.aufwand.map(a =>
     `<button class="pill ${drawDiff.has(a.id) ? 'on' : ''}" style="${tagStyle(a.id)}"
       data-v="${esc(a.id)}" onclick="toggleDrawPill(this)">${esc(a.label)}</button>`
   ).join('');
-  // Zeit-Pills – aus TIME_OPTIONS
   document.getElementById('draw-time-pills').innerHTML = TIME_OPTIONS.map(o =>
     `<button class="pill ${drawMaxTime === o.v ? 'on' : ''}"
       data-v="${o.v}" onclick="setTimePill(this)">${o.label}</button>`
@@ -67,14 +64,15 @@ export function getPool() {
   });
 }
 
-// Fix #7: Aktuelle Woche zählt auch als "kürzlich verwendet", damit Re-Roll variiert
+// Fix 3: Nur *aktive* (eingeblendete) Tage der aktuellen Woche als "kürzlich" zählen.
+// Ausgeblendete Rezepte sind wieder im Kandidatenpool für andere Tage.
 function getRecentIds() {
   const ids = new Set();
   D.archive.slice(-2).forEach(w => (w.days || []).forEach(d => {
     if (d.recipeId) ids.add(d.recipeId);
   }));
   (D.weekPlan.days || []).forEach(d => {
-    if (d.recipeId) ids.add(d.recipeId);
+    if (d.recipeId && d.active) ids.add(d.recipeId);  // nur aktive Tage
   });
   return [...ids];
 }
@@ -90,7 +88,6 @@ export async function drawWeek() {
   while (shuffled.length < 7 && extra.length) shuffled.push(extra.shift());
   const portions = +document.getElementById('draw-portions').value || 2;
 
-  // Fix #1: family_id beim Archivieren mitschicken (sonst RLS-Fehler)
   if (D.weekPlan.days && D.weekPlan.days.some(d => d.recipeId)) {
     const toArchive = JSON.parse(JSON.stringify(D.weekPlan));
     try {
@@ -162,49 +159,36 @@ function renderDayCard(d, i, plan, readonly) {
   const factor    = (d.portions || plan.portions || 2) / (r.portions || 2);
 
   const ingsHTML = (r.ings || []).length
-    ? r.ings.map(ing => `<div class="ing-row">${fmtIng(ing, factor)}</div>`).join('')
-    : '<span style="font-size:12px;color:var(--text3)">Keine Zutaten.</span>';
+    ? `<ul style="margin:0;padding-left:16px;font-size:12px;color:var(--text2)">${(r.ings || []).map(ing => `<li>${fmtIng(ing, factor)}</li>`).join('')}</ul>`
+    : '<p style="font-size:12px;color:var(--text3)">Keine Zutaten hinterlegt.</p>';
 
   const stepsHTML = (r.steps || []).length
-    ? r.steps.map((s, si) => `
-        <div class="step-mini">
-          <span class="step-mini-num">${si + 1}</span>
-          <span style="font-size:12px">${esc(s)}</span>
-        </div>`).join('')
-    : '<span style="font-size:12px;color:var(--text3)">Keine Schritte.</span>';
+    ? `<ol style="margin:0;padding-left:16px;font-size:12px;color:var(--text2)">${(r.steps || []).map(s => `<li style="margin-bottom:4px">${esc(s)}</li>`).join('')}</ol>`
+    : '';
 
-  const detailHTML = d.active && isOpen ? `
+  const actionsHTML = readonly ? '' : `
+    <div class="day-actions" style="padding:var(--s-3) var(--s-5);display:flex;gap:6px;border-top:1px solid var(--bd);background:var(--bg2)">
+      <button class="btn btn--sm btn--ghost" onclick="toggleDayActive(${i},event)" title="${d.active ? 'Ausblenden' : 'Einblenden'}">
+        ${d.active ? '👁 Ausblenden' : '👁 Einblenden'}
+      </button>
+      <button class="btn btn--sm btn--ghost" onclick="rerollDay(${i},event)" title="Anderes Rezept">🎲 Neu</button>
+    </div>`;
+
+  const detailHTML = isOpen ? `
     <div class="day-detail open">
-      <div style="font-size:11px;color:var(--text3);margin-bottom:4px">Zutaten (${d.portions || plan.portions} Port.)</div>
-      <div class="ing-list" style="margin-bottom:10px">${ingsHTML}</div>
-      <div class="divider"></div>
-      <div style="font-size:11px;color:var(--text3);margin-bottom:6px;margin-top:8px">Zubereitung</div>
-      ${stepsHTML}
-      ${srcHTML(r.src) ? `<div class="divider"></div><div style="margin-top:8px">${srcHTML(r.src)}</div>` : ''}
-      ${!readonly
-        ? `<div class="divider"></div>
-           <div style="font-size:11px;color:var(--text3);margin-bottom:4px;margin-top:8px">Notiz</div>
-           <textarea class="day-note-input" placeholder="Notiz…" onclick="event.stopPropagation()"
-             onchange="setNote(${i},this.value)">${esc(d.note || '')}</textarea>`
-        : d.note
-          ? `<div class="divider"></div><div style="font-size:12px;color:var(--text2);margin-top:8px">📝 ${esc(d.note)}</div>`
-          : ''}
+      <div class="section-title" style="margin-bottom:6px">Portionen</div>
+      <input type="number" value="${d.portions || plan.portions || 2}" min="1" max="20"
+        style="width:70px;margin-bottom:10px" onchange="setPortions(${i},+this.value)" />
+      <div class="section-title" style="margin-bottom:6px">Zutaten</div>
+      ${ingsHTML}
+      ${stepsHTML ? `<div class="section-title" style="margin:10px 0 6px">Zubereitung</div>${stepsHTML}` : ''}
+      ${r.src && r.src.val ? `<div style="margin-top:8px;font-size:11px;color:var(--text3)">${srcHTML(r.src)}</div>` : ''}
+      <div class="section-title" style="margin:10px 0 6px">Notiz</div>
+      <textarea class="day-note-input" placeholder="z.B. ohne Zwiebeln…"
+        onchange="setNote(${i},this.value)">${esc(d.note || '')}</textarea>
     </div>` : '';
 
-  const actionsHTML = !readonly ? `
-    <div class="day-actions">
-      <button class="icon-btn" onclick="toggleDayActive(${i},event)">👁</button>
-      ${d.active ? `
-        <button class="icon-btn" onclick="rerollDay(${i},event)">↺</button>
-        <div class="portions-row">
-          <span style="font-size:11px;color:var(--text3)">Port.</span>
-          <input type="number" value="${d.portions || plan.portions}" min="1" max="20"
-            onclick="event.stopPropagation()" onchange="setPortions(${i},+this.value)" />
-        </div>` : ''}
-    </div>` : '';
-
-  return `
-    <div class="day-card ${d.active ? '' : 'off'} ${isWeekend ? 'day-card-weekend' : ''}">
+  return `<div class="day-card ${!d.active ? 'off' : ''} ${isWeekend ? 'day-card-weekend' : ''}">
       ${r.img && d.active ? `<div class="day-card-img" style="background-image:url('${esc(r.img)}')"></div>` : ''}
       <div class="day-card-top" onclick="toggleDay(${i})">
         <div class="day-lbl ${isWeekend ? 'day-lbl-weekend' : ''}">
@@ -252,7 +236,9 @@ export async function toggleDayActive(i, e) {
 export async function rerollDay(i, e) {
   e.stopPropagation();
   const pool = getPool();
-  const usedIds = D.weekPlan.days.map(d => d.recipeId).filter(Boolean);
+  const usedIds = D.weekPlan.days
+    .filter((d, idx) => idx !== i && d.active)  // nur aktive andere Tage sperren
+    .map(d => d.recipeId).filter(Boolean);
   const avail = pool.filter(r => !usedIds.includes(r.id));
   const src = avail.length ? avail : pool.filter(r => r.id !== D.weekPlan.days[i].recipeId);
   if (!src.length) return;

@@ -41,7 +41,6 @@ export function setSortOrder(v) {
 
 export function renderRecipes(searchQuery = '') {
   const el = document.getElementById('r-list');
-  // Fix #4: Arbeitskopie, damit .sort() niemals D.recipes mutiert
   let vis = [...D.recipes];
   if (rFilters.size) {
     const catIds = D.settings.cats.map(c => c.id);
@@ -87,6 +86,9 @@ export function renderRecipes(searchQuery = '') {
       ${r.img ? `<div class="recipe-img" style="background-image:url('${esc(r.img)}')"></div>` : ''}
       <div class="detail-grid">
         <div>
+          <div class="section-title">Name</div>
+          <input type="text" value="${esc(r.name)}" style="margin-bottom:10px"
+            onchange="updR(${r.id},'name',this.value);this.closest('.recipe-row, .card').querySelector('.recipe-name-col').textContent=this.value" />
           <div class="section-title">Eckdaten</div>
           <div class="row" style="gap:8px;margin-bottom:10px">
             <div style="flex:1"><span class="label">Kochzeit (min)</span>
@@ -105,23 +107,37 @@ export function renderRecipes(searchQuery = '') {
               </select></div>
           </div>
           <div class="section-title">Zutaten (für ${r.portions || 2} Port.)</div>
-          <div class="ing-list">${(r.ings || []).map((ing, i) => `<div class="ing-row"><span class="ing-amt">${fmtIng(ing)}</span><button class="xbtn" onclick="delIng(${r.id},${i})">×</button></div>`).join('')}</div>
-          <div class="row" style="gap:6px">
-            <input type="number" id="im-${r.id}" placeholder="Menge" min="0" step="0.1" style="width:70px" />
-            <select id="iu-${r.id}" style="width:80px">${einheiten.map(u => `<option>${esc(u)}</option>`).join('')}</select>
-            <input type="text" id="in-${r.id}" placeholder="Zutatname" style="flex:1" onkeydown="if(event.key==='Enter')addIng(${r.id})" />
+          <div class="ing-list">${(r.ings || []).map((ing, i) =>
+            `<div class="ing-row">
+              <span class="ing-amt">${fmtIng(ing, 1)}</span>
+              <button class="xbtn" onclick="delIng(${r.id},${i})">×</button>
+            </div>`).join('')}
+          </div>
+          <div class="row" style="gap:4px;margin-top:4px">
+            <input type="number" id="im-${r.id}" placeholder="Menge" style="width:60px" step="any" min="0" />
+            <select id="iu-${r.id}" class="inline-select" style="width:80px">
+              ${einheiten.map(e => `<option>${esc(e)}</option>`).join('')}
+            </select>
+            <input type="text" id="in-${r.id}" placeholder="Zutat" style="flex:1" onkeydown="if(event.key==='Enter')addIng(${r.id})" />
             <button class="btn btn--sm" onclick="addIng(${r.id})">+</button>
           </div>
         </div>
         <div>
           <div class="section-title">Zubereitung</div>
-          <ol class="steps-list" id="steps-${r.id}">${(r.steps || []).map((s, i) => `<li class="step-item" data-idx="${i}"><span class="drag-handle">⠿</span><span class="step-num">${i + 1}</span><span class="step-text">${esc(s)}</span><button class="xbtn" onclick="delStep(${r.id},${i})" style="margin-top:3px">×</button></li>`).join('')}</ol>
-          <div class="row" style="gap:6px">
-            <input type="text" id="st-${r.id}" placeholder="Schritt hinzufügen…" style="flex:1" onkeydown="if(event.key==='Enter')addStep(${r.id})" />
+          <ul class="steps-list">${(r.steps || []).map((s, i) =>
+            `<li class="step-item" data-id="${r.id}" data-i="${i}">
+              <span class="drag-handle">⠿</span>
+              <span class="step-num">${i + 1}</span>
+              <span class="step-text">${esc(s)}</span>
+              <button class="xbtn" onclick="delStep(${r.id},${i})">×</button>
+            </li>`).join('')}
+          </ul>
+          <div class="row" style="gap:4px;margin-top:4px">
+            <input type="text" id="st-${r.id}" placeholder="Neuer Schritt…" style="flex:1" onkeydown="if(event.key==='Enter')addStep(${r.id})" />
             <button class="btn btn--sm" onclick="addStep(${r.id})">+</button>
           </div>
           <div class="section-title" style="margin-top:12px">Quelle</div>
-          <div class="row" style="gap:6px;margin-bottom:8px">
+          <div class="pills" style="gap:6px;margin-bottom:8px">
             <button class="pill ${!r.src || r.src.type === 'url' ? 'on' : ''}" onclick="setSrcType(${r.id},'url')">🔗 URL</button>
             <button class="pill ${r.src && r.src.type === 'buch' ? 'on' : ''}" onclick="setSrcType(${r.id},'buch')">📖 Buch</button>
           </div>
@@ -155,70 +171,30 @@ export function renderRecipes(searchQuery = '') {
 export function toggleER(id) {
   expandedR = expandedR === id ? null : id;
   rerender();
-  initSortable();
-}
-
-export async function removeRecipeImage(id) {
-  const r = D.recipes.find(r => r.id === id);
-  if (r.img && r.img_owned !== false) await sbDeleteImage(r.img);
-  r.img = null;
-  await saveRecipeNow(r);
-  rerender();
-  toast('Foto entfernt');
-}
-
-function initSortable() {
-  if (expandedR === null) return;
-  const listEl = document.getElementById('steps-' + expandedR);
-  if (!listEl || typeof Sortable === 'undefined') return;
-  Sortable.create(listEl, {
-    handle: '.drag-handle',
-    animation: 150,
-    onEnd: async (evt) => {
-      if (evt.oldIndex === evt.newIndex) return;
-      const r = D.recipes.find(r => r.id === expandedR);
-      if (!r) return;
-      const moved = r.steps.splice(evt.oldIndex, 1)[0];
-      r.steps.splice(evt.newIndex, 0, moved);
-      listEl.querySelectorAll('.step-num').forEach((el, i) => el.textContent = i + 1);
-      await saveRecipeNow(r);
-    }
-  });
 }
 
 export async function delR(id) {
-  const deleted = D.recipes.find(r => r.id === id);
-  if (!confirm(`"${deleted.name}" wirklich löschen?`)) return;
-  const deletedDays = (D.weekPlan.days || []).filter(d => d.recipeId === id);
-  if (deleted.img && deleted.img_owned !== false) await sbDeleteImage(deleted.img);
-  await deleteRecipeFromDB(deleted);
-  D.recipes = D.recipes.filter(r => r.id !== id);
-  D.weekPlan.days = (D.weekPlan.days || []).filter(d => d.recipeId !== id);
-  await saveWeekNow();
-  renderRFilters();
+  const idx = D.recipes.findIndex(r => r.id === id);
+  if (idx < 0) return;
+  const [removed] = D.recipes.splice(idx, 1);
   rerender();
-  renderWeek();
-  // Undo Toast
   let undone = false;
-  const toastEl = document.getElementById('toast');
-  toastEl.innerHTML = `"${esc(deleted.name)}" gelöscht. <span style="text-decoration:underline;cursor:pointer" onclick="undoDelR()">Rückgängig</span>`;
-  toastEl.classList.add('show');
   window._undoDelR = async () => {
     if (undone) return;
     undone = true;
-    D.recipes.push(deleted);
-    deletedDays.forEach(d => D.weekPlan.days.push(d));
-    await saveRecipeNow(deleted);
-    await saveWeekNow();
-    renderRFilters();
+    D.recipes.splice(idx, 0, removed);
+    await saveRecipeNow(removed);
     rerender();
-    renderWeek();
-    toast('"' + deleted.name + '" wiederhergestellt');
+    toast('Rezept wiederhergestellt');
   };
-  setTimeout(() => { toastEl.classList.remove('show'); window._undoDelR = null; }, 5000);
+  toast(`"${removed.name}" gelöscht · <a onclick="undoDelR()" style="cursor:pointer;text-decoration:underline">Rückgängig</a>`);
+  setTimeout(async () => {
+    if (!undone) {
+      await deleteRecipeFromDB(removed);
+    }
+  }, 5000);
 }
 
-// Fix #8: Menge optional (0 oder leer). Wichtig für "Salz, Pfeffer" etc.
 export async function addIng(id) {
   const mRaw = document.getElementById('im-' + id).value;
   const u = document.getElementById('iu-' + id).value;
@@ -267,25 +243,20 @@ export async function updR(id, key, val) {
 export async function uploadRecipeImage(id, input) {
   const file = input.files[0];
   if (!file) return;
-
   if (!file.type.startsWith('image/')) {
     toast('Nur Bilder erlaubt (JPG, PNG, HEIC)');
     return;
   }
-
   const previewUrl = URL.createObjectURL(file);
   const previewEl = document.getElementById('img-preview-' + id);
   if (previewEl) {
     previewEl.style.backgroundImage = `url('${previewUrl}')`;
     previewEl.style.display = 'block';
   }
-
   const label = input.parentElement.querySelector('.img-upload-label');
   if (label) label.textContent = 'Wird hochgeladen…';
-
   const url = await sbUploadImage(file);
   URL.revokeObjectURL(previewUrl);
-
   if (url) {
     const ri = D.recipes.find(r => r.id === id);
     ri.img = url;
@@ -297,6 +268,19 @@ export async function uploadRecipeImage(id, input) {
     if (label) label.textContent = 'Fehler beim Hochladen';
     if (previewEl) previewEl.style.display = 'none';
   }
+}
+
+export async function removeRecipeImage(id) {
+  const r = D.recipes.find(r => r.id === id);
+  if (!r || !r.img) return;
+  if (r.img_owned !== false) {
+    await sbDeleteImage(r.img);
+  }
+  r.img = null;
+  r.img_owned = undefined;
+  await saveRecipeNow(r);
+  rerender();
+  toast('Foto entfernt');
 }
 
 export async function togglePublic(id) {
@@ -324,18 +308,25 @@ export async function updSrc(id, key, val) {
 
 // ── Quick Entry ───────────────────────────────────────────────────────────────
 export function openQE() {
-  document.getElementById('qe-name').value = '';
-  document.getElementById('qe-ings').value = '';
+  const modal = document.getElementById('qe-modal');
+  document.getElementById('qe-name').value  = '';
+  document.getElementById('qe-ings').value  = '';
   document.getElementById('qe-steps').value = '';
-  document.getElementById('qe-time').value = '';
-  document.getElementById('qe-modal').style.display = 'flex';
+  document.getElementById('qe-time').value  = '';
+  // Importdaten löschen falls vorhanden
+  delete modal.dataset.importSrc;
+  delete modal.dataset.importImg;
+  modal.style.display = 'flex';
   setTimeout(() => document.getElementById('qe-name').focus(), 100);
 }
 
 export function closeQE() {
-  document.getElementById('qe-modal').style.display = 'none';
+  const modal = document.getElementById('qe-modal');
+  modal.style.display = 'none';
+  // Fix 5: Temporäre Import-Daten aufräumen
+  delete modal.dataset.importSrc;
+  delete modal.dataset.importImg;
 }
-
 
 export function parseIngredientLine(line) {
   line = line.trim();
@@ -343,31 +334,30 @@ export function parseIngredientLine(line) {
   try {
     const r = parseIngredient(line, 'en', {
       additionalUOMs: {
-  dl:           { short: 'dl',       plural: 'dl',       versions: ['dl'] },
-  cl:           { short: 'cl',       plural: 'cl',       versions: ['cl'] },
-  EL:           { short: 'EL',       plural: 'EL',       versions: ['el', 'EL'] },
-  TL:           { short: 'TL',       plural: 'TL',       versions: ['tl', 'TL'] },
-  Prise:        { short: 'Prise',    plural: 'Prisen',   versions: ['prise', 'prisen'] },
-  Bund:         { short: 'Bund',     plural: 'Bund',     versions: ['bund'] },
-  Dose:         { short: 'Dose',     plural: 'Dosen',    versions: ['dose', 'dosen'] },
-  Pck:          { short: 'Pck.',     plural: 'Pck.',     versions: ['pck', 'pck.', 'päckchen'] },
-  Stück:        { short: 'Stück',    plural: 'Stück',    versions: ['stück', 'stk', 'stk.'] },
-  Becher:       { short: 'Becher',   plural: 'Becher',   versions: ['becher'] },
-  Glas:         { short: 'Glas',     plural: 'Gläser',   versions: ['glas', 'gläser'] },
-  Zweig:        { short: 'Zweig',    plural: 'Zweige',   versions: ['zweig', 'zweige'] },
-  Blatt:        { short: 'Blatt',    plural: 'Blätter',  versions: ['blatt', 'blätter'] },
-  Zehe:         { short: 'Zehe',     plural: 'Zehen',    versions: ['zehe', 'zehen'] },
-  Scheibe:      { short: 'Scheibe',  plural: 'Scheiben', versions: ['scheibe', 'scheiben'] },
-  Handvoll:     { short: 'Handvoll', plural: 'Handvoll', versions: ['handvoll'] },
-  Messerspitze: { short: 'Msp.',     plural: 'Msp.',     versions: ['msp', 'msp.', 'messerspitze'] },
-  Würfel:       { short: 'Würfel',   plural: 'Würfel',   versions: ['würfel'] },
-  Knolle:       { short: 'Knolle',   plural: 'Knollen',  versions: ['knolle', 'knollen'] },
-  Kopf:         { short: 'Kopf',     plural: 'Köpfe',    versions: ['kopf', 'köpfe'] },
-  Stange:       { short: 'Stange',   plural: 'Stangen',  versions: ['stange', 'stangen'] },
-  Tasse:        { short: 'Tasse',    plural: 'Tassen',   versions: ['tasse', 'tassen'] },
-  Zehe:         { short: 'Zehe',     plural: 'Zehen',    versions: ['Zehe/n', 'zehe/n', 'zehe', 'zehen'] },
-  Pkg:          { short: 'Pkg.',     plural: 'Pkg.',     versions: ['pkg', 'pkg.', 'packung', 'packungen'] },
-}
+        dl:           { short: 'dl',       plural: 'dl',       versions: ['dl'] },
+        cl:           { short: 'cl',       plural: 'cl',       versions: ['cl'] },
+        EL:           { short: 'EL',       plural: 'EL',       versions: ['el', 'EL'] },
+        TL:           { short: 'TL',       plural: 'TL',       versions: ['tl', 'TL'] },
+        Prise:        { short: 'Prise',    plural: 'Prisen',   versions: ['prise', 'prisen'] },
+        Bund:         { short: 'Bund',     plural: 'Bund',     versions: ['bund'] },
+        Dose:         { short: 'Dose',     plural: 'Dosen',    versions: ['dose', 'dosen'] },
+        Pck:          { short: 'Pck.',     plural: 'Pck.',     versions: ['pck', 'pck.', 'päckchen'] },
+        Stück:        { short: 'Stück',    plural: 'Stück',    versions: ['stück', 'stk', 'stk.'] },
+        Becher:       { short: 'Becher',   plural: 'Becher',   versions: ['becher'] },
+        Glas:         { short: 'Glas',     plural: 'Gläser',   versions: ['glas', 'gläser'] },
+        Zweig:        { short: 'Zweig',    plural: 'Zweige',   versions: ['zweig', 'zweige'] },
+        Blatt:        { short: 'Blatt',    plural: 'Blätter',  versions: ['blatt', 'blätter'] },
+        Zehe:         { short: 'Zehe',     plural: 'Zehen',    versions: ['zehe', 'zehen', 'Zehe/n', 'zehe/n'] },
+        Scheibe:      { short: 'Scheibe',  plural: 'Scheiben', versions: ['scheibe', 'scheiben'] },
+        Handvoll:     { short: 'Handvoll', plural: 'Handvoll', versions: ['handvoll'] },
+        Messerspitze: { short: 'Msp.',     plural: 'Msp.',     versions: ['msp', 'msp.', 'messerspitze'] },
+        Würfel:       { short: 'Würfel',   plural: 'Würfel',   versions: ['würfel'] },
+        Knolle:       { short: 'Knolle',   plural: 'Knollen',  versions: ['knolle', 'knollen'] },
+        Kopf:         { short: 'Kopf',     plural: 'Köpfe',    versions: ['kopf', 'köpfe'] },
+        Stange:       { short: 'Stange',   plural: 'Stangen',  versions: ['stange', 'stangen'] },
+        Tasse:        { short: 'Tasse',    plural: 'Tassen',   versions: ['tasse', 'tassen'] },
+        Pkg:          { short: 'Pkg.',     plural: 'Pkg.',     versions: ['pkg', 'pkg.', 'packung', 'packungen'] },
+      }
     });
     if (r && r.ingredient) {
       return {
@@ -377,7 +367,7 @@ export function parseIngredientLine(line) {
       };
     }
   } catch(e) {}
-  return {m: 1, u: '', n: line};
+  return { m: 1, u: '', n: line };
 }
 
 function splitSteps(text) {
@@ -392,13 +382,33 @@ function splitSteps(text) {
 export async function saveQE() {
   const name = document.getElementById('qe-name').value.trim();
   if (!name) { document.getElementById('qe-name').focus(); return; }
-  const ingLines = document.getElementById('qe-ings').value.split('\n').filter(l => l.trim());
+
+  const modal = document.getElementById('qe-modal');
+
+  const ingLines  = document.getElementById('qe-ings').value.split('\n').filter(l => l.trim());
   const stepsText = document.getElementById('qe-steps').value.trim();
-  const ings = ingLines.map(parseIngredientLine).filter(Boolean);
+  const ings  = ingLines.map(parseIngredientLine).filter(Boolean);
   const steps = splitSteps(stepsText);
-  const time = parseInt(document.getElementById('qe-time').value) || null;
+  const time     = parseInt(document.getElementById('qe-time').value) || null;
   const portions = parseInt(document.getElementById('qe-portions').value) || 2;
-  const newR = { id: D.nextId++, name, cat: document.getElementById('qe-cat').value, auf: document.getElementById('qe-auf').value, time, portions, ings, steps, src: null, public: true };
+
+  // Fix 5: URL aus Import als Quelle übernehmen
+  const importSrc = modal.dataset.importSrc ?? '';
+  const src = importSrc ? { type: 'url', val: importSrc, seite: '' } : null;
+
+  const newR = {
+    id: D.nextId++,
+    name,
+    cat:    document.getElementById('qe-cat').value,
+    auf:    document.getElementById('qe-auf').value,
+    time,
+    portions,
+    ings,
+    steps,
+    src,
+    public: true
+  };
+
   D.recipes.push(newR);
   closeQE();
   await saveRecipeNow(newR);

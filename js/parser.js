@@ -46,7 +46,8 @@ export async function parseRecipeUrl() {
     }
 
     closeUrlImport();
-    openQEWithRecipe(data.recipe);
+    // Fix 5: URL mitgeben damit sie als Quelle gesetzt werden kann
+    openQEWithRecipe(data.recipe, url);
 
   } catch (e) {
     errEl.textContent = 'Netzwerkfehler – bist du online?';
@@ -57,16 +58,19 @@ export async function parseRecipeUrl() {
 }
 
 // ── Quick-Entry Modal mit geparsten Daten befüllen ───────────────────────────
-function openQEWithRecipe(r) {
-  // Name
-  document.getElementById('qe-name').value = r.name ?? '';
+function openQEWithRecipe(r, sourceUrl) {
+  const modal = document.getElementById('qe-modal');
 
-  // Zeit + Portionen
-  document.getElementById('qe-time').value     = r.time ?? '';
+  // Fix 5: Quell-URL für saveQE bereitstellen
+  modal.dataset.importSrc = sourceUrl ?? '';
+
+  // Felder befüllen
+  document.getElementById('qe-name').value     = r.name     ?? '';
+  document.getElementById('qe-time').value     = r.time     ?? '';
   document.getElementById('qe-portions').value = r.portions ?? 2;
 
-  // Zutaten als Textblock (eine Zeile pro Zutat)
-  // Das QE-Modal parst sie beim Speichern selbst via parseIngredientLine
+  // Zutaten als lesbaren Text – der User kann sie noch korrigieren,
+  // saveQE parst sie dann nochmals (gewollter Review-Schritt)
   const ingText = (r.ings ?? []).map(ing => {
     const parts = [
       ing.m > 0 ? String(ing.m) : '',
@@ -83,20 +87,20 @@ function openQEWithRecipe(r) {
     .join('\n');
   document.getElementById('qe-steps').value = stepsText;
 
-  // Kategorie + Aufwand auf leer/erste Option setzen (manuell wählen)
-  // cat und auf sind null aus der Edge Function
-
-  // Modal öffnen
-  document.getElementById('qe-modal').style.display = 'flex';
-
-  // Bild-Hinweis falls vorhanden
   if (r.img) {
-    // Wir speichern die Bild-URL temporär als data-Attribut –
-    // beim Speichern kann man sie übernehmen oder ignorieren
-    document.getElementById('qe-modal').dataset.importImg = r.img;
-    toast('Rezept geladen · Kategorie & Aufwand noch auswählen');
+    modal.dataset.importImg = r.img;
   } else {
-    delete document.getElementById('qe-modal').dataset.importImg;
-    toast('Rezept geladen · Kategorie & Aufwand noch auswählen');
+    delete modal.dataset.importImg;
   }
+
+  modal.style.display = 'flex';
+
+  // Fix 6: Name-Feld fokussieren und selektieren → sofort editierbar
+  setTimeout(() => {
+    const nameEl = document.getElementById('qe-name');
+    nameEl.focus();
+    nameEl.select();
+  }, 80);
+
+  toast('Rezept geladen · Name prüfen, dann Kategorie & Aufwand wählen');
 }
