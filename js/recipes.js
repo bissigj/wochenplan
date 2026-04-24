@@ -2,13 +2,12 @@ import { D, getCatLabel, getAufLabel, tagStyle } from './data.js';
 import { parseIngredient } from 'https://esm.sh/@jlucaspains/sharp-recipe-parser@1.3.6';
 import { saveRecipesDebounced, saveRecipeNow, deleteRecipeFromDB, saveWeekNow } from './data.js';
 import { sbUploadImage, sbDeleteImage } from './db.js';
-
 import { fmtIng, srcHTML, toast, esc } from './ui.js';
 import { renderWeek } from './week.js';
 
 export let expandedR = null;
 export let rFilters = new Set();
-export let sortOrder = 'name'; // 'name' | 'cat' | 'time'
+export let sortOrder = 'name';
 
 window.undoDelR = () => { if (window._undoDelR) window._undoDelR(); };
 
@@ -71,99 +70,157 @@ export function renderRecipes(searchQuery = '') {
       : '<div class="empty-state"><div class="empty-state-icon">🍳</div><div class="empty-state-title">Noch keine Rezepte</div><div class="empty-state-sub">Tippe auf + um dein erstes Rezept hinzuzufügen.</div></div>';
     return;
   }
+
   const einheiten = D.settings.einheiten || [];
+
   el.innerHTML = vis.map(r => {
     const isOpen = expandedR === r.id;
-    return `<div class="card">
+    return `<div class="card recipe-card">
+
+      <!-- ── Zusammengeklappte Zeile ── -->
       <div class="recipe-row" onclick="toggleER(${r.id})" style="cursor:pointer">
         <span class="recipe-name-col">${esc(r.name)}</span>
         <span class="recipe-meta">${r.time ? r.time + ' min' : ''}</span>
         <span class="tag" style="${tagStyle(r.cat)}">${esc(getCatLabel(r.cat))}</span>
         <span class="tag" style="${tagStyle(r.auf)}">${esc(getAufLabel(r.auf))}</span>
-        <button class="xbtn" onclick="event.stopPropagation();delR(${r.id})" style="margin-left:6px;padding:4px 6px;font-size:16px;opacity:0.4" onmouseover="this.style.opacity=1;this.style.color='var(--red)'" onmouseout="this.style.opacity=0.4;this.style.color=''">×</button>
+        <button class="xbtn" onclick="event.stopPropagation();delR(${r.id})"
+          style="margin-left:6px;padding:4px 6px;font-size:16px;opacity:0.4"
+          onmouseover="this.style.opacity=1;this.style.color='var(--red)'"
+          onmouseout="this.style.opacity=0.4;this.style.color=''">×</button>
       </div>
-      ${isOpen ? `<div class="recipe-detail">
-      ${r.img ? `<div class="recipe-img" style="background-image:url('${esc(r.img)}')"></div>` : ''}
-      <div class="detail-grid">
-        <div>
-          <div class="section-title">Name</div>
-          <input type="text" value="${esc(r.name)}" style="margin-bottom:10px"
-            onchange="updR(${r.id},'name',this.value);this.closest('.recipe-row, .card').querySelector('.recipe-name-col').textContent=this.value" />
-          <div class="section-title">Eckdaten</div>
-          <div class="row" style="gap:8px;margin-bottom:10px">
-            <div style="flex:1"><span class="label">Kochzeit (min)</span>
-              <input type="number" value="${r.time || ''}" min="1" max="300" style="width:80px" onchange="updR(${r.id},'time',+this.value)" /></div>
-            <div style="flex:1"><span class="label">Portionen</span>
-              <input type="number" value="${r.portions || 2}" min="1" max="20" style="width:80px" onchange="updR(${r.id},'portions',+this.value)" /></div>
+
+      ${isOpen ? `
+      <!-- ── Aufgeklapptes Detail ── -->
+      <div class="recipe-detail">
+
+        <!-- Bild als Header mit Overlay -->
+        <div class="rd-img-header" style="${r.img ? `background-image:url('${esc(r.img)}')` : 'background:var(--bg3)'}">
+          <div class="rd-img-overlay">
+            <div class="rd-img-meta">
+              <span class="tag" style="${tagStyle(r.cat)}">${esc(getCatLabel(r.cat))}</span>
+              <span class="tag" style="${tagStyle(r.auf)}">${esc(getAufLabel(r.auf))}</span>
+              ${r.time ? `<span class="rd-chip">${r.time} min</span>` : ''}
+              <span class="rd-chip">${r.portions || 2} Port.</span>
+            </div>
+            <div class="rd-img-actions">
+              <label class="btn btn--sm rd-img-btn" style="cursor:pointer">
+                <span class="img-upload-label">${r.img ? 'Foto ersetzen' : '+ Foto'}</span>
+                <input type="file" accept="image/*,image/heic" style="display:none" onchange="uploadRecipeImage(${r.id},this)" />
+              </label>
+              ${r.img ? `<button class="btn btn--sm rd-img-btn btn--danger" onclick="removeRecipeImage(${r.id})">Entfernen</button>` : ''}
+            </div>
           </div>
-          <div class="row" style="gap:8px;margin-bottom:10px">
-            <div style="flex:1"><span class="label">Kategorie</span>
-              <select class="inline-select" style="width:100%" onchange="updR(${r.id},'cat',this.value)">
-                ${D.settings.cats.map(c => `<option value="${esc(c.id)}" ${r.cat === c.id ? 'selected' : ''}>${esc(c.label)}</option>`).join('')}
-              </select></div>
-            <div style="flex:1"><span class="label">Aufwand</span>
-              <select class="inline-select" style="width:100%" onchange="updR(${r.id},'auf',this.value)">
-                ${D.settings.aufwand.map(a => `<option value="${esc(a.id)}" ${r.auf === a.id ? 'selected' : ''}>${esc(a.label)}</option>`).join('')}
-              </select></div>
-          </div>
-          <div class="section-title">Zutaten (für ${r.portions || 2} Port.)</div>
-          <div class="ing-list">${(r.ings || []).map((ing, i) =>
-            `<div class="ing-row">
-              <span class="ing-amt">${fmtIng(ing, 1)}</span>
-              <button class="xbtn" onclick="delIng(${r.id},${i})">×</button>
-            </div>`).join('')}
-          </div>
-          <div class="row" style="gap:4px;margin-top:4px">
-            <input type="number" id="im-${r.id}" placeholder="Menge" style="width:60px" step="any" min="0" />
-            <select id="iu-${r.id}" class="inline-select" style="width:80px">
-              ${einheiten.map(e => `<option>${esc(e)}</option>`).join('')}
+        </div>
+
+        <!-- Name -->
+        <div class="rd-name-row">
+          <input type="text" class="rd-name-input" value="${esc(r.name)}"
+            onchange="updR(${r.id},'name',this.value);this.closest('.recipe-card').querySelector('.recipe-name-col').textContent=this.value" />
+        </div>
+
+        <!-- Eckdaten: 4er-Zeile -->
+        <div class="rd-meta-row">
+          <div class="rd-meta-cell">
+            <span class="rd-label">Kategorie</span>
+            <select class="inline-select" onchange="updR(${r.id},'cat',this.value)">
+              ${D.settings.cats.map(c => `<option value="${esc(c.id)}" ${r.cat === c.id ? 'selected' : ''}>${esc(c.label)}</option>`).join('')}
             </select>
-            <input type="text" id="in-${r.id}" placeholder="Zutat" style="flex:1" onkeydown="if(event.key==='Enter')addIng(${r.id})" />
-            <button class="btn btn--sm" onclick="addIng(${r.id})">+</button>
+          </div>
+          <div class="rd-meta-cell">
+            <span class="rd-label">Aufwand</span>
+            <select class="inline-select" onchange="updR(${r.id},'auf',this.value)">
+              ${D.settings.aufwand.map(a => `<option value="${esc(a.id)}" ${r.auf === a.id ? 'selected' : ''}>${esc(a.label)}</option>`).join('')}
+            </select>
+          </div>
+          <div class="rd-meta-cell">
+            <span class="rd-label">Zeit (min)</span>
+            <input type="number" value="${r.time || ''}" min="1" max="300" style="width:100%" onchange="updR(${r.id},'time',+this.value)" />
+          </div>
+          <div class="rd-meta-cell">
+            <span class="rd-label">Portionen</span>
+            <input type="number" value="${r.portions || 2}" min="1" max="20" style="width:100%" onchange="updR(${r.id},'portions',+this.value)" />
           </div>
         </div>
-        <div>
-          <div class="section-title">Zubereitung</div>
-          <ul class="steps-list">${(r.steps || []).map((s, i) =>
-            `<li class="step-item" data-id="${r.id}" data-i="${i}">
-              <span class="drag-handle">⠿</span>
-              <span class="step-num">${i + 1}</span>
-              <span class="step-text">${esc(s)}</span>
-              <button class="xbtn" onclick="delStep(${r.id},${i})">×</button>
-            </li>`).join('')}
-          </ul>
-          <div class="row" style="gap:4px;margin-top:4px">
-            <input type="text" id="st-${r.id}" placeholder="Neuer Schritt…" style="flex:1" onkeydown="if(event.key==='Enter')addStep(${r.id})" />
-            <button class="btn btn--sm" onclick="addStep(${r.id})">+</button>
+
+        <div class="rd-divider"></div>
+
+        <!-- Zutaten | Zubereitung -->
+        <div class="rd-body">
+
+          <!-- Zutaten -->
+          <div class="rd-col rd-col-ings">
+            <div class="rd-col-title">Zutaten · ${r.portions || 2} Port.</div>
+            <div class="rd-ing-list">
+              ${(r.ings || []).map((ing, i) => `
+                <div class="rd-ing-row">
+                  <span class="rd-ing-qty">${fmtIng(ing, 1)}</span>
+                  <button class="xbtn" onclick="delIng(${r.id},${i})">×</button>
+                </div>`).join('')}
+            </div>
+            <div class="rd-add-row">
+              <input type="number" id="im-${r.id}" placeholder="Menge" step="any" min="0" class="rd-add-qty" />
+              <select id="iu-${r.id}" class="inline-select rd-add-unit">
+                ${einheiten.map(e => `<option>${esc(e)}</option>`).join('')}
+              </select>
+              <input type="text" id="in-${r.id}" placeholder="Zutat" class="rd-add-name"
+                onkeydown="if(event.key==='Enter')addIng(${r.id})" />
+              <button class="btn btn--sm" onclick="addIng(${r.id})">+</button>
+            </div>
           </div>
-          <div class="section-title" style="margin-top:12px">Quelle</div>
-          <div class="pills" style="gap:6px;margin-bottom:8px">
-            <button class="pill ${!r.src || r.src.type === 'url' ? 'on' : ''}" onclick="setSrcType(${r.id},'url')">🔗 URL</button>
-            <button class="pill ${r.src && r.src.type === 'buch' ? 'on' : ''}" onclick="setSrcType(${r.id},'buch')">📖 Buch</button>
-          </div>
-          ${(!r.src || r.src.type === 'url')
-            ? `<input type="url" value="${esc(r.src?.val || '')}" placeholder="https://…" onchange="updSrc(${r.id},'val',this.value)" />`
-            : `<input type="text" value="${esc(r.src?.val || '')}" placeholder="Kochbuchname" style="margin-bottom:6px" onchange="updSrc(${r.id},'val',this.value)" />
-               <input type="text" value="${esc(r.src?.seite || '')}" placeholder="Seite (optional)" onchange="updSrc(${r.id},'seite',this.value)" />`}
-          <div style="margin-top:6px">${srcHTML(r.src)}</div>
-          <div class="section-title" style="margin-top:12px">Foto</div>
-          <div id="img-preview-${r.id}" style="width:100%;height:140px;background-size:cover;background-position:center;border-radius:var(--rs);margin-bottom:8px;${r.img ? `background-image:url('${esc(r.img)}')` : 'display:none'}"></div>
-          <div class="img-upload-wrap">
-            <label class="btn btn--sm" style="cursor:pointer">
-              <span class="img-upload-label">${r.img ? 'Foto ersetzen' : '+ Foto hochladen'}</span>
-              <input type="file" accept="image/*,image/heic" style="display:none" onchange="uploadRecipeImage(${r.id},this)" />
-            </label>
-            ${r.img ? `<button class="btn btn--danger btn--sm" onclick="removeRecipeImage(${r.id})">Foto entfernen</button>` : ''}
+
+          <div class="rd-col-sep"></div>
+
+          <!-- Zubereitung -->
+          <div class="rd-col rd-col-steps">
+            <div class="rd-col-title">Zubereitung</div>
+            <ul class="steps-list" id="steps-${r.id}">
+              ${(r.steps || []).map((s, i) => `
+                <li class="step-item" data-id="${r.id}" data-i="${i}">
+                  <span class="drag-handle">⠿</span>
+                  <span class="step-num">${i + 1}</span>
+                  <span class="step-text">${esc(s)}</span>
+                  <button class="xbtn" onclick="delStep(${r.id},${i})">×</button>
+                </li>`).join('')}
+            </ul>
+            <div class="rd-add-row">
+              <input type="text" id="st-${r.id}" placeholder="Neuer Schritt…" class="rd-add-step"
+                onkeydown="if(event.key==='Enter')addStep(${r.id})" />
+              <button class="btn btn--sm" onclick="addStep(${r.id})">+</button>
+            </div>
           </div>
         </div>
-        <div class="row" style="margin-top:12px;justify-content:space-between">
+
+        <div class="rd-divider"></div>
+
+        <!-- Quelle + Sichtbarkeit nebeneinander -->
+        <div class="rd-footer">
+          <div class="rd-footer-cell">
+            <div class="rd-label" style="margin-bottom:6px">Quelle</div>
+            <div class="pills" style="gap:6px;margin-bottom:8px">
+              <button class="pill ${!r.src || r.src.type === 'url' ? 'on' : ''}" onclick="setSrcType(${r.id},'url')">🔗 URL</button>
+              <button class="pill ${r.src && r.src.type === 'buch' ? 'on' : ''}" onclick="setSrcType(${r.id},'buch')">📖 Buch</button>
+            </div>
+            ${(!r.src || r.src.type === 'url')
+              ? `<input type="url" value="${esc(r.src?.val || '')}" placeholder="https://…" onchange="updSrc(${r.id},'val',this.value)" />`
+              : `<input type="text" value="${esc(r.src?.val || '')}" placeholder="Kochbuchname" style="margin-bottom:6px" onchange="updSrc(${r.id},'val',this.value)" />
+                 <input type="text" value="${esc(r.src?.seite || '')}" placeholder="Seite (optional)" onchange="updSrc(${r.id},'seite',this.value)" />`}
+            <div style="margin-top:6px">${srcHTML(r.src)}</div>
+          </div>
+          <div class="rd-footer-cell" style="display:flex;flex-direction:column;align-items:flex-start;gap:8px">
+            <div class="rd-label">Sichtbarkeit</div>
+            <button class="btn btn--sm ${r.public === false ? 'btn-private' : 'btn-public'}"
+              onclick="togglePublic(${r.id})">
+              ${r.public === false ? '🔒 Privat' : '👁 Öffentlich'}
+            </button>
+          </div>
+        </div>
+
+        <!-- PDF -->
+        <div style="padding:10px var(--s-6) var(--s-5)">
           <button class="btn btn--sm" onclick="exportRecipePDF(${r.id})">↓ PDF exportieren</button>
-          <button class="btn btn--sm ${r.public === false ? 'btn-private' : 'btn-public'}"
-            onclick="togglePublic(${r.id})" title="${r.public === false ? 'Privat – nur für dich sichtbar' : 'Öffentlich – für andere sichtbar'}">
-            ${r.public === false ? '🔒 Privat' : '👁 Öffentlich'}
-          </button>
         </div>
-      </div></div>` : ''}
+
+      </div>` : ''}
     </div>`;
   }).join('');
 }
@@ -188,11 +245,7 @@ export async function delR(id) {
     toast('Rezept wiederhergestellt');
   };
   toast(`"${removed.name}" gelöscht · <a onclick="undoDelR()" style="cursor:pointer;text-decoration:underline">Rückgängig</a>`);
-  setTimeout(async () => {
-    if (!undone) {
-      await deleteRecipeFromDB(removed);
-    }
-  }, 5000);
+  setTimeout(async () => { if (!undone) await deleteRecipeFromDB(removed); }, 5000);
 }
 
 export async function addIng(id) {
@@ -243,20 +296,10 @@ export async function updR(id, key, val) {
 export async function uploadRecipeImage(id, input) {
   const file = input.files[0];
   if (!file) return;
-  if (!file.type.startsWith('image/')) {
-    toast('Nur Bilder erlaubt (JPG, PNG, HEIC)');
-    return;
-  }
-  const previewUrl = URL.createObjectURL(file);
-  const previewEl = document.getElementById('img-preview-' + id);
-  if (previewEl) {
-    previewEl.style.backgroundImage = `url('${previewUrl}')`;
-    previewEl.style.display = 'block';
-  }
+  if (!file.type.startsWith('image/')) { toast('Nur Bilder erlaubt (JPG, PNG, HEIC)'); return; }
   const label = input.parentElement.querySelector('.img-upload-label');
   if (label) label.textContent = 'Wird hochgeladen…';
   const url = await sbUploadImage(file);
-  URL.revokeObjectURL(previewUrl);
   if (url) {
     const ri = D.recipes.find(r => r.id === id);
     ri.img = url;
@@ -266,16 +309,13 @@ export async function uploadRecipeImage(id, input) {
     toast('Bild gespeichert');
   } else {
     if (label) label.textContent = 'Fehler beim Hochladen';
-    if (previewEl) previewEl.style.display = 'none';
   }
 }
 
 export async function removeRecipeImage(id) {
   const r = D.recipes.find(r => r.id === id);
   if (!r || !r.img) return;
-  if (r.img_owned !== false) {
-    await sbDeleteImage(r.img);
-  }
+  if (r.img_owned !== false) await sbDeleteImage(r.img);
   r.img = null;
   r.img_owned = undefined;
   await saveRecipeNow(r);
@@ -313,7 +353,6 @@ export function openQE() {
   document.getElementById('qe-ings').value  = '';
   document.getElementById('qe-steps').value = '';
   document.getElementById('qe-time').value  = '';
-  // Importdaten löschen falls vorhanden
   delete modal.dataset.importSrc;
   delete modal.dataset.importImg;
   modal.style.display = 'flex';
@@ -323,7 +362,6 @@ export function openQE() {
 export function closeQE() {
   const modal = document.getElementById('qe-modal');
   modal.style.display = 'none';
-  // Fix 5: Temporäre Import-Daten aufräumen
   delete modal.dataset.importSrc;
   delete modal.dataset.importImg;
 }
@@ -360,11 +398,7 @@ export function parseIngredientLine(line) {
       }
     });
     if (r && r.ingredient) {
-      return {
-        m: r.quantity > 0 ? r.quantity : 0,
-        u: r.unitText || '',
-        n: r.ingredient.trim()
-      };
+      return { m: r.quantity > 0 ? r.quantity : 0, u: r.unitText || '', n: r.ingredient.trim() };
     }
   } catch(e) {}
   return { m: 1, u: '', n: line };
@@ -382,33 +416,21 @@ function splitSteps(text) {
 export async function saveQE() {
   const name = document.getElementById('qe-name').value.trim();
   if (!name) { document.getElementById('qe-name').focus(); return; }
-
   const modal = document.getElementById('qe-modal');
-
   const ingLines  = document.getElementById('qe-ings').value.split('\n').filter(l => l.trim());
   const stepsText = document.getElementById('qe-steps').value.trim();
   const ings  = ingLines.map(parseIngredientLine).filter(Boolean);
   const steps = splitSteps(stepsText);
   const time     = parseInt(document.getElementById('qe-time').value) || null;
   const portions = parseInt(document.getElementById('qe-portions').value) || 2;
-
-  // Fix 5: URL aus Import als Quelle übernehmen
   const importSrc = modal.dataset.importSrc ?? '';
   const src = importSrc ? { type: 'url', val: importSrc, seite: '' } : null;
-
   const newR = {
-    id: D.nextId++,
-    name,
-    cat:    document.getElementById('qe-cat').value,
-    auf:    document.getElementById('qe-auf').value,
-    time,
-    portions,
-    ings,
-    steps,
-    src,
-    public: true
+    id: D.nextId++, name,
+    cat: document.getElementById('qe-cat').value,
+    auf: document.getElementById('qe-auf').value,
+    time, portions, ings, steps, src, public: true
   };
-
   D.recipes.push(newR);
   closeQE();
   await saveRecipeNow(newR);
