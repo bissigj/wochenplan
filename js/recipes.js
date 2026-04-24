@@ -151,11 +151,16 @@ export function renderRecipes(searchQuery = '') {
           <div class="rd-col rd-col-ings">
             <div class="rd-col-title">Zutaten · ${r.portions || 2} Port.</div>
             <div class="rd-ing-list">
-              ${(r.ings || []).map((ing, i) => `
+              ${(r.ings || []).map((ing, i) => {
+                const m = ing.m > 0 ? String(+ing.m.toFixed(2)).replace('.', ',') : '';
+                const qty = [m, esc(ing.u || '')].filter(Boolean).join('\u202f');
+                return `
                 <div class="rd-ing-row">
-                  <span class="rd-ing-qty">${fmtIng(ing, 1)}</span>
+                  <span class="rd-ing-qty">${qty || '—'}</span>
+                  <span class="rd-ing-name">${esc(ing.n || '')}</span>
                   <button class="xbtn" onclick="delIng(${r.id},${i})">×</button>
-                </div>`).join('')}
+                </div>`;
+              }).join('')}
             </div>
             <div class="rd-add-row">
               <input type="number" id="im-${r.id}" placeholder="Menge" step="any" min="0" class="rd-add-qty" />
@@ -167,8 +172,6 @@ export function renderRecipes(searchQuery = '') {
               <button class="btn btn--sm" onclick="addIng(${r.id})">+</button>
             </div>
           </div>
-
-          <div class="rd-col-sep"></div>
 
           <!-- Zubereitung -->
           <div class="rd-col rd-col-steps">
