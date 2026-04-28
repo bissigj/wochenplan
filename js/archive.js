@@ -1,6 +1,5 @@
 import { D } from './data.js';
 import { showTab, esc } from './ui.js';
-// Fix #11: statischer Import statt dynamischer
 import { setViewingArchive, renderWeek, expandedDays } from './week.js';
 
 export function renderArchiv() {
@@ -17,7 +16,7 @@ export function renderArchiv() {
     return `<div class="archive-item">
       <span class="archive-kw">${esc(w.kw || '—')}</span>
       <span class="archive-recipes">${esc(names || '—')}</span>
-      <button class="btn btn-sm" onclick="viewArchiveWeek(${D.archive.length - 1 - i})">Ansehen</button>
+      <button class="btn btn--sm" onclick="viewArchiveWeek(${D.archive.length - 1 - i})">Ansehen</button>
     </div>`;
   }).join('') + '</div>';
 }
