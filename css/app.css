@@ -353,6 +353,7 @@ textarea { resize: vertical; min-block-size: 60px; line-height: 1.5; }
   cursor: pointer;
   font-family: var(--font-body);
   transition: background var(--t-fast), border-color var(--t-fast), color var(--t-fast);
+  white-space: nowrap;
 }
 .pill[style*='--tag-c'] { color: var(--tag-c); border-color: color-mix(in srgb, var(--tag-c) 38%, transparent); }
 .pill:hover { background: var(--bg2); }
