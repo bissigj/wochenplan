@@ -447,6 +447,8 @@ export async function saveQE() {
   const name = document.getElementById('qe-name').value.trim();
   if (!name) { document.getElementById('qe-name').focus(); return; }
   const modal = document.getElementById('qe-modal');
+  console.log('importImg:', modal.dataset.importImg);
+  console.log('importSrc:', modal.dataset.importSrc);
   const ingLines  = document.getElementById('qe-ings').value.split('\n').filter(l => l.trim());
   const stepsText = document.getElementById('qe-steps').value.trim();
   const ings  = ingLines.map(parseIngredientLine).filter(Boolean);
