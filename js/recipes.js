@@ -12,14 +12,24 @@ export let sortOrder = 'name';
 window.undoDelR = () => { if (window._undoDelR) window._undoDelR(); };
 
 export function renderRFilters() {
-  document.getElementById('r-count').textContent = D.recipes.length + ' Rezepte';
-  const allFilters = [
-    ...D.settings.cats.map(c => ({ id: c.id, label: c.label })),
-    ...D.settings.aufwand.map(a => ({ id: a.id, label: a.label }))
-  ];
-  document.getElementById('r-filters').innerHTML = allFilters.map(f =>
-    `<button class="pill ${rFilters.has(f.id) ? 'on' : ''}" style="${tagStyle(f.id)}" onclick="toggleRF('${esc(f.id)}')">${esc(f.label)}</button>`
+  // Kategorien alphabetisch → horizontal scrollbare Pills
+  const cats = [...D.settings.cats].sort((a, b) => a.label.localeCompare(b.label, 'de'));
+  document.getElementById('r-filters').innerHTML = cats.map(c =>
+    `<button class="pill ${rFilters.has(c.id) ? 'on' : ''}" style="${tagStyle(c.id)}"
+      onclick="toggleRF('${esc(c.id)}')">${esc(c.label)}</button>`
   ).join('');
+
+  // Aufwand Segment-Control
+  const aufEl = document.getElementById('r-auf-segment');
+  if (aufEl) {
+    const hasAufFilter = D.settings.aufwand.some(a => rFilters.has(a.id));
+    aufEl.innerHTML =
+      `<button class="segment ${!hasAufFilter ? 'on' : ''}" onclick="clearAufFilter()">Alle</button>` +
+      D.settings.aufwand.map(a =>
+        `<button class="segment ${rFilters.has(a.id) ? 'on' : ''}"
+          onclick="toggleRF('${esc(a.id)}')">${esc(a.label)}</button>`
+      ).join('');
+  }
 }
 
 function rerender() {
@@ -465,4 +475,11 @@ export function openSrcEdit(id) {
   if (!panel) return;
   const isOpen = panel.style.display !== 'none';
   panel.style.display = isOpen ? 'none' : 'block';
+}
+
+// ── Aufwand-Filter zurücksetzen ───────────────────────────────────────────────
+export function clearAufFilter() {
+  D.settings.aufwand.forEach(a => rFilters.delete(a.id));
+  renderRFilters();
+  renderRecipes();
 }
