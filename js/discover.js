@@ -88,10 +88,10 @@ function renderDiscoverFilters() {
   const el = document.getElementById('discover-filters');
   if (!el) return;
 
-  const cats = D.settings.cats.map(c =>
-    `<button class="pill ${discoverCat === c.id ? 'on' : ''}" style="${tagStyle(c.id)}"
-      onclick="setDiscoverCat('${esc(c.id)}')">${esc(c.label)}</button>`
-  ).join('');
+  const cats = [...D.settings.cats].sort((a, b) => a.label.localeCompare(b.label, 'de')).map(c =>
+  `<button class="pill ${discoverCat === c.id ? 'on' : ''}" style="${tagStyle(c.id)}"
+    onclick="setDiscoverCat('${esc(c.id)}')">${esc(c.label)}</button>`
+).join('');
 
   const aufs = D.settings.aufwand.map(a =>
     `<button class="pill ${discoverAuf === a.id ? 'on' : ''}" style="${tagStyle(a.id)}"
