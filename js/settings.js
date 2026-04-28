@@ -6,7 +6,7 @@ import { renderRFilters, renderRecipes } from './recipes.js';
 import { renderWeek } from './week.js';
 import { joinFamilyByCode } from './auth.js';
 
-// ── Accordion state preservation (Fix #9) ────────────────────────────────────
+// ── Accordion state preservation ────────────────────────────────────
 function getOpenAccordions() {
   return Array.from(document.querySelectorAll('.acc-item.open')).map(el => {
     const body = el.querySelector('.acc-body');
@@ -142,7 +142,7 @@ export function renderSettings() {
       <button class="btn btn--sm" onclick="addAuf()">+</button>
     </div>`;
 
-  // Fix #10: Einheiten via data-Attribut statt im onclick-String (Sonderzeichen-sicher)
+
   const einhContent = `
     <div id="einh-list" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">
       ${(D.settings.einheiten || []).map(e => `
@@ -199,8 +199,6 @@ export async function updateCat(id, newLabel) {
   rerenderSettings();
 }
 
-// Fix #14: Bei Farb-Änderung reicht es, die betroffenen Views neu zu rendern
-// (kein applyTagStyles mehr nötig, Farben sind inline)
 export async function updateCatColor(id, color) {
   const cat = D.settings.cats.find(c => c.id === id);
   if (cat) cat.color = color;
@@ -246,7 +244,7 @@ export async function addAuf() {
   toast(`"${label}" hinzugefügt`);
 }
 
-// Fix #13: renderWeek nach Label-Änderung für konsistente Darstellung
+
 export async function updateAuf(id, newLabel) {
   newLabel = newLabel.trim().toLowerCase();
   if (!newLabel) return;
