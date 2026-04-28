@@ -9,7 +9,7 @@ export function toast(msg) {
   const el = document.getElementById('toast');
   el.innerHTML = msg;
   el.classList.add('show');
-  setTimeout(() => el.classList.remove('show'), 1800);
+  setTimeout(() => el.classList.remove('show'), 4000);
 }
 
 // Fix #3: 'woche' war doppelt im Array
