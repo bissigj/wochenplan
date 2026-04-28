@@ -1315,3 +1315,5 @@ textarea { resize: vertical; min-block-size: 60px; line-height: 1.5; }
 .rd-img-header {
   margin-block-start: var(--s-3);
 }
+
+#r-filters::-webkit-scrollbar { display: none; }
