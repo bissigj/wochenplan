@@ -1,6 +1,5 @@
-import { D, getCatLabel, getAufLabel, tagStyle } from './data.js';
+import { D, getCatLabel, getAufLabel, tagStyle, saveRecipesDebounced, saveRecipeNow, deleteRecipeFromDB, saveWeekNow } from './data.js';
 import { parseIngredient } from 'https://esm.sh/@jlucaspains/sharp-recipe-parser@1.3.6';
-import { saveRecipesDebounced, saveRecipeNow, deleteRecipeFromDB, saveWeekNow } from './data.js';
 import { sbUploadImage, sbDeleteImage } from './db.js';
 import { fmtIng, srcHTML, toast, esc } from './ui.js';
 import { renderWeek } from './week.js';
