@@ -461,6 +461,11 @@ export async function saveQE() {
     auf: document.getElementById('qe-auf').value,
     time, portions, ings, steps, src, public: true
   };
+  // Importiertes Bild übernehmen — nach newR Deklaration
+  if (modal.dataset.importImg) {
+    newR.img = modal.dataset.importImg;
+    newR.img_owned = true;
+  }
   D.recipes.push(newR);
   closeQE();
   await saveRecipeNow(newR);
