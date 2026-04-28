@@ -7,9 +7,6 @@ import { renderWeek } from './week.js';
 export let expandedR = null;
 export let rFilters = new Set();
 export let sortOrder = 'name';
-
-window.undoDelR = () => { if (window._undoDelR) window._undoDelR(); };
-
 export function renderRFilters() {
   // Kategorien alphabetisch → horizontal scrollbare Pills
   const cats = [...D.settings.cats].sort((a, b) => a.label.localeCompare(b.label, 'de'));
