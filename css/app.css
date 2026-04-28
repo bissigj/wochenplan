@@ -260,7 +260,6 @@ body {
 .btn--ghost:hover { background: var(--bg2); color: var(--text); }
 
 .btn--sm   { padding: var(--s-1) var(--s-4); font-size: 12px; }
-.btn--lg   { padding: var(--s-4) var(--s-7); font-size: 14px; }
 .btn--full { inline-size: 100%; justify-content: center; padding: 11px; font-size: 14px; }
 
 .btn-icon {
@@ -375,7 +374,6 @@ textarea { resize: vertical; min-block-size: 60px; line-height: 1.5; }
 .label   { font-size: 11px; color: var(--text2); display: block; margin-block-end: var(--s-1); font-weight: 500; letter-spacing: 0.02em; }
 .divider { block-size: 1px; background: var(--bd); margin-block: var(--s-4); }
 .empty   { text-align: center; padding: 2.5rem; color: var(--text3); font-size: 14px; font-style: italic; }
-.badge   { font-size: 11px; font-weight: 500; padding: 2px var(--s-3); border-radius: var(--rpill); background: var(--bg3); color: var(--text2); }
 .pills   { display: flex; gap: var(--s-2); flex-wrap: wrap; }
 
 .section-title {
@@ -426,7 +424,6 @@ textarea { resize: vertical; min-block-size: 60px; line-height: 1.5; }
   font-family: var(--font-display);
 }
 .recipe-meta { font-size: 12px; color: var(--text3); }
-.expand-btn  { background: none; border: none; cursor: pointer; color: var(--text3); font-size: 12px; padding: 2px var(--s-2); }
 
 .recipe-detail {
   margin-block-start: 0;
@@ -728,15 +725,7 @@ textarea { resize: vertical; min-block-size: 60px; line-height: 1.5; }
   align-items: center;
   gap: var(--s-2);
 }
-.day-lbl-dot {
-  inline-size: 5px;
-  block-size: 5px;
-  border-radius: 50%;
-  background: var(--moss);
-  display: inline-block;
-  margin-inline-end: 2px;
-  vertical-align: middle;
-}
+
 .day-lbl-weekend  { color: var(--moss); }
 .day-recipe-name  { font-family: var(--font-display); font-size: 14px; font-weight: 500; margin-block-end: var(--s-2); line-height: 1.3; }
 .day-meta         { font-size: 11px; color: var(--text3); margin-block-end: var(--s-2); }
@@ -766,21 +755,6 @@ textarea { resize: vertical; min-block-size: 60px; line-height: 1.5; }
 }
 .day-note-input:focus { outline: none; border-color: var(--meadow); box-shadow: none; }
 
-.step-mini     { display: flex; gap: var(--s-2); align-items: flex-start; padding-block: 3px; }
-.step-mini-num {
-  inline-size: var(--icon-sm);
-  block-size: var(--icon-sm);
-  border-radius: 50%;
-  background: var(--meadow-light);
-  color: var(--meadow);
-  font-size: 10px;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  margin-block-start: 2px;
-}
 
 .day-actions {
   padding: var(--s-2) var(--s-4);
@@ -790,49 +764,9 @@ textarea { resize: vertical; min-block-size: 60px; line-height: 1.5; }
   background: var(--bg2);
   border-block-start: 1px solid var(--bd);
 }
-.icon-btn {
-  inline-size: 30px;
-  block-size: 30px;
-  border-radius: var(--rs);
-  border: 1px solid var(--bd2);
-  background: var(--bg);
-  color: var(--text2);
-  cursor: pointer;
-  font-size: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  transition: background var(--t-fast), color var(--t-fast), border-color var(--t-fast);
-}
-.icon-btn:hover { background: var(--meadow); color: #fff; border-color: var(--meadow); }
 
-.portions-row {
-  margin-inline-start: auto;
-  display: flex;
-  align-items: center;
-  gap: var(--s-1);
-  flex-shrink: 0;
-}
-.portions-row input[type=number] {
-  inline-size: 32px;
-  block-size: 30px;
-  border: 1px solid var(--bd2);
-  border-radius: var(--rs);
-  background: var(--bg);
-  color: var(--text);
-  font-size: 13px;
-  font-weight: 500;
-  font-family: var(--font-body);
-  text-align: center;
-  padding: 0;
-  -webkit-appearance: none;
-  -moz-appearance: textfield;
-  appearance: textfield;
-}
-.portions-row input[type=number]::-webkit-inner-spin-button,
-.portions-row input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
-.portions-row input[type=number]:focus { outline: none; border-color: var(--meadow); box-shadow: none; }
+
+
 
 /* ─────────────────────────────────────────────────────────────────────────────
    SHOPPING
@@ -1131,22 +1065,6 @@ textarea { resize: vertical; min-block-size: 60px; line-height: 1.5; }
 .theme-segment button { flex: 1; padding: var(--s-2) var(--s-4); font-size: 13px; background: transparent; border: none; color: var(--text2); cursor: pointer; transition: background var(--t-fast), color var(--t-fast); }
 .theme-segment button.on { background: var(--bg); color: var(--text); box-shadow: var(--shadow-sm); }
 
-/* ─────────────────────────────────────────────────────────────────────────────
-   ING CHIPS
-   ─────────────────────────────────────────────────────────────────────────── */
-
-.ing-chips { display: flex; flex-wrap: wrap; gap: var(--s-2); margin-block-end: var(--s-3); }
-.ing-chip {
-  display: flex;
-  align-items: center;
-  gap: 3px;
-  font-size: 12px;
-  padding: 3px var(--s-3);
-  background: var(--bg2);
-  border-radius: var(--rpill);
-  border: 1px solid var(--bd);
-  color: var(--text2);
-}
 
 /* ─────────────────────────────────────────────────────────────────────────────
    FAB
