@@ -22,6 +22,7 @@ window.showLogin         = showLogin;
 window.showRegister      = showRegister;
 window.openSrcEdit       = openSrcEdit;
 window.clearAufFilter    = clearAufFilter;
+window.undoDelR          = () => { if (window._undoDelR) window._undoDelR(); };
 
 const PAGE_TITLES = { rezepte: 'Rezepte', woche: 'Wochenplan', einkauf: 'Einkauf', archiv: 'Archiv', einstellungen: 'Einstellungen' };
 
