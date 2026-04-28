@@ -69,32 +69,12 @@ export async function loadData() {
       dbSettingsId = sets[0].id;
       D.settings = sets[0].data || {};
       ensureSettingsComplete();
-      if (!sets[0].data || !sets[0].data.einheiten) {
-        // Einheiten waren nicht gespeichert – jetzt speichern
-        saveSettingsNow();
-      }
     } else {
       D.settings = JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
       D.settings.einheiten = [...DEFAULT_EINHEITEN];
       const ins = await sbInsert('settings', { data: D.settings, family_id: fid });
       if (ins && ins[0]) dbSettingsId = ins[0].id;
     }
-
-    // ── Migrate cat/auf string labels → ids ───────────────────────────────────
-    let needsSave = [];
-    D.recipes.forEach(r => {
-      let changed = false;
-      if (r.cat && !r.cat.startsWith('cat_')) {
-        const found = D.settings.cats.find(c => c.label === r.cat);
-        if (found) { r.cat = found.id; changed = true; }
-      }
-      if (r.auf && !r.auf.startsWith('auf_')) {
-        const found = D.settings.aufwand.find(a => a.label === r.auf);
-        if (found) { r.auf = found.id; changed = true; }
-      }
-      if (changed) needsSave.push(r);
-    });
-    for (const r of needsSave) await saveRecipeNow(r);
 
   } catch (e) {
     setSyncStatus('err', 'Offline');
