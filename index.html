@@ -88,22 +88,25 @@
   <!-- Scrollable content -->
   <div class="app-content">
 
-    <!-- REZEPTE -->
-    <div id="tab-rezepte" class="tab-pane">
-      <div class="search-wrap">
-        <input type="text" id="recipe-search" class="search-input" placeholder="Rezepte suchen…" oninput="filterRecipes(this.value)" />
-      </div>
-      <div class="row" style="margin-bottom:1rem;gap:6px">
-        <span class="badge" id="r-count">0</span>
-        <div class="pills" id="r-filters" style="flex:1"></div>
-        <select class="sort-select" onchange="setSortOrder(this.value)">
-          <option value="name">A–Z</option>
-          <option value="cat">Kategorie</option>
-          <option value="time">Kochzeit</option>
-        </select>
-      </div>
-      <div id="r-list"></div>
-    </div>
+<!-- REZEPTE -->
+<div id="tab-rezepte" class="tab-pane">
+  <div class="search-wrap">
+    <input type="text" id="recipe-search" class="search-input" placeholder="Rezepte suchen…" oninput="filterRecipes(this.value)" />
+  </div>
+  <!-- Toolbar: Aufwand-Segment + Sortierung -->
+  <div style="display:flex;align-items:center;gap:var(--s-3);margin-bottom:var(--s-3)">
+    <div class="segment-control" id="r-auf-segment"></div>
+    <div style="flex:1"></div>
+    <select class="sort-select" onchange="setSortOrder(this.value)">
+      <option value="name">A–Z</option>
+      <option value="cat">Kategorie</option>
+      <option value="time">Kochzeit</option>
+    </select>
+  </div>
+  <!-- Kategorien: horizontal scrollbar -->
+  <div id="r-filters" style="display:flex;gap:var(--s-2);overflow-x:auto;padding-bottom:var(--s-2);scrollbar-width:none;margin-bottom:var(--s-4)"></div>
+  <div id="r-list"></div>
+</div>
 
 <!-- WOCHE -->
     <div id="tab-woche" class="tab-pane" style="display:none">
