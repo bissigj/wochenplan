@@ -1,0 +1,75 @@
+/* ═════════════════════════════════════════════════════════════════════════════
+   WOCHENPLAN THEME — TERRACOTTA
+   Mediterran, warm, küchennah.
+   ═════════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  --meadow:        #c2410c;
+  --meadow-light:  #ffedd5;
+  --moss:          #d97706;
+  --moss-light:    #fef3c7;
+  --warm:          #9a3412;
+  --warm-light:    #fff7ed;
+  --red:           #b91c1c;
+  --red-light:     #fee2e2;
+  --waterfall:     #b45309;
+
+  --bg:   #fdfaf7;
+  --bg2:  #f7f0e8;
+  --bg3:  #f0e4d4;
+  --bg4:  #e8d5c0;
+  --text:  #292016;
+  --text2: #7a6248;
+  --text3: #b09a82;
+  --bd:   rgba(41,32,22,0.10);
+  --bd2:  rgba(41,32,22,0.18);
+
+  --font-display: 'Lora', Georgia, serif;
+  --font-body:    'DM Sans', -apple-system, sans-serif;
+
+  --r:      16px;
+  --rs:      8px;
+  --rpill:  99px;
+
+  --shadow:    0 1px 3px rgba(41,32,22,0.10), 0 4px 12px rgba(41,32,22,0.07);
+  --shadow-sm: 0 1px 2px rgba(41,32,22,0.08), 0 2px 6px rgba(41,32,22,0.05);
+  --shadow-lg: 0 4px 16px rgba(41,32,22,0.12), 0 12px 32px rgba(41,32,22,0.09);
+
+  --s-1:  4px; --s-2:  6px; --s-3:  8px; --s-4: 10px;
+  --s-5: 14px; --s-6: 16px; --s-7: 20px; --s-8: 24px;
+  --t-fast: .15s; --t-base: .20s;
+  --icon-sm: 16px; --icon-md: 22px;
+  --header-height: 54px; --nav-height: 60px;
+  --fab-size: 52px; --fab-sm-size: 44px;
+  --tag-c: var(--text2); --tag-bg: var(--bg3);
+}
+
+/* FAB Shadow anpassen */
+.fab {
+  box-shadow: 0 2px 8px rgba(194,65,12,0.35), 0 6px 20px rgba(194,65,12,0.20);
+}
+.fab:hover {
+  box-shadow: 0 4px 12px rgba(194,65,12,0.45), 0 8px 24px rgba(194,65,12,0.25);
+}
+.fab-discover { border-color: var(--meadow); color: var(--meadow); }
+.btn--primary { box-shadow: 0 1px 3px rgba(194,65,12,0.3); }
+
+/* Dark Mode */
+:root[data-theme='dark'] {
+  --bg:   #1c1208; --bg2:  #261a0e; --bg3:  #2e2014; --bg4:  #3a2a1a;
+  --text:  #f5ede0; --text2: #a08060; --text3: #6a5040;
+  --bd:   rgba(245,237,224,0.08); --bd2:  rgba(245,237,224,0.14);
+  --meadow:       #f97316; --meadow-light: #431407;
+  --moss:         #fbbf24; --moss-light:   #451a03;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']):not([data-theme='dark']) {
+    --bg:   #1c1208; --bg2:  #261a0e; --bg3:  #2e2014; --bg4:  #3a2a1a;
+    --text:  #f5ede0; --text2: #a08060; --text3: #6a5040;
+    --bd:   rgba(245,237,224,0.08); --bd2:  rgba(245,237,224,0.14);
+    --meadow:       #f97316; --meadow-light: #431407;
+    --moss:         #fbbf24; --moss-light:   #451a03;
+  }
+}
+:root[data-theme='dark'] .tag,
+:root[data-theme='dark'] .pill.on { filter: brightness(1.15) saturate(0.9); }

@@ -1,0 +1,69 @@
+/* ═════════════════════════════════════════════════════════════════════════════
+   WOCHENPLAN THEME — FOREST
+   Satteres, dunkleres Grün. Bleibt nah am Original.
+   ═════════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  --meadow:        #166534;
+  --meadow-light:  #dcfce7;
+  --moss:          #15803d;
+  --moss-light:    #f0fdf4;
+  --warm:          #92400e;
+  --warm-light:    #fef3c7;
+  --red:           #b91c1c;
+  --red-light:     #fee2e2;
+  --waterfall:     #0f766e;
+
+  --bg:   #f7faf7;
+  --bg2:  #eef5ee;
+  --bg3:  #e2ede2;
+  --bg4:  #d0e3d0;
+  --text:  #0f2010;
+  --text2: #4a7050;
+  --text3: #8aaa8a;
+  --bd:   rgba(15,32,16,0.09);
+  --bd2:  rgba(15,32,16,0.16);
+
+  --font-display: 'Lora', Georgia, serif;
+  --font-body:    'DM Sans', -apple-system, sans-serif;
+
+  --r:      14px;
+  --rs:      8px;
+  --rpill:  99px;
+
+  --shadow:    0 1px 3px rgba(15,32,16,0.10), 0 4px 12px rgba(15,32,16,0.07);
+  --shadow-sm: 0 1px 2px rgba(15,32,16,0.08), 0 2px 6px rgba(15,32,16,0.05);
+  --shadow-lg: 0 4px 16px rgba(15,32,16,0.12), 0 12px 32px rgba(15,32,16,0.09);
+
+  --s-1:  4px; --s-2:  6px; --s-3:  8px; --s-4: 10px;
+  --s-5: 14px; --s-6: 16px; --s-7: 20px; --s-8: 24px;
+  --t-fast: .15s; --t-base: .20s;
+  --icon-sm: 16px; --icon-md: 22px;
+  --header-height: 54px; --nav-height: 60px;
+  --fab-size: 52px; --fab-sm-size: 44px;
+  --tag-c: var(--text2); --tag-bg: var(--bg3);
+}
+
+.fab { box-shadow: 0 2px 8px rgba(22,101,52,0.35), 0 6px 20px rgba(22,101,52,0.20); }
+.fab:hover { box-shadow: 0 4px 12px rgba(22,101,52,0.45), 0 8px 24px rgba(22,101,52,0.25); }
+.btn--primary { box-shadow: 0 1px 3px rgba(22,101,52,0.3); }
+
+/* Dark Mode */
+:root[data-theme='dark'] {
+  --bg:   #071410; --bg2:  #0e2018; --bg3:  #152b1e; --bg4:  #1e3a28;
+  --text:  #e8f5ec; --text2: #6aaa7a; --text3: #3a6a48;
+  --bd:   rgba(232,245,236,0.08); --bd2:  rgba(232,245,236,0.14);
+  --meadow:       #4ade80; --meadow-light: #052e16;
+  --moss:         #86efac; --moss-light:   #052e16;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']):not([data-theme='dark']) {
+    --bg:   #071410; --bg2:  #0e2018; --bg3:  #152b1e; --bg4:  #1e3a28;
+    --text:  #e8f5ec; --text2: #6aaa7a; --text3: #3a6a48;
+    --bd:   rgba(232,245,236,0.08); --bd2:  rgba(232,245,236,0.14);
+    --meadow:       #4ade80; --meadow-light: #052e16;
+    --moss:         #86efac; --moss-light:   #052e16;
+  }
+}
+:root[data-theme='dark'] .tag,
+:root[data-theme='dark'] .pill.on { filter: brightness(1.15) saturate(0.9); }

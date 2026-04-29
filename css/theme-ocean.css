@@ -1,0 +1,68 @@
+/* ═════════════════════════════════════════════════════════════════════════════
+   WOCHENPLAN THEME — OCEAN
+   Kühl, frisch, modern. Blau-Türkis.
+   ═════════════════════════════════════════════════════════════════════════════
+   Aktivieren: In index.html ersetzen durch:
+   <link rel="stylesheet" href="css/themes/theme-ocean.css">
+   ═════════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  --meadow:        #2563eb;
+  --meadow-light:  #dbeafe;
+  --moss:          #0891b2;
+  --moss-light:    #cffafe;
+  --warm:          #d97706;
+  --warm-light:    #fef3c7;
+  --red:           #dc2626;
+  --red-light:     #fee2e2;
+  --waterfall:     #0ea5e9;
+
+  --bg:   #f8fafc;
+  --bg2:  #f1f5f9;
+  --bg3:  #e2e8f0;
+  --bg4:  #cbd5e1;
+  --text:  #0f172a;
+  --text2: #64748b;
+  --text3: #94a3b8;
+  --bd:   rgba(15,23,42,0.09);
+  --bd2:  rgba(15,23,42,0.16);
+
+  --font-display: 'DM Sans', -apple-system, sans-serif;  /* sans auch für Display */
+  --font-body:    'DM Sans', -apple-system, sans-serif;
+
+  --r:      12px;
+  --rs:      7px;
+  --rpill:  99px;
+
+  --shadow:    0 1px 3px rgba(15,23,42,0.08), 0 4px 12px rgba(15,23,42,0.06);
+  --shadow-sm: 0 1px 2px rgba(15,23,42,0.06), 0 2px 6px rgba(15,23,42,0.04);
+  --shadow-lg: 0 4px 16px rgba(15,23,42,0.10), 0 12px 32px rgba(15,23,42,0.08);
+
+  --s-1:  4px; --s-2:  6px; --s-3:  8px; --s-4: 10px;
+  --s-5: 14px; --s-6: 16px; --s-7: 20px; --s-8: 24px;
+  --t-fast: .15s; --t-base: .20s;
+  --icon-sm: 16px; --icon-md: 22px;
+  --header-height: 54px; --nav-height: 60px;
+  --fab-size: 52px; --fab-sm-size: 44px;
+  --tag-c: var(--text2); --tag-bg: var(--bg3);
+}
+
+/* Dark Mode */
+:root[data-theme='dark'] {
+  --bg:   #0f172a; --bg2:  #1e293b; --bg3:  #1e293b; --bg4:  #334155;
+  --text:  #f1f5f9; --text2: #94a3b8; --text3: #475569;
+  --bd:   rgba(241,245,249,0.08); --bd2:  rgba(241,245,249,0.14);
+  --meadow:       #3b82f6; --meadow-light: #1e3a5f;
+  --moss:         #22d3ee; --moss-light:   #164e63;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']):not([data-theme='dark']) {
+    --bg:   #0f172a; --bg2:  #1e293b; --bg3:  #1e293b; --bg4:  #334155;
+    --text:  #f1f5f9; --text2: #94a3b8; --text3: #475569;
+    --bd:   rgba(241,245,249,0.08); --bd2:  rgba(241,245,249,0.14);
+    --meadow:       #3b82f6; --meadow-light: #1e3a5f;
+    --moss:         #22d3ee; --moss-light:   #164e63;
+  }
+}
+:root[data-theme='dark'] .tag,
+:root[data-theme='dark'] .pill.on { filter: brightness(1.15) saturate(0.9); }

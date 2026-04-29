@@ -1,0 +1,67 @@
+/* ═════════════════════════════════════════════════════════════════════════════
+   WOCHENPLAN THEME — SLATE
+   Minimal, grau-blau, professionell. Fast monochrom.
+   ═════════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  --meadow:        #334155;
+  --meadow-light:  #f1f5f9;
+  --moss:          #64748b;
+  --moss-light:    #f8fafc;
+  --warm:          #475569;
+  --warm-light:    #f8fafc;
+  --red:           #dc2626;
+  --red-light:     #fee2e2;
+  --waterfall:     #475569;
+
+  --bg:   #ffffff;
+  --bg2:  #f8fafc;
+  --bg3:  #f1f5f9;
+  --bg4:  #e2e8f0;
+  --text:  #0f172a;
+  --text2: #64748b;
+  --text3: #94a3b8;
+  --bd:   rgba(15,23,42,0.08);
+  --bd2:  rgba(15,23,42,0.14);
+
+  --font-display: 'DM Sans', -apple-system, sans-serif;
+  --font-body:    'DM Sans', -apple-system, sans-serif;
+
+  --r:       8px;   /* eckiger */
+  --rs:      5px;
+  --rpill:  99px;
+
+  --shadow:    0 1px 2px rgba(15,23,42,0.06), 0 2px 8px rgba(15,23,42,0.04);
+  --shadow-sm: 0 1px 1px rgba(15,23,42,0.04), 0 1px 4px rgba(15,23,42,0.03);
+  --shadow-lg: 0 4px 12px rgba(15,23,42,0.08), 0 8px 24px rgba(15,23,42,0.06);
+
+  --s-1:  4px; --s-2:  6px; --s-3:  8px; --s-4: 10px;
+  --s-5: 14px; --s-6: 16px; --s-7: 20px; --s-8: 24px;
+  --t-fast: .12s; --t-base: .18s;
+  --icon-sm: 16px; --icon-md: 22px;
+  --header-height: 54px; --nav-height: 60px;
+  --fab-size: 52px; --fab-sm-size: 44px;
+  --tag-c: var(--text2); --tag-bg: var(--bg3);
+}
+
+.fab { box-shadow: 0 2px 8px rgba(51,65,85,0.30), 0 4px 16px rgba(51,65,85,0.15); }
+.fab:hover { box-shadow: 0 4px 12px rgba(51,65,85,0.40), 0 8px 24px rgba(51,65,85,0.20); }
+.btn--primary { box-shadow: 0 1px 3px rgba(51,65,85,0.25); }
+
+/* Dark Mode */
+:root[data-theme='dark'] {
+  --bg:   #0f172a; --bg2:  #1e293b; --bg3:  #1e293b; --bg4:  #334155;
+  --text:  #f1f5f9; --text2: #94a3b8; --text3: #475569;
+  --bd:   rgba(241,245,249,0.07); --bd2:  rgba(241,245,249,0.13);
+  --meadow:       #94a3b8; --meadow-light: #1e293b;
+  --moss:         #cbd5e1; --moss-light:   #0f172a;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']):not([data-theme='dark']) {
+    --bg:   #0f172a; --bg2:  #1e293b; --bg3:  #1e293b; --bg4:  #334155;
+    --text:  #f1f5f9; --text2: #94a3b8; --text3: #475569;
+    --bd:   rgba(241,245,249,0.07); --bd2:  rgba(241,245,249,0.13);
+    --meadow:       #94a3b8; --meadow-light: #1e293b;
+    --moss:         #cbd5e1; --moss-light:   #0f172a;
+  }
+}
