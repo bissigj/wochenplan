@@ -1,4 +1,4 @@
-import { D, tagStyle, saveWeekNow, getCatLabel, getAufLabe } from './data.js';
+import { D, tagStyle, saveWeekNow, getCatLabel, getAufLabel } from './data.js';
 import { sbInsert } from './db.js';
 import { DAYS } from './config.js';
 import { kw, fmtIng, srcHTML, toast, esc } from './ui.js';
