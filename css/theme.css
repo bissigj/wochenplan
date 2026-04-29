@@ -1,0 +1,161 @@
+/* ═════════════════════════════════════════════════════════════════════════════
+   WOCHENPLAN — THEME
+   Alle visuellen Hauptentscheidungen an einem Ort.
+   Diese Datei wird nach app.css geladen und überschreibt die Defaults.
+   Eine leere theme.css ist valide — dann gelten die app.css Defaults.
+   ═════════════════════════════════════════════════════════════════════════════
+
+   SCHNELL ANPASSEN:
+   • Primärfarbe  → --meadow + --meadow-light
+   • Hintergründe → --bg bis --bg3
+   • Rundungen    → --r (Karten), --rs (Buttons/Inputs), --rpill (Tags)
+   • Schriften    → --font-display, --font-body
+   • Abstände     → --s-1 bis --s-8 (Spacing Scale)
+
+   VARIANTEN-BEISPIELE (auskommentiert):
+   ──────────────────────────────────────
+   Blaues Theme:
+     --meadow:       #2563eb;
+     --meadow-light: #dbeafe;
+
+   Eckiges Design:
+     --r:   4px;
+     --rs:  3px;
+
+   Serifenlos überall:
+     --font-display: var(--font-body);
+
+   Höherer Kontrast:
+     --bg:  #ffffff;
+     --bg3: #f0f0f0;
+   ═════════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* ── Primärfarbe ────────────────────────────────────────────────────────── */
+  --meadow:        #4d7a28;
+  --meadow-light:  #e8f0df;
+
+  /* ── Akzentfarbe ────────────────────────────────────────────────────────── */
+  --moss:          #8fa828;
+  --moss-light:    #f0f4d8;
+
+  /* ── Warnfarben ─────────────────────────────────────────────────────────── */
+  --warm:          #c8783a;
+  --warm-light:    #faf0e6;
+  --red:           #b03030;
+  --red-light:     #fdf0f0;
+
+  /* ── Hintergründe (warm-neutral) ────────────────────────────────────────── */
+  --bg:   #faf9f6;   /* Karten, Modals */
+  --bg2:  #f3f1eb;   /* Leicht abgehoben (Hover, Inputs) */
+  --bg3:  #ede9e0;   /* App-Hintergrund */
+  --bg4:  #e5e0d4;   /* Stark abgehoben (selten) */
+
+  /* ── Text ───────────────────────────────────────────────────────────────── */
+  --text:  #2d2c28;  /* Primär */
+  --text2: #7a7568;  /* Sekundär */
+  --text3: #b0aa9e;  /* Tertiär / Placeholder */
+
+  /* ── Borders ────────────────────────────────────────────────────────────── */
+  --bd:  rgba(45,44,40,0.10);  /* Dezent */
+  --bd2: rgba(45,44,40,0.18);  /* Standard */
+
+  /* ── Sonstige Farben ────────────────────────────────────────────────────── */
+  --waterfall: #6b8fa8;  /* Links */
+  --thunder:   #2d2c28;  /* Alias für --text */
+
+  /* ── Typografie ─────────────────────────────────────────────────────────── */
+  --font-display: 'Lora', Georgia, serif;
+  --font-body:    'DM Sans', -apple-system, sans-serif;
+
+  /* ── Rundungen ──────────────────────────────────────────────────────────── */
+  --r:      14px;  /* Karten, Akkordeons */
+  --rs:      8px;  /* Buttons, Inputs, kleine Elemente */
+  --rpill:  99px;  /* Pills, Tags, Toasts */
+
+  /* ── Schatten ───────────────────────────────────────────────────────────── */
+  --shadow:    0 1px 3px rgba(45,44,40,0.08), 0 4px 12px rgba(45,44,40,0.06);
+  --shadow-sm: 0 1px 2px rgba(45,44,40,0.08), 0 2px 6px rgba(45,44,40,0.05);
+  --shadow-lg: 0 4px 16px rgba(45,44,40,0.10), 0 12px 32px rgba(45,44,40,0.08);
+
+  /* ── Abstände ───────────────────────────────────────────────────────────── */
+  --s-1:  4px;
+  --s-2:  6px;
+  --s-3:  8px;
+  --s-4: 10px;
+  --s-5: 14px;
+  --s-6: 16px;
+  --s-7: 20px;
+  --s-8: 24px;
+
+  /* ── Transitionen ───────────────────────────────────────────────────────── */
+  --t-fast: .15s;
+  --t-base: .20s;
+
+  /* ── Fixe Grössen ───────────────────────────────────────────────────────── */
+  --icon-sm:      16px;
+  --icon-md:      22px;
+  --header-height: 54px;
+  --nav-height:    60px;
+  --fab-size:      52px;
+  --fab-sm-size:   44px;
+
+  /* ── Tag Fallback (überschrieben via inline --tag-c / --tag-bg) ─────────── */
+  --tag-c:  var(--text2);
+  --tag-bg: var(--bg3);
+}
+
+/* ── Dark Mode ───────────────────────────────────────────────────────────── */
+:root[data-theme='dark'] {
+  --bg:   #1c1b18;
+  --bg2:  #242320;
+  --bg3:  #2c2b27;
+  --bg4:  #343330;
+  --text:  #e8e5dc;
+  --text2: #9a9488;
+  --text3: #5a5650;
+  --bd:   rgba(232,229,220,0.09);
+  --bd2:  rgba(232,229,220,0.16);
+  --meadow:       #78b840;
+  --meadow-light: #162508;
+  --moss:         #b0cc38;
+  --moss-light:   #1e2408;
+  --warm:         #d89050;
+  --warm-light:   #281808;
+  --red-light:    #3a1818;
+  --shadow:    0 1px 3px rgba(0,0,0,0.25), 0 4px 12px rgba(0,0,0,0.20);
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.20), 0 2px 6px rgba(0,0,0,0.15);
+  --shadow-lg: 0 4px 16px rgba(0,0,0,0.30), 0 12px 32px rgba(0,0,0,0.25);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']):not([data-theme='dark']) {
+    --bg:   #1c1b18;
+    --bg2:  #242320;
+    --bg3:  #2c2b27;
+    --bg4:  #343330;
+    --text:  #e8e5dc;
+    --text2: #9a9488;
+    --text3: #5a5650;
+    --bd:   rgba(232,229,220,0.09);
+    --bd2:  rgba(232,229,220,0.16);
+    --meadow:       #78b840;
+    --meadow-light: #162508;
+    --moss:         #b0cc38;
+    --moss-light:   #1e2408;
+    --warm:         #d89050;
+    --warm-light:   #281808;
+    --red-light:    #3a1818;
+    --shadow:    0 1px 3px rgba(0,0,0,0.25), 0 4px 12px rgba(0,0,0,0.20);
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.20), 0 2px 6px rgba(0,0,0,0.15);
+    --shadow-lg: 0 4px 16px rgba(0,0,0,0.30), 0 12px 32px rgba(0,0,0,0.25);
+  }
+}
+
+/* ── Dark Mode Tag-Filter ────────────────────────────────────────────────── */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .tag,
+  :root:not([data-theme='light']) .pill.on { filter: brightness(1.2) saturate(0.85); }
+}
+:root[data-theme='dark'] .tag,
+:root[data-theme='dark'] .pill.on { filter: brightness(1.2) saturate(0.85); }
