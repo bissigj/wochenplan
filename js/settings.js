@@ -6,7 +6,7 @@ import { renderRFilters, renderRecipes } from './recipes.js';
 import { renderWeek } from './week.js';
 import { joinFamilyByCode } from './auth.js';
 
-// ── Accordion state preservation ────────────────────────────────────
+// ── Accordion state preservation ──────────────────────────────────────────────
 function getOpenAccordions() {
   return Array.from(document.querySelectorAll('.acc-item.open')).map(el => {
     const body = el.querySelector('.acc-body');
@@ -21,7 +21,6 @@ function restoreOpenAccordions(ids) {
   });
 }
 
-// Wrapper: behält offene Akkordeons beim Neu-Render
 function rerenderSettings() {
   const open = getOpenAccordions();
   renderSettings();
@@ -44,10 +43,9 @@ export function toggleAcc(id) {
   item.classList.toggle('open');
 }
 
-// ── Theme Toggle (setTheme aus ui.js) ─────────────────────────────────────────
+// ── Theme ─────────────────────────────────────────────────────────────────────
 export function changeTheme(t) {
   setTheme(t);
-  // Neu rendern damit der aktive State im UI updated
   const openIds = getOpenAccordions();
   rerenderSettings();
   restoreOpenAccordions(openIds);
@@ -59,8 +57,8 @@ export function renderSettings() {
   const el = document.getElementById('tab-einstellungen');
   if (!el) return;
 
-  const cats = D.settings.cats;
-  const auf = D.settings.aufwand;
+  const cats  = D.settings.cats;
+  const auf   = D.settings.aufwand;
   const theme = getTheme();
 
   const familyContent = `
@@ -69,37 +67,37 @@ export function renderSettings() {
         <input type="text" id="family-name-input" class="settings-input" value="${esc(D.familyName || '')}" placeholder="Familienname" />
         <button class="btn btn--sm" onclick="saveFamilyName()">Speichern</button>
       </div>
-      <div style="margin-top:12px">
+      <div class="settings-section">
         <div class="section-title">Mitglieder</div>
-        <div id="members-list" style="font-size:13px;color:var(--text2)">Wird geladen…</div>
+        <div id="members-list" class="settings-members">Wird geladen…</div>
       </div>
-      <div style="margin-top:12px">
+      <div class="settings-section">
         <div class="section-title">Einladen</div>
-        <div class="row" style="gap:6px;margin-bottom:6px">
-          <select id="invite-role" style="width:auto">
+        <div class="settings-invite-row">
+          <select id="invite-role" class="settings-invite-role">
             <option value="member">Member</option>
             <option value="admin">Admin</option>
           </select>
           <button class="btn btn--sm" onclick="createInvitation()">Einladungscode erstellen</button>
         </div>
-        <div id="invitation-result" style="margin-top:8px;font-size:13px"></div>
+        <div id="invitation-result" class="settings-result"></div>
       </div>
-      <div style="margin-top:12px">
+      <div class="settings-section">
         <div class="section-title">Familie beitreten</div>
-        <div class="row" style="gap:6px">
-          <input type="text" id="invite-code-input" placeholder="Einladungscode…" style="flex:1;max-width:200px" />
+        <div class="settings-add-row">
+          <input type="text" id="invite-code-input" class="settings-invite-input" placeholder="Einladungscode…" />
           <button class="btn btn--sm" onclick="joinFamily()">Beitreten</button>
         </div>
-        <div id="join-result" style="margin-top:8px;font-size:13px"></div>
+        <div id="join-result" class="settings-result"></div>
       </div>
     </div>`;
 
   const themeContent = `
-    <div class="section-title" style="margin-top:0">Erscheinungsbild</div>
+    <div class="section-title section-title--flush">Erscheinungsbild</div>
     <div class="theme-segment">
       <button class="${theme === 'system' ? 'on' : ''}" onclick="changeTheme('system')">Auto</button>
-      <button class="${theme === 'light' ? 'on' : ''}" onclick="changeTheme('light')">Hell</button>
-      <button class="${theme === 'dark' ? 'on' : ''}" onclick="changeTheme('dark')">Dunkel</button>
+      <button class="${theme === 'light'  ? 'on' : ''}" onclick="changeTheme('light')">Hell</button>
+      <button class="${theme === 'dark'   ? 'on' : ''}" onclick="changeTheme('dark')">Dunkel</button>
     </div>`;
 
   const catsContent = `
@@ -116,8 +114,8 @@ export function renderSettings() {
           <button class="btn btn--danger btn--sm" onclick="deleteCat('${esc(c.id)}')">×</button>
         </div>`).join('')}
     </div>
-    <div class="row" style="gap:6px;margin-top:8px">
-      <input type="text" id="new-cat-input" placeholder="Neue Kategorie…" style="flex:1"
+    <div class="settings-add-row">
+      <input type="text" id="new-cat-input" class="settings-add-input" placeholder="Neue Kategorie…"
         onkeydown="if(event.key==='Enter')addCat()" />
       <button class="btn btn--sm" onclick="addCat()">+</button>
     </div>`;
@@ -136,43 +134,42 @@ export function renderSettings() {
           <button class="btn btn--danger btn--sm" onclick="deleteAuf('${esc(a.id)}')">×</button>
         </div>`).join('')}
     </div>
-    <div class="row" style="gap:6px;margin-top:8px">
-      <input type="text" id="new-auf-input" placeholder="Neuer Aufwand…" style="flex:1"
+    <div class="settings-add-row">
+      <input type="text" id="new-auf-input" class="settings-add-input" placeholder="Neuer Aufwand…"
         onkeydown="if(event.key==='Enter')addAuf()" />
       <button class="btn btn--sm" onclick="addAuf()">+</button>
     </div>`;
 
-
   const einhContent = `
-    <div id="einh-list" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">
+    <div class="einh-list" id="einh-list">
       ${(D.settings.einheiten || []).map(e => `
         <div class="einh-tag">
           <span>${esc(e)}</span>
           <button class="xbtn" data-einh="${esc(e)}" onclick="deleteEinh(this.dataset.einh)">×</button>
         </div>`).join('')}
     </div>
-    <div class="row" style="gap:6px">
-      <input type="text" id="new-einh-input" placeholder="Neue Einheit…" style="flex:1;max-width:160px"
+    <div class="settings-add-row">
+      <input type="text" id="new-einh-input" class="settings-einh-add" placeholder="Neue Einheit…"
         onkeydown="if(event.key==='Enter')addEinh()" />
       <button class="btn btn--sm" onclick="addEinh()">+</button>
     </div>`;
 
   el.innerHTML = `<div class="acc-wrap">
-    ${accordion('familie', 'Familie', familyContent, true)}
-    ${accordion('theme', 'Erscheinungsbild', themeContent)}
-    ${accordion('kategorien', 'Kategorien', catsContent)}
-    ${accordion('aufwand', 'Aufwand', aufContent)}
-    ${accordion('einheiten', 'Einheiten', einhContent)}
+    ${accordion('familie',    'Familie',           familyContent, true)}
+    ${accordion('theme',      'Erscheinungsbild',  themeContent)}
+    ${accordion('kategorien', 'Kategorien',        catsContent)}
+    ${accordion('aufwand',    'Aufwand',           aufContent)}
+    ${accordion('einheiten',  'Einheiten',         einhContent)}
   </div>`;
 
   loadFamilyMembers();
 }
 
-
-// ── Color palette for new entries (from config.js – single source of truth) ─
+// ── Color palette helpers ─────────────────────────────────────────────────────
 function nextCatColor(arr) { return CAT_PALETTE[arr.length % CAT_PALETTE.length]; }
 function nextAufColor(arr) { return AUF_PALETTE[arr.length % AUF_PALETTE.length]; }
 
+// ── Kategorien CRUD ───────────────────────────────────────────────────────────
 export async function addCat() {
   const input = document.getElementById('new-cat-input');
   const label = input.value.trim().toLowerCase();
@@ -241,9 +238,9 @@ export async function addAuf() {
   input.value = '';
   await saveSettingsNow();
   rerenderSettings();
+  renderRFilters();
   toast(`"${label}" hinzugefügt`);
 }
-
 
 export async function updateAuf(id, newLabel) {
   newLabel = newLabel.trim().toLowerCase();
@@ -251,10 +248,8 @@ export async function updateAuf(id, newLabel) {
   const auf = D.settings.aufwand.find(a => a.id === id);
   if (auf) auf.label = newLabel;
   await saveSettingsNow();
-  renderWeek();
-  renderRecipes();
   renderRFilters();
-  rerenderSettings();
+  renderRecipes();
 }
 
 export async function updateAufColor(id, color) {
@@ -323,8 +318,8 @@ async function loadFamilyMembers() {
   if (!Array.isArray(members) || !members.length) { el.textContent = 'Keine Mitglieder gefunden.'; return; }
   el.innerHTML = members.map(m =>
     `<div class="settings-row" style="border:none;padding:3px 0">
-      <span style="flex:1;font-size:13px">${esc(m.email || m.user_id.slice(0,8) + '…')}</span>
-      <span class="tag" style="font-size:11px">${esc(m.role)}</span>
+      <span class="settings-add-input">${esc(m.email || m.user_id.slice(0, 8) + '…')}</span>
+      <span class="tag">${esc(m.role)}</span>
     </div>`
   ).join('');
 }
@@ -339,12 +334,11 @@ export async function createInvitation() {
     role
   });
   const el = document.getElementById('invitation-result');
-  el.innerHTML = `Code: <strong style="font-family:monospace;font-size:15px;letter-spacing:2px">${esc(code)}</strong>
-    <span style="color:var(--text3);font-size:11px"> · gültig 7 Tage</span>`;
+  el.innerHTML = `Code: <strong class="invitation-code">${esc(code)}</strong>
+    <span class="invitation-hint"> · gültig 7 Tage</span>`;
   toast('Einladungscode erstellt');
 }
 
-// Fix #19: Gemeinsame joinFamilyByCode aus auth.js verwenden
 export async function joinFamily() {
   const code = document.getElementById('invite-code-input').value.trim().toUpperCase();
   const el = document.getElementById('join-result');

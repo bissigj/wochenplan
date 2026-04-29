@@ -62,15 +62,13 @@ export function getPool() {
   });
 }
 
-// Fix 3: Nur *aktive* (eingeblendete) Tage der aktuellen Woche als "kürzlich" zählen.
-// Ausgeblendete Rezepte sind wieder im Kandidatenpool für andere Tage.
 function getRecentIds() {
   const ids = new Set();
   D.archive.slice(-2).forEach(w => (w.days || []).forEach(d => {
     if (d.recipeId) ids.add(d.recipeId);
   }));
   (D.weekPlan.days || []).forEach(d => {
-    if (d.recipeId && d.active) ids.add(d.recipeId);  // nur aktive Tage
+    if (d.recipeId && d.active) ids.add(d.recipeId);
   });
   return [...ids];
 }
@@ -157,31 +155,33 @@ function renderDayCard(d, i, plan, readonly) {
   const factor    = (d.portions || plan.portions || 2) / (r.portions || 2);
 
   const ingsHTML = (r.ings || []).length
-    ? `<ul style="margin:0;padding-left:16px;font-size:12px;color:var(--text2)">${(r.ings || []).map(ing => `<li>${fmtIng(ing, factor)}</li>`).join('')}</ul>`
-    : '<p style="font-size:12px;color:var(--text3)">Keine Zutaten hinterlegt.</p>';
+    ? `<ul class="day-ings-list">${(r.ings || []).map(ing => `<li>${fmtIng(ing, factor)}</li>`).join('')}</ul>`
+    : '<p class="day-empty">Keine Zutaten hinterlegt.</p>';
 
   const stepsHTML = (r.steps || []).length
-    ? `<ol style="margin:0;padding-left:16px;font-size:12px;color:var(--text2)">${(r.steps || []).map(s => `<li style="margin-bottom:4px">${esc(s)}</li>`).join('')}</ol>`
+    ? `<ol class="day-steps-list">${(r.steps || []).map(s => `<li>${esc(s)}</li>`).join('')}</ol>`
     : '';
 
   const actionsHTML = readonly ? '' : `
-    <div class="day-actions" style="padding:var(--s-3) var(--s-5);display:flex;gap:6px;border-top:1px solid var(--bd);background:var(--bg2)">
-      <button class="btn btn--sm btn--ghost" onclick="toggleDayActive(${i},event)" title="${d.active ? 'Ausblenden' : 'Einblenden'}">
+    <div class="day-actions">
+      <button class="btn btn--sm btn--ghost" onclick="toggleDayActive(${i},event)">
         ${d.active ? '👁 Ausblenden' : '👁 Einblenden'}
       </button>
-      <button class="btn btn--sm btn--ghost" onclick="rerollDay(${i},event)" title="Anderes Rezept">Anderes Rezept</button>
+      <button class="btn btn--sm btn--ghost" onclick="rerollDay(${i},event)">Anderes Rezept</button>
     </div>`;
 
   const detailHTML = isOpen ? `
     <div class="day-detail open">
-      <div class="section-title" style="margin-bottom:6px">Portionen</div>
-      <input type="number" value="${d.portions || plan.portions || 2}" min="1" max="20"
-        style="width:70px;margin-bottom:10px" onchange="setPortions(${i},+this.value)" />
-      <div class="section-title" style="margin-bottom:6px">Zutaten</div>
+      <div class="day-detail-portionen">
+        <div class="section-title">Portionen</div>
+        <input type="number" value="${d.portions || plan.portions || 2}" min="1" max="20"
+          onchange="setPortions(${i},+this.value)" />
+      </div>
+      <div class="section-title">Zutaten</div>
       ${ingsHTML}
-      ${stepsHTML ? `<div class="section-title" style="margin:10px 0 6px">Zubereitung</div>${stepsHTML}` : ''}
-      ${r.src && r.src.val ? `<div style="margin-top:8px;font-size:11px;color:var(--text3)">${srcHTML(r.src)}</div>` : ''}
-      <div class="section-title" style="margin:10px 0 6px">Notiz</div>
+      ${stepsHTML ? `<div class="section-title">Zubereitung</div>${stepsHTML}` : ''}
+      ${r.src && r.src.val ? `<div class="day-detail-src">${srcHTML(r.src)}</div>` : ''}
+      <div class="section-title">Notiz</div>
       <textarea class="day-note-input" placeholder="z.B. ohne Zwiebeln…"
         onchange="setNote(${i},this.value)">${esc(d.note || '')}</textarea>
     </div>` : '';
@@ -191,16 +191,16 @@ function renderDayCard(d, i, plan, readonly) {
       <div class="day-card-top" onclick="toggleDay(${i})">
         <div class="day-lbl ${isWeekend ? 'day-lbl-weekend' : ''}">
           ${esc(d.day)}
-          ${!d.active ? '<span style="font-size:10px;background:var(--bg3);padding:1px 6px;border-radius:99px;margin-left:4px">ausgeblendet</span>' : ''}
+          ${!d.active ? `<span class="day-inactive-label">ausgeblendet</span>` : ''}
         </div>
         ${d.active
           ? `<div class="day-recipe-name">${esc(r.name)}</div>
              <div class="day-meta">${r.time ? r.time + ' min · ' : ''}${esc(getAufLabel(r.auf))}</div>
-             <div class="row" style="gap:4px;flex-wrap:wrap">
+             <div class="day-tag-row">
                <span class="tag" style="${tagStyle(r.cat)}">${esc(getCatLabel(r.cat))}</span>
-               <span style="font-size:11px;color:var(--text3);margin-left:auto">${isOpen ? '▲' : '▼'}</span>
+               <span class="day-chevron">${isOpen ? '▲' : '▼'}</span>
              </div>`
-          : '<div style="font-size:13px;color:var(--text3)">—</div>'}
+          : '<div class="day-empty">—</div>'}
       </div>
       ${actionsHTML}
       ${detailHTML}
@@ -235,7 +235,7 @@ export async function rerollDay(i, e) {
   e.stopPropagation();
   const pool = getPool();
   const usedIds = D.weekPlan.days
-    .filter((d, idx) => idx !== i && d.active)  // nur aktive andere Tage sperren
+    .filter((d, idx) => idx !== i && d.active)
     .map(d => d.recipeId).filter(Boolean);
   const avail = pool.filter(r => !usedIds.includes(r.id));
   const src = avail.length ? avail : pool.filter(r => r.id !== D.weekPlan.days[i].recipeId);
