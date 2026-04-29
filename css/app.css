@@ -489,9 +489,8 @@ textarea { resize: vertical; min-block-size: 60px; line-height: 1.5; }
 .recipe-filter-pills {
   display: flex;
   gap: var(--s-2);
-  overflow-x: auto;
+  flex-wrap: wrap;
   padding-block-end: var(--s-2);
-  scrollbar-width: none;
   margin-block-end: var(--s-4);
 }
 #r-filters::-webkit-scrollbar { display: none; }
