@@ -1243,8 +1243,6 @@ textarea { resize: vertical; min-block-size: 60px; line-height: 1.5; }
    ─────────────────────────────────────────────────────────────────────────── */
 
 /* ── Recipe list ─────────────────────────────────────────────────────────────*/
-.recipe-card > .recipe-row { background: var(--meadow-light); border-radius: var(--rs) var(--rs) 0 0; }
-.recipe-card > .recipe-row:hover { background: color-mix(in srgb, var(--meadow-light) 80%, var(--bg2)); }
 
 .recipe-del-btn {
   margin-inline-start: var(--s-2);
