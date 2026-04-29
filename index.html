@@ -94,9 +94,9 @@
     <input type="text" id="recipe-search" class="search-input" placeholder="Rezepte suchen…" oninput="filterRecipes(this.value)" />
   </div>
   <!-- Toolbar: Aufwand-Segment + Sortierung -->
-  <div style="display:flex;align-items:center;gap:var(--s-3);margin-bottom:var(--s-3)">
+  <div class="recipe-filter-toolbar">
     <div class="segment-control" id="r-auf-segment"></div>
-    <div style="flex:1"></div>
+    <div class="toolbar-spacer"></div>
     <select class="sort-select" onchange="setSortOrder(this.value)">
       <option value="name">A–Z</option>
       <option value="cat">Kategorie</option>
@@ -104,7 +104,7 @@
     </select>
   </div>
   <!-- Kategorien: horizontal scrollbar -->
-  <div id="r-filters" style="display:flex;gap:var(--s-2);overflow-x:auto;padding-bottom:var(--s-2);scrollbar-width:none;margin-bottom:var(--s-4)"></div>
+  <div id="r-filters" class="recipe-filter-pills"></div>
   <div id="r-list"></div>
 </div>
 
@@ -112,7 +112,7 @@
     <div id="tab-woche" class="tab-pane" style="display:none">
       <div class="week-header">
         <span class="week-title" id="week-title">Wochenplan</span>
-        <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+        <div class="week-actions">
           <button class="btn btn--sm" id="btn-zurueck" onclick="backToCurrent()" style="display:none">← Aktuelle Woche</button>
           <button class="btn btn--sm" onclick="exportPDF()" title="PDF exportieren">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
@@ -125,7 +125,7 @@
       </div>
       <div id="archive-banner" class="archive-banner" style="display:none">
         <span>📁 Archivansicht</span>
-        <span id="archive-banner-kw" style="color:var(--text2)"></span>
+        <span id="archive-banner-kw" class="archive-banner-kw"></span>
       </div>
       <div id="week-view"><div class="empty">Noch keine Woche generiert.</div></div>
     </div>
