@@ -1236,3 +1236,96 @@ textarea { resize: vertical; min-block-size: 60px; line-height: 1.5; }
 }
 
 #r-filters::-webkit-scrollbar { display: none; }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   INLINE-STYLE REPLACEMENTS
+   Neue Klassen die Inline-Styles aus JS-Files ablösen
+   ─────────────────────────────────────────────────────────────────────────── */
+
+/* ── Recipe list ─────────────────────────────────────────────────────────────*/
+.recipe-card > .recipe-row { background: var(--meadow-light); border-radius: var(--rs) var(--rs) 0 0; }
+.recipe-card > .recipe-row:hover { background: color-mix(in srgb, var(--meadow-light) 80%, var(--bg2)); }
+
+.recipe-del-btn {
+  margin-inline-start: var(--s-2);
+  font-size: 16px;
+  opacity: .4;
+  transition: opacity var(--t-fast), color var(--t-fast);
+}
+.recipe-del-btn:hover { opacity: 1; color: var(--red); }
+
+/* ── Recipe detail ────────────────────────────────────────────────────────── */
+.rd-img-btn-label { cursor: pointer; }
+.rd-file-input    { display: none; }
+.rd-src-display   { display: flex; align-items: center; gap: var(--s-2); flex-wrap: wrap; }
+.rd-src-edit-panel { display: none; margin-block-start: var(--s-4); }
+.rd-src-edit-panel.open { display: block; }
+.rd-footer-vis    { display: flex; flex-direction: column; align-items: flex-start; gap: var(--s-3); }
+.rd-input-full    { inline-size: 100%; }
+
+/* ── Day card detail ─────────────────────────────────────────────────────────*/
+.day-actions      { padding: var(--s-3) var(--s-5); }  /* overrides padding from base */
+.day-detail-src   { margin-block-start: var(--s-3); font-size: 11px; color: var(--text3); }
+.day-detail-portionen { display: flex; flex-direction: column; gap: var(--s-2); margin-block-end: var(--s-4); }
+.day-detail-portionen input { inline-size: 70px; }
+.day-inactive-label {
+  font-size: 10px;
+  background: var(--bg3);
+  padding: 1px var(--s-2);
+  border-radius: var(--rpill);
+  margin-inline-start: var(--s-1);
+}
+.day-tag-row      { display: flex; gap: var(--s-1); flex-wrap: wrap; align-items: center; }
+.day-chevron      { font-size: 11px; color: var(--text3); margin-inline-start: auto; }
+.day-empty        { font-size: 13px; color: var(--text3); }
+.day-ings-list    { margin: 0; padding-inline-start: var(--s-6); font-size: 12px; color: var(--text2); }
+.day-steps-list   { margin: 0; padding-inline-start: var(--s-6); font-size: 12px; color: var(--text2); }
+.day-steps-list li { margin-block-end: var(--s-1); }
+
+/* ── Week header ─────────────────────────────────────────────────────────────*/
+.week-actions     { margin-inline-start: auto; display: flex; align-items: center; gap: var(--s-2); }
+.archive-banner-kw { color: var(--text2); }
+
+/* ── Settings ────────────────────────────────────────────────────────────────*/
+.settings-section       { margin-block-start: var(--s-5); }
+.settings-add-row       { display: flex; gap: var(--s-2); margin-block-start: var(--s-3); }
+.settings-add-input     { flex: 1; }
+.settings-invite-row    { display: flex; gap: var(--s-2); margin-block-end: var(--s-2); align-items: center; }
+.settings-invite-role   { inline-size: auto; }
+.settings-invite-input  { flex: 1; max-inline-size: 200px; }
+.settings-result        { font-size: 13px; margin-block-start: var(--s-3); }
+.settings-members       { font-size: 13px; color: var(--text2); }
+.einh-list              { display: flex; flex-wrap: wrap; gap: var(--s-2); margin-block-end: var(--s-3); }
+.settings-einh-add      { flex: 1; max-inline-size: 160px; }
+.section-title--flush   { margin-block-start: 0; }
+
+/* ── r-filters scrollbar ─────────────────────────────────────────────────────*/
+#r-filters::-webkit-scrollbar { display: none; }
+
+/* ── r-filters toolbar spacer ────────────────────────────────────────────────*/
+.toolbar-spacer { flex: 1; }
+.recipe-filter-toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  margin-block-end: var(--s-3);
+}
+.recipe-filter-pills {
+  display: flex;
+  gap: var(--s-2);
+  overflow-x: auto;
+  padding-block-end: var(--s-2);
+  scrollbar-width: none;
+  margin-block-end: var(--s-4);
+}
+
+/* ── Settings: Invitation code display ───────────────────────────────────────*/
+.invitation-code {
+  font-family: monospace;
+  font-size: 15px;
+  letter-spacing: 2px;
+}
+.invitation-hint {
+  font-size: 11px;
+  color: var(--text3);
+}
