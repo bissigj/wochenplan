@@ -3,6 +3,7 @@ import { parseIngredient } from 'https://esm.sh/@jlucaspains/sharp-recipe-parser
 import { sbUploadImage, sbDeleteImage } from './db.js';
 import { fmtIng, srcHTML, toast, esc } from './ui.js';
 import { renderWeek } from './week.js';
+import { SUPA_URL, SUPA_KEY } from './config.js';
 
 export let expandedR = null;
 export let rFilters = new Set();
@@ -486,9 +487,6 @@ export function clearAufFilter() {
   renderRFilters();
   renderRecipes();
 }
-
-import { SUPA_URL, SUPA_KEY } from './config.js';
-import { toast } from './ui.js';
 
 // ── URL-Import Modal öffnen ───────────────────────────────────────────────────
 export function openUrlImport() {
