@@ -40,7 +40,10 @@ function updateFAB(t) {
     fab.innerHTML = FAB_ICONS.generate;
     fab.onclick   = () => openDrawModal();
     fab.title     = 'Woche neu generieren';
-    fabDiscover.style.display = 'none';
+    fabDiscover.innerHTML = FAB_ICONS.pdf;
+    fabDiscover.onclick   = () => exportPDF();
+    fabDiscover.title     = 'Wochenplan als PDF';
+    fabDiscover.style.display = '';
     fabGroup.classList.remove('hidden');
   } else if (t === 'einkauf') {
     fab.innerHTML = FAB_ICONS.pdf;
