@@ -108,3 +108,8 @@
   .header-nav     { display: none !important; }
   .header-actions { display: none !important; }
 }
+
+@media (min-width: 768px) {
+  #nav-einstellungen { display: none; }
+  .logout-label      { display: none; }
+}
