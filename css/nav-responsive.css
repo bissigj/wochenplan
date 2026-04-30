@@ -32,48 +32,13 @@
   font-weight: 500;
 }
 
-/* ── Header Actions (Desktop) ──────────────────────────────────────────────── */
-.header-actions {
-  display: none;   /* Mobile: versteckt */
-  align-items: center;
-  gap: var(--s-3);
-}
-.header-add-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--s-2);
-  padding: var(--s-2) var(--s-4);
-  background: var(--meadow);
-  color: #fff;
-  border: none;
-  border-radius: var(--rs);
-  font-size: 13px;
-  font-weight: 500;
-  font-family: var(--font-body);
-  cursor: pointer;
-  transition: opacity var(--t-fast);
-}
-.header-add-btn:hover { opacity: .88; }
-.header-discover-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: var(--rs);
-  border: 1px solid color-mix(in srgb, var(--meadow) 35%, transparent);
-  background: transparent;
-  color: var(--meadow);
-  cursor: pointer;
-  transition: background var(--t-fast);
-}
-.header-discover-btn:hover { background: var(--meadow-light); }
-
 /* ── Desktop breakpoint ────────────────────────────────────────────────────── */
 @media (min-width: 768px) {
   /* Header Nav sichtbar */
-  .header-nav     { display: flex; }
-  .header-actions { display: flex; }
+  .header-nav { display: flex; }
+
+  /* Header-Actions NICHT zeigen — FAB übernimmt */
+  /* .header-actions bleibt display:none */
 
   /* app-title auf Desktop kleiner / dezenter */
   .app-title {
