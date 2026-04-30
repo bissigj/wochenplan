@@ -4,6 +4,7 @@ import { saveRecipesDebounced, saveRecipeNow, deleteRecipeFromDB, saveWeekNow } 
 import { sbUploadImage, sbDeleteImage } from './db.js';
 import { fmtIng, srcHTML, toast, esc } from './ui.js';
 import { renderWeek } from './week.js';
+import { SUPA_URL, SUPA_KEY } from './config.js';
 
 export let expandedR = null;
 export let rFilters = new Set();
@@ -542,4 +543,62 @@ export function openSrcEdit(id) {
   if (!panel) return;
   const isOpen = panel.style.display !== 'none';
   panel.style.display = isOpen ? 'none' : 'block';
+}
+
+// ── URL-Import ────────────────────────────────────────────────────────────────
+export function openUrlImport() {
+  document.getElementById('url-import-modal').style.display = 'flex';
+  document.getElementById('url-import-input').value = '';
+  document.getElementById('url-import-err').textContent = '';
+  document.getElementById('url-import-btn').textContent = 'Rezept laden';
+  setTimeout(() => document.getElementById('url-import-input').focus(), 80);
+}
+
+export function closeUrlImport() {
+  document.getElementById('url-import-modal').style.display = 'none';
+}
+
+export async function parseRecipeUrl() {
+  const input  = document.getElementById('url-import-input');
+  const errEl  = document.getElementById('url-import-err');
+  const btn    = document.getElementById('url-import-btn');
+  const url    = input.value.trim();
+  if (!url) { errEl.textContent = 'Bitte eine URL eingeben.'; return; }
+  errEl.textContent = '';
+  btn.textContent   = 'Wird geladen…';
+  btn.disabled      = true;
+  try {
+    const res = await fetch(`${SUPA_URL}/functions/v1/parse-recipe`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPA_KEY}`, 'apikey': SUPA_KEY },
+      body: JSON.stringify({ url }),
+    });
+    const data = await res.json();
+    if (!res.ok || !data.ok) { errEl.textContent = data.error ?? 'Unbekannter Fehler.'; return; }
+    closeUrlImport();
+    openQEWithRecipe(data.recipe, url);
+  } catch (e) {
+    errEl.textContent = 'Netzwerkfehler – bist du online?';
+  } finally {
+    btn.textContent = 'Rezept laden';
+    btn.disabled    = false;
+  }
+}
+
+function openQEWithRecipe(r, sourceUrl) {
+  const modal = document.getElementById('qe-modal');
+  modal.dataset.importSrc = sourceUrl ?? '';
+  document.getElementById('qe-name').value     = r.name     ?? '';
+  document.getElementById('qe-time').value     = r.time     ?? '';
+  document.getElementById('qe-portions').value = r.portions ?? 2;
+  const ingText = (r.ings ?? []).map(ing =>
+    [ing.m > 0 ? String(ing.m) : '', ing.u ?? '', ing.n ?? ''].filter(Boolean).join(' ')
+  ).join('\n');
+  document.getElementById('qe-ings').value = ingText;
+  document.getElementById('qe-steps').value = (r.steps ?? []).map((s, i) => `${i + 1}. ${s}`).join('\n');
+  if (r.img) modal.dataset.importImg = r.img;
+  else delete modal.dataset.importImg;
+  modal.style.display = 'flex';
+  setTimeout(() => { const n = document.getElementById('qe-name'); n.focus(); n.select(); }, 80);
+  toast('Rezept geladen · Name prüfen, dann Kategorie & Aufwand wählen');
 }
