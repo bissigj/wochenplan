@@ -49,12 +49,6 @@ window.showTab = (t) => {
   // FAB (Mobile only — auf Desktop via CSS hidden)
   const fabGroup = document.getElementById('fab-group');
   if (fabGroup) fabGroup.classList.toggle('hidden', t !== 'rezepte');
-
-  // Desktop Header-Actions nur auf Rezepte-Tab
-  const headerAdd      = document.querySelector('.header-add-btn');
-  const headerDiscover = document.querySelector('.header-discover-btn');
-  if (headerAdd)      headerAdd.style.display      = t === 'rezepte' ? '' : 'none';
-  if (headerDiscover) headerDiscover.style.display = t === 'rezepte' ? '' : 'none';
 };
 
 window.toggleRF          = toggleRF;
