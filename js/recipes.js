@@ -38,7 +38,7 @@ function _renderCatPanelContent() {
   const cats = [...D.settings.cats].sort((a, b) => a.label.localeCompare(b.label, 'de'));
   list.innerHTML = cats.map(c => {
     const active = catFilters.has(c.id);
-    return `<div class="cat-panel-item ${active ? 'active' : ''}" onclick="toggleCatFilter('${esc(c.id)}')">
+    return `<div class="cat-panel-item ${active ? 'active' : ''}" onclick="event.stopPropagation();toggleCatFilter('${esc(c.id)}')">
       <div class="cat-panel-dot" style="background:${esc(c.color || '#888')}"></div>
       <span class="cat-panel-label">${esc(c.label)}</span>
       <div class="cat-panel-check">${active ? `<svg viewBox="0 0 10 10" width="9" height="9" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><polyline points="1.5 5 4 7.5 8.5 2"/></svg>` : ''}</div>
