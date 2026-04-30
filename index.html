@@ -109,32 +109,33 @@
 
 <!-- REZEPTE -->
 <div id="tab-rezepte" class="tab-pane">
-  <div class="search-wrap">
+  <div class="recipe-filter-area">
+    <!-- Filter zuerst -->
+    <div class="recipe-filter-toolbar">
+      <div class="segment-control" id="r-auf-segment"></div>
+      <div id="r-cat-btn-wrap" class="cat-filter-wrap">
+        <button id="r-cat-btn" class="cat-filter-btn" onclick="toggleCatPanel(event)">
+          Kategorie
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div id="r-cat-panel" class="cat-filter-panel">
+          <div class="cat-panel-header">
+            <span class="cat-panel-header-title">Kategorie</span>
+            <button class="cat-panel-clear" onclick="clearCatFilter()">Zurücksetzen</button>
+          </div>
+          <div id="r-cat-panel-list" class="cat-panel-list"></div>
+        </div>
+      </div>
+      <div class="toolbar-spacer"></div>
+      <select class="sort-select" onchange="setSortOrder(this.value)">
+        <option value="name">A–Z</option>
+        <option value="cat">Kategorie</option>
+        <option value="time">Kochzeit</option>
+      </select>
+    </div>
+    <!-- Suche darunter -->
     <input type="text" id="recipe-search" class="search-input" placeholder="Rezepte suchen…" oninput="filterRecipes(this.value)" />
   </div>
-  <!-- Toolbar: Aufwand-Segment + Sortierung -->
-  <div class="recipe-filter-toolbar">
-  <div class="segment-control" id="r-auf-segment"></div>
-  <div id="r-cat-btn-wrap" class="cat-filter-wrap">
-    <button id="r-cat-btn" class="cat-filter-btn" onclick="toggleCatPanel(event)">
-      Kategorie
-      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
-    </button>
-    <div id="r-cat-panel" class="cat-filter-panel">
-      <div class="cat-panel-header">
-        <span class="cat-panel-header-title">Kategorie</span>
-        <button class="cat-panel-clear" onclick="clearCatFilter()">Zurücksetzen</button>
-      </div>
-      <div id="r-cat-panel-list" class="cat-panel-list"></div>
-    </div>
-  </div>
-  <div class="toolbar-spacer"></div>
-  <select class="sort-select" onchange="setSortOrder(this.value)">
-    <option value="name">A–Z</option>
-    <option value="cat">Kategorie</option>
-    <option value="time">Kochzeit</option>
-  </select>
-</div>
   <div id="r-list"></div>
 </div>
 
