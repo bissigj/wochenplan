@@ -1,13 +1,16 @@
 import { showTab, toast, initTheme } from './ui.js';
 import { D } from './data.js';
 import { doLogin, doRegister, doLogout, showLogin, showRegister, tryRestoreSession, obCreateFamily, obJoinFamily } from './auth.js';
-import { renderRFilters, renderRecipes, toggleRF, toggleER, delR, addIng, delIng, addStep, delStep, updR, setSrcType, updSrc, openQE, closeQE, saveQE, setSortOrder, uploadRecipeImage, removeRecipeImage, togglePublic, openSrcEdit, clearAufFilter, openUrlImport, closeUrlImport, parseRecipeUrl } from './recipes.js';
+import { renderRFilters, renderRecipes, toggleRF, toggleER, delR, addIng, delIng, addStep, delStep, updR, setSrcType, updSrc, openQE, closeQE,
+        saveQE, setSortOrder, uploadRecipeImage, removeRecipeImage, togglePublic, openSrcEdit, clearAufFilter, openUrlImport,
+        closeUrlImport, parseRecipeUrl, toggleCatPanel, toggleCatFilter, clearCatFilter } from './recipes.js';
 import { renderWeek, openDrawModal, closeDrawModal, toggleDrawPill, setTimePill, drawWeek, backToCurrent, toggleDay, toggleDayActive, rerollDay, setPortions, setNote } from './week.js';
 import { renderShop, setShopView } from './shopping.js';
 import { renderArchiv, viewArchiveWeek } from './archive.js';
 import { exportPDF, exportRecipePDF, exportShopPDF } from './pdf.js';
 import { openDiscover, closeDiscover, importRecipe, filterDiscover, setDiscoverCat, setDiscoverAuf, toggleDiscoverR, discoverLoadMore } from './discover.js';
-import { renderSettings, toggleAcc, changeTheme, addCat, updateCat, updateCatColor, updateCatBg, deleteCat, addAuf, updateAuf, updateAufColor, updateAufBg, deleteAuf, addEinh, deleteEinh, saveFamilyName, createInvitation, joinFamily } from './settings.js';
+import { renderSettings, toggleAcc, changeTheme, addCat, updateCat, updateCatColor, updateCatBg, deleteCat, addAuf, updateAuf, updateAufColor, updateAufBg,
+        deleteAuf, addEinh, deleteEinh, saveFamilyName, createInvitation, joinFamily } from './settings.js';
 
 // ── Apply saved theme before first paint ──────────────────────────────────────
 initTheme();
@@ -23,6 +26,9 @@ window.showRegister      = showRegister;
 window.openSrcEdit       = openSrcEdit;
 window.clearAufFilter    = clearAufFilter;
 window.undoDelR          = () => { if (window._undoDelR) window._undoDelR(); };
+window.toggleCatPanel  = toggleCatPanel;
+window.toggleCatFilter = toggleCatFilter;
+window.clearCatFilter  = clearCatFilter;
 
 const PAGE_TITLES = { rezepte: 'Rezepte', woche: 'Wochenplan', einkauf: 'Einkauf', archiv: 'Archiv', einstellungen: 'Einstellungen' };
 
