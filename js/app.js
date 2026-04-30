@@ -31,15 +31,30 @@ window.showTab = (t) => {
   if (t === 'einkauf') renderShop();
   if (t === 'archiv') renderArchiv();
   if (t === 'einstellungen') renderSettings();
+
+  // Mobile Bottom-Nav
   document.querySelectorAll('.nav-item').forEach(el => {
     el.classList.toggle('active', el.id === 'nav-' + t);
   });
+
+  // Desktop Header-Nav
+  document.querySelectorAll('.header-nav-tab').forEach(el => {
+    el.classList.toggle('active', el.id === 'hnav-' + t);
+  });
+
+  // Gear-Button Farbe (Mobile)
   const gear = document.getElementById('nav-einstellungen');
   if (gear) gear.style.color = t === 'einstellungen' ? 'var(--meadow)' : '';
-  const titleEl = document.getElementById('page-title');
-  if (titleEl) titleEl.textContent = PAGE_TITLES[t] || 'Wochenplan';
+
+  // FAB (Mobile only — auf Desktop via CSS hidden)
   const fabGroup = document.getElementById('fab-group');
   if (fabGroup) fabGroup.classList.toggle('hidden', t !== 'rezepte');
+
+  // Desktop Header-Actions nur auf Rezepte-Tab
+  const headerAdd      = document.querySelector('.header-add-btn');
+  const headerDiscover = document.querySelector('.header-discover-btn');
+  if (headerAdd)      headerAdd.style.display      = t === 'rezepte' ? '' : 'none';
+  if (headerDiscover) headerDiscover.style.display = t === 'rezepte' ? '' : 'none';
 };
 
 window.toggleRF          = toggleRF;
