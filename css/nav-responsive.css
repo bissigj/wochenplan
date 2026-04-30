@@ -1,0 +1,110 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   RESPONSIVE NAVIGATION
+   Desktop (≥768px): Nav-Tabs im Header, FAB + Bottom-Nav versteckt
+   Mobile  (<768px): Bottom-Nav + FAB sichtbar, Header-Nav versteckt
+   ─────────────────────────────────────────────────────────────────────────── */
+
+/* ── Header Nav Tabs (Desktop) ─────────────────────────────────────────────── */
+.header-nav {
+  display: none;   /* Mobile: versteckt */
+  align-items: center;
+  gap: var(--s-1);
+  flex: 1;
+  padding-inline-start: var(--s-7);
+}
+.header-nav-tab {
+  padding: var(--s-2) var(--s-4);
+  border-radius: var(--rs);
+  font-size: 13px;
+  font-weight: 400;
+  font-family: var(--font-body);
+  color: var(--text3);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--t-fast), color var(--t-fast);
+}
+.header-nav-tab:hover { background: var(--bg2); color: var(--text2); }
+.header-nav-tab.active {
+  background: var(--meadow-light);
+  color: var(--meadow);
+  font-weight: 500;
+}
+
+/* ── Header Actions (Desktop) ──────────────────────────────────────────────── */
+.header-actions {
+  display: none;   /* Mobile: versteckt */
+  align-items: center;
+  gap: var(--s-3);
+}
+.header-add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  padding: var(--s-2) var(--s-4);
+  background: var(--meadow);
+  color: #fff;
+  border: none;
+  border-radius: var(--rs);
+  font-size: 13px;
+  font-weight: 500;
+  font-family: var(--font-body);
+  cursor: pointer;
+  transition: opacity var(--t-fast);
+}
+.header-add-btn:hover { opacity: .88; }
+.header-discover-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--rs);
+  border: 1px solid color-mix(in srgb, var(--meadow) 35%, transparent);
+  background: transparent;
+  color: var(--meadow);
+  cursor: pointer;
+  transition: background var(--t-fast);
+}
+.header-discover-btn:hover { background: var(--meadow-light); }
+
+/* ── Desktop breakpoint ────────────────────────────────────────────────────── */
+@media (min-width: 768px) {
+  /* Header Nav sichtbar */
+  .header-nav     { display: flex; }
+  .header-actions { display: flex; }
+
+  /* app-title auf Desktop kleiner / dezenter */
+  .app-title {
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: 0;
+    white-space: nowrap;
+  }
+
+  /* Header höher für die Nav-Tabs */
+  .app-header-inner { block-size: 52px; }
+  --header-height: 52px;
+
+  /* Bottom-Nav verstecken */
+  .bottom-nav { display: none; }
+
+  /* FAB verstecken */
+  .fab-group { display: none; }
+
+  /* Content: kein Bottom-Margin mehr für Nav */
+  .app-content {
+    margin-block-end: var(--s-8);
+    padding-block-start: var(--s-7);
+  }
+
+  /* Sync-Bar: nur Dot + Settings, kein "Abmelden" Text */
+  .logout-label { display: none; }
+}
+
+/* ── Mobile: alles wie bisher ──────────────────────────────────────────────── */
+@media (max-width: 767px) {
+  .header-nav     { display: none !important; }
+  .header-actions { display: none !important; }
+}
