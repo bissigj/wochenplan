@@ -85,13 +85,13 @@
 
   /* Header höher für die Nav-Tabs */
   .app-header-inner { block-size: 52px; }
-  --header-height: 52px;
 
   /* Bottom-Nav verstecken */
   .bottom-nav { display: none; }
 
-  /* FAB verstecken */
-  .fab-group { display: none; }
+  /* FAB bleibt — Position ohne Nav-Height Offset */
+  .fab          { inset-block-end: var(--s-7); }
+  .fab-discover { inset-block-end: calc(var(--fab-size) + var(--s-7) + var(--s-3)); }
 
   /* Content: kein Bottom-Margin mehr für Nav */
   .app-content {
@@ -99,8 +99,9 @@
     padding-block-start: var(--s-7);
   }
 
-  /* Sync-Bar: nur Dot + Settings, kein "Abmelden" Text */
-  .logout-label { display: none; }
+  /* Gear + Abmelden auf Desktop verstecken */
+  #nav-einstellungen { display: none; }
+  .logout-label      { display: none; }
 }
 
 /* ── Mobile: alles wie bisher ──────────────────────────────────────────────── */
