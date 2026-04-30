@@ -124,16 +124,17 @@ export function renderWeek() {
   const banner = document.getElementById('archive-banner');
   const btnGen = document.getElementById('btn-generieren');
   const btnBack = document.getElementById('btn-zurueck');
+  const pageTitle = document.getElementById('page-title');
 
   if (viewingArchive) {
-    document.getElementById('week-title').textContent = viewingArchive.kw || 'Archivwoche';
+    if (pageTitle) pageTitle.textContent = viewingArchive.kw || 'Archivwoche';
     banner.style.display = 'flex';
     document.getElementById('archive-banner-kw').textContent = viewingArchive.kw || '';
     btnGen.style.display = 'none';
     btnBack.style.display = '';
     renderWeekPlan(viewingArchive, true);
   } else {
-    document.getElementById('week-title').textContent = 'Wochenplan';
+    if (pageTitle) pageTitle.textContent = 'Wochenplan';
     banner.style.display = 'none';
     btnGen.style.display = '';
     btnBack.style.display = 'none';
