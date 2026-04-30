@@ -15,6 +15,44 @@ import { renderSettings, toggleAcc, changeTheme, addCat, updateCat, updateCatCol
 // ── Apply saved theme before first paint ──────────────────────────────────────
 initTheme();
 
+// ── SVG Icons für FAB ─────────────────────────────────────────────────────────
+const FAB_ICONS = {
+  add:      `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="24" height="24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`,
+  generate: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>`,
+  pdf:      `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>`,
+  discover: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>`,
+};
+
+// ── FAB konfigurieren je Tab ──────────────────────────────────────────────────
+function updateFAB(t) {
+  const fabGroup   = document.getElementById('fab-group');
+  const fab        = document.getElementById('fab-add');
+  const fabDiscover = document.getElementById('fab-discover');
+  if (!fabGroup || !fab) return;
+
+  if (t === 'rezepte') {
+    fab.innerHTML = FAB_ICONS.add;
+    fab.onclick   = () => openQE();
+    fab.title     = 'Rezept hinzufügen';
+    fabDiscover.style.display = '';
+    fabGroup.classList.remove('hidden');
+  } else if (t === 'woche') {
+    fab.innerHTML = FAB_ICONS.generate;
+    fab.onclick   = () => openDrawModal();
+    fab.title     = 'Woche neu generieren';
+    fabDiscover.style.display = 'none';
+    fabGroup.classList.remove('hidden');
+  } else if (t === 'einkauf') {
+    fab.innerHTML = FAB_ICONS.pdf;
+    fab.onclick   = () => exportShopPDF();
+    fab.title     = 'Einkaufsliste als PDF';
+    fabDiscover.style.display = 'none';
+    fabGroup.classList.remove('hidden');
+  } else {
+    fabGroup.classList.add('hidden');
+  }
+}
+
 // ── Global functions (needed for onclick="" in HTML) ──────────────────────────
 window.doLogin           = doLogin;
 window.doRegister        = doRegister;
@@ -26,9 +64,9 @@ window.showRegister      = showRegister;
 window.openSrcEdit       = openSrcEdit;
 window.clearAufFilter    = clearAufFilter;
 window.undoDelR          = () => { if (window._undoDelR) window._undoDelR(); };
-window.toggleCatPanel  = toggleCatPanel;
-window.toggleCatFilter = toggleCatFilter;
-window.clearCatFilter  = clearCatFilter;
+window.toggleCatPanel    = toggleCatPanel;
+window.toggleCatFilter   = toggleCatFilter;
+window.clearCatFilter    = clearCatFilter;
 
 const PAGE_TITLES = { rezepte: 'Rezepte', woche: 'Wochenplan', einkauf: 'Einkauf', archiv: 'Archiv', einstellungen: 'Einstellungen' };
 
@@ -52,9 +90,8 @@ window.showTab = (t) => {
   const gear = document.getElementById('nav-einstellungen');
   if (gear) gear.style.color = t === 'einstellungen' ? 'var(--meadow)' : '';
 
-  // FAB (Mobile only — auf Desktop via CSS hidden)
-  const fabGroup = document.getElementById('fab-group');
-  if (fabGroup) fabGroup.classList.toggle('hidden', t !== 'rezepte');
+  // FAB kontextabhängig aktualisieren
+  updateFAB(t);
 };
 
 window.toggleRF          = toggleRF;
@@ -115,9 +152,9 @@ window.addEinh           = addEinh;
 window.deleteEinh        = deleteEinh;
 window.saveFamilyName    = saveFamilyName;
 window.createInvitation  = createInvitation;
-window.openUrlImport    = openUrlImport;
-window.closeUrlImport   = closeUrlImport;
-window.parseRecipeUrl   = parseRecipeUrl;
+window.openUrlImport     = openUrlImport;
+window.closeUrlImport    = closeUrlImport;
+window.parseRecipeUrl    = parseRecipeUrl;
 window.joinFamily        = joinFamily;
 
 // ── renderAll (used by auth after login) ─────────────────────────────────────
@@ -126,26 +163,17 @@ export function renderAll() {
   renderRecipes();
   renderWeek();
   populateQESelects();
-  const fabGroup = document.getElementById('fab-group');
-  if (fabGroup) fabGroup.classList.remove('hidden');
+  updateFAB('rezepte');
 }
 
 function populateQESelects() {
   const catSel = document.getElementById('qe-cat');
   const aufSel = document.getElementById('qe-auf');
-  if (catSel) {
-    catSel.innerHTML = D.settings.cats.map(c =>
-      `<option value="${c.id}">${c.label}</option>`).join('');
-  }
-  if (aufSel) {
-    aufSel.innerHTML = D.settings.aufwand.map(a =>
-      `<option value="${a.id}">${a.label}</option>`).join('');
-  }
+  if (catSel) catSel.innerHTML = D.settings.cats.map(c => `<option value="${c.id}">${c.label}</option>`).join('');
+  if (aufSel) aufSel.innerHTML = D.settings.aufwand.map(a => `<option value="${a.id}">${a.label}</option>`).join('');
 }
 
-window.filterRecipes = (q) => {
-  renderRecipes(q.toLowerCase().trim());
-};
+window.filterRecipes = (q) => { renderRecipes(q.toLowerCase().trim()); };
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 (async () => {
