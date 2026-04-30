@@ -486,6 +486,23 @@ textarea { resize: vertical; min-block-size: 60px; line-height: 1.5; }
   gap: var(--s-3);
   margin-block-end: var(--s-3);
 }
+
+.recipe-filter-area {
+  background: var(--bg2);
+  border-radius: var(--r);
+  padding: var(--s-5) var(--s-6);
+  margin-block-end: var(--s-6);
+}
+
+.recipe-filter-area .recipe-filter-toolbar {
+  margin-block-end: var(--s-4);
+}
+
+.recipe-filter-area .search-input {
+  box-shadow: none;
+  background: var(--bg);
+}
+
 .recipe-filter-pills {
   display: flex;
   gap: var(--s-2);
@@ -493,10 +510,11 @@ textarea { resize: vertical; min-block-size: 60px; line-height: 1.5; }
   padding-block-end: var(--s-2);
   margin-block-end: var(--s-4);
 }
+
+
 #r-filters::-webkit-scrollbar { display: none; }
 .toolbar-spacer { flex: 1; }
 
-.search-wrap { margin-block-end: var(--s-6); }
 .search-input {
   inline-size: 100%;
   background: var(--bg);
