@@ -126,7 +126,7 @@ function renderRecipeCard(r, isOpen, einheiten) {
       <button class="xbtn" onclick="event.stopPropagation();delR(${r.id})"
         style="margin-left:6px;padding:4px 6px;font-size:16px;opacity:0.4"
         onmouseover="this.style.opacity=1;this.style.color='var(--red)'"
-        onmouseout="this.style.opacity=0.4;this.style.color=''">\xd7</button>
+        onmouseout="this.style.opacity=0.4;this.style.color=''">×</button>
     </div>
     ${isOpen ? renderRecipeDetail(r, einheiten) : ''}
   </div>`;
@@ -135,43 +135,43 @@ function renderRecipeCard(r, isOpen, einheiten) {
 function renderRecipeDetail(r, einheiten) {
   const ings = (r.ings || []).map((ing, i) => {
     const m = ing.m > 0 ? String(+ing.m.toFixed(2)).replace('.', ',') : '';
-    const qty = [m, esc(ing.u || '')].filter(Boolean).join('\u202f');
+    const qty = [m, esc(ing.u || '')].filter(Boolean).join(' ');
     return `<div class="rd-ing-row">
-      <span class="rd-ing-qty">${qty || '\u2014'}</span>
+      <span class="rd-ing-qty">${qty || '—'}</span>
       <span class="rd-ing-name">${esc(ing.n || '')}</span>
-      <button class="xbtn" onclick="delIng(${r.id},${i})">\xd7</button>
+      <button class="xbtn" onclick="delIng(${r.id},${i})">×</button>
     </div>`;
   }).join('');
 
   const steps = (r.steps || []).map((s, i) => `
     <li class="step-item" data-id="${r.id}" data-i="${i}">
-      <span class="drag-handle">\u2803</span>
+      <span class="drag-handle">⠿</span>
       <span class="step-num">${i + 1}</span>
       <span class="step-text">${esc(s)}</span>
-      <button class="xbtn" onclick="delStep(${r.id},${i})">\xd7</button>
+      <button class="xbtn" onclick="delStep(${r.id},${i})">×</button>
     </li>`).join('');
 
   const srcBlock = r.src && r.src.val ? `
     <div class="rd-src-display">
       ${srcHTML(r.src)}
-      <button class="btn btn--sm btn--ghost" style="margin-left:var(--s-4);flex-shrink:0" onclick="openSrcEdit(${r.id})">\xc4ndern</button>
+      <button class="btn btn--sm btn--ghost" style="margin-left:var(--s-4);flex-shrink:0" onclick="openSrcEdit(${r.id})">Ändern</button>
     </div>
     <div class="rd-src-edit-panel" id="src-edit-${r.id}" style="display:none;margin-top:10px">
       <div class="pills" style="gap:6px;margin-bottom:8px">
-        <button class="pill ${r.src.type === 'url' ? 'on' : ''}" onclick="setSrcType(${r.id},'url')">\ud83d\udd17 URL</button>
-        <button class="pill ${r.src.type === 'buch' ? 'on' : ''}" onclick="setSrcType(${r.id},'buch')">\ud83d\udcd6 Buch</button>
+        <button class="pill ${r.src.type === 'url' ? 'on' : ''}" onclick="setSrcType(${r.id},'url')">🔗 URL</button>
+        <button class="pill ${r.src.type === 'buch' ? 'on' : ''}" onclick="setSrcType(${r.id},'buch')">📖 Buch</button>
       </div>
       ${r.src.type === 'url'
-        ? `<input type="url" value="${esc(r.src.val)}" placeholder="https://\u2026" onchange="updSrc(${r.id},'val',this.value)" />`
+        ? `<input type="url" value="${esc(r.src.val)}" placeholder="https://…" onchange="updSrc(${r.id},'val',this.value)" />`
         : `<input type="text" value="${esc(r.src.val)}" placeholder="Kochbuchname" style="margin-bottom:6px" onchange="updSrc(${r.id},'val',this.value)" />
            <input type="text" value="${esc(r.src.seite||'')}" placeholder="Seite (optional)" onchange="updSrc(${r.id},'seite',this.value)" />`}
     </div>` : `
     <div class="pills" style="gap:6px;margin-bottom:8px">
-      <button class="pill ${!r.src || r.src.type === 'url' ? 'on' : ''}" onclick="setSrcType(${r.id},'url')">\ud83d\udd17 URL</button>
-      <button class="pill ${r.src && r.src.type === 'buch' ? 'on' : ''}" onclick="setSrcType(${r.id},'buch')">\ud83d\udcd6 Buch</button>
+      <button class="pill ${!r.src || r.src.type === 'url' ? 'on' : ''}" onclick="setSrcType(${r.id},'url')">🔗 URL</button>
+      <button class="pill ${r.src && r.src.type === 'buch' ? 'on' : ''}" onclick="setSrcType(${r.id},'buch')">📖 Buch</button>
     </div>
     ${(!r.src || r.src.type === 'url')
-      ? `<input type="url" value="" placeholder="https://\u2026" onchange="updSrc(${r.id},'val',this.value)" />`
+      ? `<input type="url" value="" placeholder="https://…" onchange="updSrc(${r.id},'val',this.value)" />`
       : `<input type="text" value="" placeholder="Kochbuchname" style="margin-bottom:6px" onchange="updSrc(${r.id},'val',this.value)" />
          <input type="text" value="" placeholder="Seite (optional)" onchange="updSrc(${r.id},'seite',this.value)" />`}`;
 
@@ -222,7 +222,7 @@ function renderRecipeDetail(r, einheiten) {
     <div class="rd-divider"></div>
     <div class="rd-body">
       <div class="rd-col rd-col-ings">
-        <div class="rd-col-title">Zutaten \xb7 ${r.portions || 2} Port.</div>
+        <div class="rd-col-title">Zutaten · ${r.portions || 2} Port.</div>
         <div class="rd-ing-list">${ings}</div>
         <div class="rd-add-row">
           <input type="number" id="im-${r.id}" placeholder="Menge" step="any" min="0" class="rd-add-qty" />
@@ -237,7 +237,7 @@ function renderRecipeDetail(r, einheiten) {
         <div class="rd-col-title">Zubereitung</div>
         <ul class="steps-list" id="steps-${r.id}">${steps}</ul>
         <div class="rd-add-row">
-          <input type="text" id="st-${r.id}" placeholder="Neuer Schritt\u2026" class="rd-add-step" onkeydown="if(event.key==='Enter')addStep(${r.id})" />
+          <input type="text" id="st-${r.id}" placeholder="Neuer Schritt…" class="rd-add-step" onkeydown="if(event.key==='Enter')addStep(${r.id})" />
           <button class="btn btn--sm" onclick="addStep(${r.id})">+</button>
         </div>
       </div>
@@ -251,12 +251,12 @@ function renderRecipeDetail(r, einheiten) {
       <div class="rd-footer-cell" style="display:flex;flex-direction:column;align-items:flex-start;gap:8px">
         <div class="rd-label">Sichtbarkeit</div>
         <button class="btn btn--sm ${r.public === false ? 'btn-private' : 'btn-public'}" onclick="togglePublic(${r.id})">
-          ${r.public === false ? '\ud83d\udd12 Privat' : '\ud83d\udc41 \xd6ffentlich'}
+          ${r.public === false ? '🔒 Privat' : '👁 Öffentlich'}
         </button>
       </div>
     </div>
     <div style="padding:10px var(--s-6) var(--s-5)">
-      <button class="btn btn--sm" onclick="exportRecipePDF(${r.id})">\u2193 PDF exportieren</button>
+      <button class="btn btn--sm" onclick="exportRecipePDF(${r.id})">↓ PDF exportieren</button>
     </div>
   </div>`;
 }
@@ -277,7 +277,7 @@ export async function delR(id) {
     rerender();
     toast('Rezept wiederhergestellt');
   };
-  toast(`"${removed.name}" gel\xf6scht \xb7 <a onclick="undoDelR()" style="cursor:pointer;text-decoration:underline">R\xfckg\xe4ngig</a>`);
+  toast(`"${removed.name}" gelöscht · <a onclick="undoDelR()" style="cursor:pointer;text-decoration:underline">Rükgängig</a>`);
   setTimeout(async () => { if (!undone) await deleteRecipeFromDB(removed); }, 5000);
 }
 
@@ -316,7 +316,7 @@ export async function uploadRecipeImage(id, input) {
   if (!file) return;
   if (!file.type.startsWith('image/')) { toast('Nur Bilder erlaubt (JPG, PNG, HEIC)'); return; }
   const label = input.parentElement.querySelector('.img-upload-label');
-  if (label) label.textContent = 'Wird hochgeladen\u2026';
+  if (label) label.textContent = 'Wird hochgeladen…';
   const url = await sbUploadImage(file);
   if (url) { const ri = D.recipes.find(r => r.id === id); ri.img = url; ri.img_owned = true; await saveRecipeNow(ri); rerender(); toast('Bild gespeichert'); }
   else { if (label) label.textContent = 'Fehler beim Hochladen'; }
@@ -334,7 +334,7 @@ export async function togglePublic(id) {
   const r = D.recipes.find(r => r.id === id);
   r.public = !r.public;
   await saveRecipeNow(r); rerender();
-  toast(r.public ? 'Rezept ist jetzt \xf6ffentlich' : 'Rezept ist jetzt privat');
+  toast(r.public ? 'Rezept ist jetzt öffentlich' : 'Rezept ist jetzt privat');
 }
 
 export async function setSrcType(id, type) { const r = D.recipes.find(r => r.id === id); r.src = { type, val: '', seite: '' }; saveRecipesDebounced(r); rerender(); }
@@ -378,19 +378,19 @@ export function parseIngredientLine(line) {
       Prise: { short: 'Prise', plural: 'Prisen', versions: ['prise', 'prisen'] },
       Bund: { short: 'Bund', plural: 'Bund', versions: ['bund'] },
       Dose: { short: 'Dose', plural: 'Dosen', versions: ['dose', 'dosen'] },
-      Pck: { short: 'Pck.', plural: 'Pck.', versions: ['pck', 'pck.', 'p\xe4ckchen'] },
-      St\xfcck: { short: 'St\xfcck', plural: 'St\xfcck', versions: ['st\xfcck', 'stk', 'stk.'] },
+      Pck: { short: 'Pck.', plural: 'Pck.', versions: ['pck', 'pck.', 'päckchen'] },
+      Stück: { short: 'Stück', plural: 'Stück', versions: ['stück', 'stk', 'stk.'] },
       Becher: { short: 'Becher', plural: 'Becher', versions: ['becher'] },
-      Glas: { short: 'Glas', plural: 'Gl\xe4ser', versions: ['glas', 'gl\xe4ser'] },
+      Glas: { short: 'Glas', plural: 'Gläser', versions: ['glas', 'gläser'] },
       Zweig: { short: 'Zweig', plural: 'Zweige', versions: ['zweig', 'zweige'] },
-      Blatt: { short: 'Blatt', plural: 'Bl\xe4tter', versions: ['blatt', 'bl\xe4tter'] },
+      Blatt: { short: 'Blatt', plural: 'Blätter', versions: ['blatt', 'blätter'] },
       Zehe: { short: 'Zehe', plural: 'Zehen', versions: ['zehe', 'zehen', 'Zehe/n', 'zehe/n'] },
       Scheibe: { short: 'Scheibe', plural: 'Scheiben', versions: ['scheibe', 'scheiben'] },
       Handvoll: { short: 'Handvoll', plural: 'Handvoll', versions: ['handvoll'] },
       Messerspitze: { short: 'Msp.', plural: 'Msp.', versions: ['msp', 'msp.', 'messerspitze'] },
-      W\xfcrfel: { short: 'W\xfcrfel', plural: 'W\xfcrfel', versions: ['w\xfcrfel'] },
+      Würfel: { short: 'Würfel', plural: 'Würfel', versions: ['würfel'] },
       Knolle: { short: 'Knolle', plural: 'Knollen', versions: ['knolle', 'knollen'] },
-      Kopf: { short: 'Kopf', plural: 'K\xf6pfe', versions: ['kopf', 'k\xf6pfe'] },
+      Kopf: { short: 'Kopf', plural: 'Köpfe', versions: ['kopf', 'köpfe'] },
       Stange: { short: 'Stange', plural: 'Stangen', versions: ['stange', 'stangen'] },
       Tasse: { short: 'Tasse', plural: 'Tassen', versions: ['tasse', 'tassen'] },
       Pkg: { short: 'Pkg.', plural: 'Pkg.', versions: ['pkg', 'pkg.', 'packung', 'packungen'] },
@@ -426,7 +426,7 @@ export async function saveQE() {
   await saveRecipeNow(newR);
   renderRFilters();
   rerender();
-  toast('Rezept hinzugef\xfcgt');
+  toast('Rezept hinzugefügt');
 }
 
 // ── URL-Import ────────────────────────────────────────────────────────────────
@@ -448,7 +448,7 @@ export async function parseRecipeUrl() {
   const btn   = document.getElementById('url-import-btn');
   const url   = input.value.trim();
   if (!url) { errEl.textContent = 'Bitte eine URL eingeben.'; return; }
-  errEl.textContent = ''; btn.textContent = 'Wird geladen\u2026'; btn.disabled = true;
+  errEl.textContent = ''; btn.textContent = 'Wird geladen…'; btn.disabled = true;
   try {
     const res = await fetch(`${SUPA_URL}/functions/v1/parse-recipe`, {
       method: 'POST',
@@ -460,7 +460,7 @@ export async function parseRecipeUrl() {
     closeUrlImport();
     openQEWithRecipe(data.recipe, url);
   } catch (e) {
-    errEl.textContent = 'Netzwerkfehler \u2013 bist du online?';
+    errEl.textContent = 'Netzwerkfehler – bist du online?';
   } finally {
     btn.textContent = 'Rezept laden'; btn.disabled = false;
   }
@@ -477,5 +477,5 @@ function openQEWithRecipe(r, sourceUrl) {
   if (r.img) modal.dataset.importImg = r.img; else delete modal.dataset.importImg;
   modal.style.display = 'flex';
   setTimeout(() => { const n = document.getElementById('qe-name'); n.focus(); n.select(); }, 80);
-  toast('Rezept geladen \xb7 Name pr\xfcfen, dann Kategorie & Aufwand w\xe4hlen');
+  toast('Rezept geladen · Name prüfen, dann Kategorie & Aufwand wählen');
 }
