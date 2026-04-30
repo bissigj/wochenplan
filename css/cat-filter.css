@@ -1,0 +1,113 @@
+/* ── Kategorie Filter Button + Panel ─────────────────────────────────────────*/
+.cat-filter-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.cat-filter-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  padding: var(--s-2) var(--s-4);
+  border: 1px solid var(--bd2);
+  border-radius: var(--rs);
+  background: var(--bg);
+  font-size: 12px;
+  font-weight: 500;
+  font-family: var(--font-body);
+  color: var(--text2);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--t-fast), border-color var(--t-fast), color var(--t-fast);
+}
+.cat-filter-btn:hover { background: var(--bg2); }
+.cat-filter-btn.has-filter {
+  background: var(--meadow-light);
+  border-color: color-mix(in srgb, var(--meadow) 35%, transparent);
+  color: var(--meadow);
+}
+
+.cat-filter-panel {
+  display: none;
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  width: 220px;
+  background: var(--bg);
+  border: 1px solid var(--bd);
+  border-radius: var(--r);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  z-index: 60;
+}
+
+.cat-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--s-4) var(--s-5);
+  border-block-end: 1px solid var(--bd);
+}
+.cat-panel-header-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.cat-panel-clear {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--meadow);
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: var(--font-body);
+}
+.cat-panel-clear:hover { opacity: .75; }
+
+.cat-panel-list {
+  max-block-size: 280px;
+  overflow-y: auto;
+  padding: var(--s-2) 0;
+  scrollbar-width: thin;
+  scrollbar-color: var(--bd2) transparent;
+}
+
+.cat-panel-item {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  padding: 7px var(--s-5);
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text);
+  transition: background var(--t-fast);
+}
+.cat-panel-item:hover  { background: var(--bg2); }
+.cat-panel-item.active { background: var(--meadow-light); }
+
+.cat-panel-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.cat-panel-label { flex: 1; }
+
+.cat-panel-check {
+  width: 17px;
+  height: 17px;
+  border-radius: 5px;
+  border: 1.5px solid var(--bd2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background var(--t-fast), border-color var(--t-fast);
+}
+.cat-panel-item.active .cat-panel-check {
+  background: var(--meadow);
+  border-color: var(--meadow);
+}
