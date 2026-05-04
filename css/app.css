@@ -766,16 +766,26 @@ textarea { resize: vertical; min-block-size: 60px; line-height: 1.5; }
 @media (max-width: 500px) { .week-grid { grid-template-columns: repeat(2, 1fr); } }
 
 .day-card {
-  background: var(--bg); border-radius: var(--r); overflow: hidden;
-  box-shadow: var(--shadow-sm); border: 1px solid var(--bd);
+  background: var(--bg);
+  border-radius: var(--r);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--bd);
   transition: box-shadow var(--t-base), transform var(--t-fast);
+  display: flex;
+  flex-direction: column;
 }
 .day-card:hover { box-shadow: var(--shadow); transform: translateY(-1px); }
 .day-card.off   { opacity: .4; filter: grayscale(30%); }
 .day-card-weekend { border-inline-start: 3px solid var(--moss); }
-.day-card-top   { padding: var(--s-5) var(--s-5) var(--s-4); cursor: pointer; transition: background var(--t-fast); }
+.day-card-top   {
+  flex: 1;
+  padding: var(--s-5) var(--s-5) var(--s-4);
+  cursor: pointer;
+  transition: background var(--t-fast);
+}
 .day-card-top:hover { background: var(--bg2); }
-.day-card-img   { inline-size: 100%; aspect-ratio: 16 / 7; background-size: cover; background-position: center; }
+.day-card-img   { inline-size: 100%; aspect-ratio: 16 / 7; background-size: cover; background-position: center; flex-shrink: 0; }
 
 .day-lbl { font-size: 10px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; margin-block-end: var(--s-1); display: flex; align-items: center; gap: var(--s-2); }
 .day-lbl-weekend   { color: var(--moss); }
@@ -793,6 +803,8 @@ textarea { resize: vertical; min-block-size: 60px; line-height: 1.5; }
   gap: var(--s-2);
   background: var(--bg2);
   border-block-start: 1px solid var(--bd);
+  margin-block-start: auto;
+  flex-shrink: 0;
 }
 .day-detail {
   border-block-start: 1px solid var(--bd);
