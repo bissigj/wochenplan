@@ -5,11 +5,13 @@ export function setSyncStatus(s, l) {
   dot.title = l;
 }
 
+let _toastTimer = null;
 export function toast(msg, duration = 4000) {
   const el = document.getElementById('toast');
+  clearTimeout(_toastTimer);
   el.innerHTML = msg;
   el.classList.add('show');
-  setTimeout(() => el.classList.remove('show'), duration);
+  _toastTimer = setTimeout(() => el.classList.remove('show'), duration);
 }
 
 // Tabs — jeder Tab-Name exakt einmal
