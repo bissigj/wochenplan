@@ -1,7 +1,16 @@
 import { D, tagStyle, saveWeekNow, getCatLabel, getAufLabel } from './data.js';
+import { getState, setState } from './store.js';
 import { sbInsert } from './db.js';
 import { DAYS } from './config.js';
 import { kw, fmtIng, srcHTML, toast, esc } from './ui.js';
+
+// ── updateWeekDay: atomares Update eines einzelnen Tages im weekPlan ─────────
+function updateWeekDay(i, patchFn) {
+  setState(s => {
+    const days = s.weekPlan.days.map((d, idx) => idx === i ? { ...d, ...patchFn(d) } : d);
+    return { weekPlan: { ...s.weekPlan, days } };
+  });
+}
 
 export let expandedDays = new Set();
 export let viewingArchive = null;
@@ -98,28 +107,31 @@ async function _drawWeek() {
   while (shuffled.length < 7 && extra.length) shuffled.push(extra.shift());
   const portions = +document.getElementById('draw-portions').value || 2;
 
-  if (D.weekPlan.days && D.weekPlan.days.some(d => d.recipeId)) {
-    const toArchive = JSON.parse(JSON.stringify(D.weekPlan));
+  const { weekPlan, familyId, archive } = getState();
+  if (weekPlan.days && weekPlan.days.some(d => d.recipeId)) {
+    const toArchive = JSON.parse(JSON.stringify(weekPlan));
     try {
       const ins = await sbInsert('archive', {
         data: toArchive,
         kw: toArchive.kw,
-        family_id: D.familyId
+        family_id: familyId
       });
       if (ins && ins[0]) toArchive._dbid = ins[0].id;
-      D.archive.push(toArchive);
+      setState(s => ({ archive: [...s.archive, toArchive] }));
     } catch (e) { console.error('Archive save error', e); }
   }
 
   const now = new Date();
-  D.weekPlan = {
-    kw: `KW ${kw()} / ${now.getFullYear()}`,
-    year: now.getFullYear(),
-    days: DAYS.map((day, i) => ({
-      day, recipeId: shuffled[i] ? shuffled[i].id : null, active: true, portions, note: ''
-    })),
-    portions
-  };
+  setState(() => ({
+    weekPlan: {
+      kw: `KW ${kw()} / ${now.getFullYear()}`,
+      year: now.getFullYear(),
+      days: DAYS.map((day, i) => ({
+        day, recipeId: shuffled[i] ? shuffled[i].id : null, active: true, portions, note: ''
+      })),
+      portions
+    }
+  }));
   expandedDays.clear();
   viewingArchive = null;
   closeDrawModal();
@@ -242,31 +254,32 @@ export function toggleDay(i) {
 
 export async function toggleDayActive(i, e) {
   e.stopPropagation();
-  D.weekPlan.days[i].active = !D.weekPlan.days[i].active;
+  updateWeekDay(i, d => ({ active: !d.active }));
   await saveWeekNow();
   renderWeek();
 }
 
 export async function rerollDay(i, e) {
   e.stopPropagation();
+  const { weekPlan } = getState();
   const pool = getPool();
-  const usedIds = D.weekPlan.days
+  const usedIds = weekPlan.days
     .filter((d, idx) => idx !== i && d.active)
     .map(d => d.recipeId).filter(Boolean);
   const avail = pool.filter(r => !usedIds.includes(r.id));
-  const src = avail.length ? avail : pool.filter(r => r.id !== D.weekPlan.days[i].recipeId);
+  const src = avail.length ? avail : pool.filter(r => r.id !== weekPlan.days[i].recipeId);
   if (!src.length) return;
-  D.weekPlan.days[i].recipeId = src[Math.floor(Math.random() * src.length)].id;
+  updateWeekDay(i, () => ({ recipeId: src[Math.floor(Math.random() * src.length)].id }));
   await saveWeekNow();
   renderWeek();
 }
 
 export async function setPortions(i, v) {
-  D.weekPlan.days[i].portions = v;
+  updateWeekDay(i, () => ({ portions: v }));
   await saveWeekNow();
 }
 
 export async function setNote(i, v) {
-  D.weekPlan.days[i].note = v;
+  updateWeekDay(i, () => ({ note: v }));
   await saveWeekNow();
 }
