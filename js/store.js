@@ -1,7 +1,5 @@
 // ── store.js ──────────────────────────────────────────────────────────────────
 // Zentraler State-Container für Wochenplan.
-// Phase 1: Store einführen, D in data.js als Proxy-Shim weiterhin exportieren
-// damit alle bestehenden Module ohne Änderung funktionieren.
 //
 // API:
 //   getState()         → aktueller State (readonly behandeln)
@@ -42,8 +40,3 @@ export function unsubscribe(fn) {
   _listeners.delete(fn);
 }
 
-// Direkt einen flachen Wert setzen ohne Updater-Funktion
-// Kurzform: setKey('familyId', 'abc-123')
-export function setKey(key, value) {
-  setState(() => ({ [key]: value }));
-}

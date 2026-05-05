@@ -56,17 +56,3 @@ export const DEFAULT_SETTINGS = {
 
 export const DEFAULT_EINHEITEN = ['Stück','g','kg','dl','cl','ml','l','EL','TL','Prise','Bund','Dose','Pck.'];
 
-export const DEFAULTS = [
-  {id:1,name:'Spaghetti Pomodoro',cat:'cat_pasta',auf:'auf_einfach',time:25,portions:2,
-   ings:[{m:500,u:'g',n:'Spaghetti'},{m:2,u:'Dose',n:'Tomaten'},{m:3,u:'Stück',n:'Knoblauch'},{m:1,u:'Bund',n:'Basilikum'},{m:3,u:'EL',n:'Olivenöl'}],
-   steps:['Spaghetti nach Packung kochen.','Knoblauch in Olivenöl anschwitzen.','Tomaten dazugeben, 15 min köcheln.','Mit Basilikum servieren.'],src:{type:'url',val:'https://www.chefkoch.de',seite:''}},
-  {id:2,name:'Kürbissuppe',cat:'cat_suppe',auf:'auf_einfach',time:40,portions:4,
-   ings:[{m:1,u:'Stück',n:'Hokkaido Kürbis'},{m:400,u:'ml',n:'Kokosmilch'},{m:30,u:'g',n:'Ingwer'},{m:2,u:'Stück',n:'Zwiebeln'},{m:1,u:'l',n:'Gemüsebrühe'}],
-   steps:['Kürbis würfeln, Zwiebeln und Ingwer anschwitzen.','Kürbis mit Brühe 20 min köcheln.','Kokosmilch hinzufügen, pürieren.'],src:{type:'buch',val:'Ottolenghi Simple',seite:'42'}},
-  {id:3,name:'Kichererbsen-Curry',cat:'cat_curry',auf:'auf_mittel',time:35,portions:4,
-   ings:[{m:2,u:'Dose',n:'Kichererbsen'},{m:1,u:'Dose',n:'Tomaten'},{m:400,u:'ml',n:'Kokosmilch'},{m:2,u:'EL',n:'Currypaste'},{m:200,u:'g',n:'Spinat'}],
-   steps:['Currypaste anbraten.','Kichererbsen und Tomaten dazugeben.','Kokosmilch einrühren, 15 min köcheln.','Spinat unterheben.'],src:null},
-  {id:4,name:'Shakshuka',cat:'cat_vegetarisch',auf:'auf_einfach',time:25,portions:2,
-   ings:[{m:4,u:'Stück',n:'Eier'},{m:2,u:'Dose',n:'Tomaten'},{m:2,u:'Stück',n:'Paprika'},{m:1,u:'Stück',n:'Zwiebeln'},{m:1,u:'EL',n:'Harissa'}],
-   steps:['Zwiebeln und Paprika anschwitzen.','Tomaten und Harissa 10 min köcheln.','Eier einlegen, 5 min pochieren.'],src:null},
-];

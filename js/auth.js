@@ -132,8 +132,9 @@ export async function obCreateFamily() {
   err.textContent = '';
   const fam = await sbInsert('families', { name });
   if (!fam || !fam[0]) { err.textContent = 'Fehler beim Erstellen.'; return; }
-  setState(() => ({ familyId: fam[0].id, familyName: name }));
-  await sbInsert('family_members', { family_id: getState().familyId, user_id: getState().userId, role: 'admin', email: session.user.email });
+  const familyId = fam[0].id;
+  setState(() => ({ familyId, familyName: name }));
+  await sbInsert('family_members', { family_id: familyId, user_id: getState().userId, role: 'admin', email: session.user.email });
   document.getElementById('onboarding-screen').style.display = 'none';
   await finishLogin();
 }

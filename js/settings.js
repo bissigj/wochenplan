@@ -53,9 +53,7 @@ export function toggleAcc(id) {
 // ── Theme ─────────────────────────────────────────────────────────────────────
 export function changeTheme(t) {
   setTheme(t);
-  const openIds = getOpenAccordions();
   rerenderSettings();
-  restoreOpenAccordions(openIds);
   toast(t === 'system' ? 'Theme: System' : (t === 'dark' ? 'Theme: Dunkel' : 'Theme: Hell'));
 }
 
@@ -113,9 +111,9 @@ export function renderSettings() {
       ${cats.map(c => `
         <div class="settings-row">
           <input type="color" value="${esc(c.color)}" class="settings-color"
-            onchange="updateCatColor('${esc(c.id)}', this.value)" title="Textfarbe" />
+            onchange="updateCatField('${esc(c.id)}', 'color', this.value)" title="Textfarbe" />
           <input type="color" value="${esc(c.bg)}" class="settings-color settings-color-bg"
-            onchange="updateCatBg('${esc(c.id)}', this.value)" title="Hintergrundfarbe" />
+            onchange="updateCatField('${esc(c.id)}', 'bg', this.value)" title="Hintergrundfarbe" />
           <input type="text" value="${esc(c.label)}" class="settings-input"
             onchange="updateCat('${esc(c.id)}', this.value)" />
           <span class="tag" style="${tagStyle(c.id)};flex-shrink:0">${esc(c.label)}</span>
@@ -133,9 +131,9 @@ export function renderSettings() {
       ${auf.map(a => `
         <div class="settings-row">
           <input type="color" value="${esc(a.color)}" class="settings-color"
-            onchange="updateAufColor('${esc(a.id)}', this.value)" title="Textfarbe" />
+            onchange="updateAufField('${esc(a.id)}', 'color', this.value)" title="Textfarbe" />
           <input type="color" value="${esc(a.bg)}" class="settings-color settings-color-bg"
-            onchange="updateAufBg('${esc(a.id)}', this.value)" title="Hintergrundfarbe" />
+            onchange="updateAufField('${esc(a.id)}', 'bg', this.value)" title="Hintergrundfarbe" />
           <input type="text" value="${esc(a.label)}" class="settings-input"
             onchange="updateAuf('${esc(a.id)}', this.value)" />
           <span class="tag" style="${tagStyle(a.id)};flex-shrink:0">${esc(a.label)}</span>
@@ -204,16 +202,8 @@ export async function updateCat(id, newLabel) {
   rerenderSettings();
 }
 
-export async function updateCatColor(id, color) {
-  updateSettings(s => ({ cats: s.cats.map(c => c.id === id ? { ...c, color } : c) }));
-  await saveSettingsNow();
-  renderRFilters();
-  renderRecipes();
-  renderWeek();
-}
-
-export async function updateCatBg(id, bg) {
-  updateSettings(s => ({ cats: s.cats.map(c => c.id === id ? { ...c, bg } : c) }));
+export async function updateCatField(id, field, value) {
+  updateSettings(s => ({ cats: s.cats.map(c => c.id === id ? { ...c, [field]: value } : c) }));
   await saveSettingsNow();
   renderRFilters();
   renderRecipes();
@@ -259,16 +249,8 @@ export async function updateAuf(id, newLabel) {
   renderRecipes();
 }
 
-export async function updateAufColor(id, color) {
-  updateSettings(s => ({ aufwand: s.aufwand.map(a => a.id === id ? { ...a, color } : a) }));
-  await saveSettingsNow();
-  renderRFilters();
-  renderRecipes();
-  renderWeek();
-}
-
-export async function updateAufBg(id, bg) {
-  updateSettings(s => ({ aufwand: s.aufwand.map(a => a.id === id ? { ...a, bg } : a) }));
+export async function updateAufField(id, field, value) {
+  updateSettings(s => ({ aufwand: s.aufwand.map(a => a.id === id ? { ...a, [field]: value } : a) }));
   await saveSettingsNow();
   renderRFilters();
   renderRecipes();
@@ -276,10 +258,10 @@ export async function updateAufBg(id, bg) {
 }
 
 export async function deleteAuf(id) {
-  const { settings: s2, recipes: recs2 } = getState();
-  const auf = s2.aufwand.find(a => a.id === id);
+  const { settings, recipes } = getState();
+  const auf = settings.aufwand.find(a => a.id === id);
   if (!auf) return;
-  const inUse = recs2.some(r => r.auf === id);
+  const inUse = recipes.some(r => r.auf === id);
   if (inUse && !confirm(`"${auf.label}" wird von Rezepten verwendet. Trotzdem löschen?`)) return;
   updateSettings(s => ({ aufwand: s.aufwand.filter(a => a.id !== id) }));
   await saveSettingsNow();

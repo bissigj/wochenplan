@@ -1,6 +1,6 @@
 import { SUPA_URL, SUPA_KEY } from './config.js';
 
-export let H = {
+export const H = {
   'Content-Type': 'application/json',
   'apikey': SUPA_KEY,
   'Authorization': 'Bearer ' + SUPA_KEY
@@ -8,14 +8,6 @@ export let H = {
 
 export function setToken(t) {
   H['Authorization'] = 'Bearer ' + t;
-}
-
-function getAuthHeader() {
-  try {
-    const s = JSON.parse(localStorage.getItem('wp_session'));
-    if (s?.access_token) return 'Bearer ' + s.access_token;
-  } catch(e) {}
-  return H['Authorization'];
 }
 
 export async function sbGet(table, filter = '') {
@@ -82,13 +74,12 @@ export async function sbUploadImage(file) {
   // Resize before upload
   let uploadFile = file;
   try { uploadFile = await resizeImage(file); } catch(e) { console.warn('Resize failed, using original', e); }
-  const auth = getAuthHeader();
   const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.jpg`;
   const r = await fetch(`${SUPA_URL}/storage/v1/object/rezeptbilder/${path}`, {
     method: 'POST',
     headers: {
       'apikey': SUPA_KEY,
-      'Authorization': auth,
+      'Authorization': H['Authorization'],
       'Content-Type': 'image/jpeg'
     },
     body: uploadFile
@@ -101,10 +92,9 @@ export async function sbDeleteImage(url) {
   if (!url) return;
   const path = url.split('/rezeptbilder/')[1];
   if (!path) return;
-  const auth = getAuthHeader();
   const r = await fetch(`${SUPA_URL}/storage/v1/object/rezeptbilder/${path}`, {
     method: 'DELETE',
-    headers: { 'apikey': SUPA_KEY, 'Authorization': auth }
+    headers: { 'apikey': SUPA_KEY, 'Authorization': H['Authorization'] }
   });
   if (!r.ok) console.warn('Delete image failed', r.status, await r.text());
 }

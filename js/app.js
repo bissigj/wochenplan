@@ -9,7 +9,7 @@ import { renderShop, setShopView } from './shopping.js';
 import { renderArchiv, viewArchiveWeek } from './archive.js';
 import { exportPDF, exportRecipePDF, exportShopPDF } from './pdf.js';
 import { openDiscover, closeDiscover, importRecipe, filterDiscover, setDiscoverCat, setDiscoverAuf, toggleDiscoverR, discoverLoadMore } from './discover.js';
-import { renderSettings, toggleAcc, changeTheme, addCat, updateCat, updateCatColor, updateCatBg, deleteCat, addAuf, updateAuf, updateAufColor, updateAufBg,
+import { renderSettings, toggleAcc, changeTheme, addCat, updateCat, updateCatField, deleteCat, addAuf, updateAuf, updateAufField,
         deleteAuf, addEinh, deleteEinh, saveFamilyName, createInvitation, joinFamily } from './settings.js';
 
 // ── Apply saved theme before first paint ──────────────────────────────────────
@@ -147,13 +147,11 @@ window.toggleAcc         = toggleAcc;
 window.changeTheme       = changeTheme;
 window.addCat            = addCat;
 window.updateCat         = updateCat;
-window.updateCatColor    = updateCatColor;
-window.updateCatBg       = updateCatBg;
+window.updateCatField    = updateCatField;
 window.deleteCat         = deleteCat;
 window.addAuf            = addAuf;
 window.updateAuf         = updateAuf;
-window.updateAufColor    = updateAufColor;
-window.updateAufBg       = updateAufBg;
+window.updateAufField    = updateAufField;
 window.deleteAuf         = deleteAuf;
 window.addEinh           = addEinh;
 window.deleteEinh        = deleteEinh;
