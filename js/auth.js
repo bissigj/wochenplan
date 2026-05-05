@@ -1,7 +1,8 @@
 import { SUPA_URL, SUPA_KEY } from './config.js';
 import { H, setToken, sbGet, sbInsert, sbUpdate } from './db.js';
 import { setSyncStatus } from './ui.js';
-import { loadData, D } from './data.js';
+import { loadData } from './data.js';
+import { getState, setState } from './store.js';
 import { renderAll } from './app.js';
 
 export let session = null;
@@ -118,7 +119,7 @@ export function showLogin() {
 async function resolveFamily(userId) {
   const members = await sbGet('family_members', `user_id=eq.${userId}&select=family_id,role`);
   if (Array.isArray(members) && members.length) {
-    D.familyId = members[0].family_id;
+    setState(() => ({ familyId: members[0].family_id }));
     return true;
   }
   return false;
@@ -131,9 +132,8 @@ export async function obCreateFamily() {
   err.textContent = '';
   const fam = await sbInsert('families', { name });
   if (!fam || !fam[0]) { err.textContent = 'Fehler beim Erstellen.'; return; }
-  D.familyId = fam[0].id;
-  await sbInsert('family_members', { family_id: D.familyId, user_id: D.userId, role: 'admin', email: session.user.email });
-  D.familyName = name;
+  setState(() => ({ familyId: fam[0].id, familyName: name }));
+  await sbInsert('family_members', { family_id: getState().familyId, user_id: getState().userId, role: 'admin', email: session.user.email });
   document.getElementById('onboarding-screen').style.display = 'none';
   await finishLogin();
 }
@@ -158,16 +158,17 @@ export async function joinFamilyByCode(code, errEl) {
   const i = inv[0];
   if (i.used_at) { setErr('❌ Code bereits verwendet.'); return false; }
   if (new Date(i.expires_at) < new Date()) { setErr('❌ Code abgelaufen.'); return false; }
-  D.familyId = i.family_id;
+  setState(() => ({ familyId: i.family_id }));
+  const { familyId, userId, userEmail } = getState();
   await sbInsert('family_members', {
-    family_id: D.familyId,
-    user_id: D.userId,
+    family_id: familyId,
+    user_id: userId,
     role: i.role || 'member',
-    email: (session && session.user && session.user.email) || D.userEmail || ''
+    email: (session && session.user && session.user.email) || userEmail || ''
   });
-  await sbUpdate('invitations', i.id, { used_by: D.userId, used_at: new Date().toISOString() });
-  const fams = await sbGet('families', `id=eq.${D.familyId}&select=name`);
-  if (Array.isArray(fams) && fams[0]) D.familyName = fams[0].name;
+  await sbUpdate('invitations', i.id, { used_by: userId, used_at: new Date().toISOString() });
+  const fams = await sbGet('families', `id=eq.${familyId}&select=name`);
+  if (Array.isArray(fams) && fams[0]) setState(() => ({ familyName: fams[0].name }));
   return true;
 }
 
@@ -183,15 +184,14 @@ export async function onLoggedIn() {
   localStorage.setItem('wp_session', JSON.stringify(session));
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('register-screen').style.display = 'none';
-  D.userId = session.user.id;
-  D.userEmail = session.user.email;
+  setState(() => ({ userId: session.user.id, userEmail: session.user.email }));
   const hasFamily = await resolveFamily(session.user.id);
   if (!hasFamily) {
     document.getElementById('onboarding-screen').style.display = 'flex';
     return;
   }
-  const fams = await sbGet('families', `id=eq.${D.familyId}&select=name`);
-  if (Array.isArray(fams) && fams[0]) D.familyName = fams[0].name;
+  const fams = await sbGet('families', `id=eq.${getState().familyId}&select=name`);
+  if (Array.isArray(fams) && fams[0]) setState(() => ({ familyName: fams[0].name }));
   await finishLogin();
 }
 

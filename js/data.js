@@ -18,18 +18,17 @@ export let dbSettingsId = null;
 export let dbWeekId = null;
 const saveTimers = {};
 
-// Fix #5 / Safety: stellt sicher, dass settings immer vollständig sind
-function ensureSettingsComplete() {
-  if (!D.settings || typeof D.settings !== 'object') {
-    D.settings = { cats: [], aufwand: [], einheiten: [] };
-  }
-  if (!Array.isArray(D.settings.cats)) D.settings.cats = [];
-  if (!Array.isArray(D.settings.aufwand)) D.settings.aufwand = [];
-  if (!Array.isArray(D.settings.einheiten)) D.settings.einheiten = [...DEFAULT_EINHEITEN];
+// Fix #5 / Safety: gibt ein vollständiges settings-Objekt zurück (ohne Side-Effects)
+function ensureSettingsComplete(s) {
+  const settings = (s && typeof s === 'object') ? { ...s } : {};
+  if (!Array.isArray(settings.cats))      settings.cats      = [];
+  if (!Array.isArray(settings.aufwand))   settings.aufwand   = [];
+  if (!Array.isArray(settings.einheiten)) settings.einheiten = [...DEFAULT_EINHEITEN];
+  return settings;
 }
 
 export async function loadData() {
-  const fid = D.familyId;
+  const fid = getState().familyId;
 
   // Jeder Query einzeln abgesichert – ein Fehler bricht nicht alles ab
   const [recs, weeks, arch, sets] = await Promise.all([
@@ -39,41 +38,42 @@ export async function loadData() {
     sbGet('settings',   `select=id,data&family_id=eq.${fid}`).catch(e => { console.error('settings load error', e); return null; }),
   ]);
 
-    // ── Recipes – one row per recipe ─────────────────────────────────────────
-    if (Array.isArray(recs) && recs.length) {
-      D.recipes = recs.map(r => ({ ...r.data, _dbid: r.id, public: r.public }));
-      D.nextId = Math.max(...D.recipes.map(r => r.id)) + 1;
-      // Mark image ownership – only delete images we uploaded ourselves
-      D.recipes.forEach(r => {
-        if (r.img && r.img_owned === undefined) r.img_owned = true;
-      });
-    } else {
-      D.recipes = [];
-      D.nextId = 1;
-    }
+  // ── Recipes ───────────────────────────────────────────────────────────────
+  let recipes, nextId;
+  if (Array.isArray(recs) && recs.length) {
+    recipes = recs.map(r => ({ ...r.data, _dbid: r.id, public: r.public }));
+    recipes.forEach(r => { if (r.img && r.img_owned === undefined) r.img_owned = true; });
+    nextId = Math.max(...recipes.map(r => r.id)) + 1;
+  } else {
+    recipes = [];
+    nextId = 1;
+  }
 
-    // ── Week plan ─────────────────────────────────────────────────────────────
-    if (Array.isArray(weeks) && weeks.length) {
-      weeks.sort((a, b) => new Date(b.updated_at || 0) - new Date(a.updated_at || 0));
-      dbWeekId = weeks[0].id;
-      const wp = weeks[0].data;
-      if (wp && wp.days && wp.days.length) D.weekPlan = wp;
-    }
+  // ── Week plan ─────────────────────────────────────────────────────────────
+  let weekPlan = getState().weekPlan;
+  if (Array.isArray(weeks) && weeks.length) {
+    weeks.sort((a, b) => new Date(b.updated_at || 0) - new Date(a.updated_at || 0));
+    dbWeekId = weeks[0].id;
+    const wp = weeks[0].data;
+    if (wp && wp.days && wp.days.length) weekPlan = wp;
+  }
 
-    // ── Archive ───────────────────────────────────────────────────────────────
-    D.archive = Array.isArray(arch) ? arch.map(a => ({ ...a.data, _dbid: a.id })) : [];
+  // ── Archive ───────────────────────────────────────────────────────────────
+  const archive = Array.isArray(arch) ? arch.map(a => ({ ...a.data, _dbid: a.id })) : [];
 
-    // ── Settings ──────────────────────────────────────────────────────────────
-    if (Array.isArray(sets) && sets.length) {
-      dbSettingsId = sets[0].id;
-      D.settings = sets[0].data || {};
-      ensureSettingsComplete();
-    } else {
-      D.settings = JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
-      D.settings.einheiten = [...DEFAULT_EINHEITEN];
-      const ins = await sbInsert('settings', { data: D.settings, family_id: fid });
-      if (ins && ins[0]) dbSettingsId = ins[0].id;
-    }
+  // ── Settings ──────────────────────────────────────────────────────────────
+  let settings;
+  if (Array.isArray(sets) && sets.length) {
+    dbSettingsId = sets[0].id;
+    settings = ensureSettingsComplete(sets[0].data);
+  } else {
+    settings = ensureSettingsComplete(JSON.parse(JSON.stringify(DEFAULT_SETTINGS)));
+    const ins = await sbInsert('settings', { data: settings, family_id: fid });
+    if (ins && ins[0]) dbSettingsId = ins[0].id;
+  }
+
+  // ── Alles in einem einzigen setState-Call → nur ein notify ────────────────
+  setState(() => ({ recipes, nextId, weekPlan, archive, settings }));
 }
 
 // ── Recipe persistence ────────────────────────────────────────────────────────
