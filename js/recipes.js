@@ -1,9 +1,21 @@
 import { D, getCatLabel, getAufLabel, tagStyle, saveRecipesDebounced, saveRecipeNow, deleteRecipeFromDB, saveWeekNow } from './data.js';
+import { getState, setState } from './store.js';
 import { parseIngredient } from 'https://esm.sh/@jlucaspains/sharp-recipe-parser@1.3.6';
 import { sbUploadImage, sbDeleteImage } from './db.js';
 import { fmtIng, srcHTML, toast, esc } from './ui.js';
 import { renderWeek } from './week.js';
 import { SUPA_URL, SUPA_KEY } from './config.js';
+
+// ── updateRecipe: atomares Update eines Rezepts im Store ─────────────────────
+// patchFn(recipe) → gibt ein neues (gepatchtes) Rezept-Objekt zurück
+function updateRecipe(id, patchFn) {
+  const recipes = getState().recipes;
+  const idx = recipes.findIndex(r => r.id === id);
+  if (idx < 0) return null;
+  const updated = patchFn({ ...recipes[idx] });
+  setState(s => ({ recipes: s.recipes.map(r => r.id === id ? updated : r) }));
+  return updated;
+}
 
 export let expandedR  = null;
 export let rFilters   = new Set();
@@ -264,15 +276,21 @@ function renderRecipeDetail(r, einheiten) {
 export function toggleER(id) { expandedR = expandedR === id ? null : id; rerender(); }
 
 export async function delR(id) {
-  const idx = D.recipes.findIndex(r => r.id === id);
+  const recipes = getState().recipes;
+  const idx = recipes.findIndex(r => r.id === id);
   if (idx < 0) return;
-  const [removed] = D.recipes.splice(idx, 1);
+  const removed = recipes[idx];
+  setState(s => ({ recipes: s.recipes.filter(r => r.id !== id) }));
   rerender();
   let undone = false;
   window._undoDelR = async () => {
     if (undone) return;
     undone = true;
-    D.recipes.splice(idx, 0, removed);
+    setState(s => {
+      const r = [...s.recipes];
+      r.splice(idx, 0, removed);
+      return { recipes: r };
+    });
     await saveRecipeNow(removed);
     rerender();
     toast('Rezept wiederhergestellt');
@@ -284,7 +302,11 @@ export async function delR(id) {
         await deleteRecipeFromDB(removed);
       } catch (e) {
         // DB-Fehler: Rollback – Rezept wieder einfügen
-        D.recipes.splice(idx, 0, removed);
+        setState(s => {
+          const r = [...s.recipes];
+          r.splice(idx, 0, removed);
+          return { recipes: r };
+        });
         rerender();
         toast('Fehler beim Löschen – Rezept wiederhergestellt');
         console.error('deleteRecipeFromDB error', e);
@@ -299,29 +321,34 @@ export async function addIng(id) {
   const n = document.getElementById('in-' + id).value.trim();
   if (!n) return;
   const m = mRaw === '' ? 0 : parseFloat(mRaw);
-  const r = D.recipes.find(r => r.id === id);
-  r.ings.push({ m: isNaN(m) ? 0 : m, u, n });
+  const r = updateRecipe(id, r => ({ ...r, ings: [...r.ings, { m: isNaN(m) ? 0 : m, u, n }] }));
   document.getElementById('im-' + id).value = '';
   document.getElementById('in-' + id).value = '';
-  saveRecipesDebounced(r);
-  rerender();
+  if (r) { saveRecipesDebounced(r); rerender(); }
 }
 
-export async function delIng(id, i) { const r = D.recipes.find(r => r.id === id); r.ings.splice(i, 1); saveRecipesDebounced(r); rerender(); }
+export async function delIng(id, i) {
+  const r = updateRecipe(id, r => ({ ...r, ings: r.ings.filter((_, idx) => idx !== i) }));
+  if (r) { saveRecipesDebounced(r); rerender(); }
+}
 
 export async function addStep(id) {
   const inp = document.getElementById('st-' + id);
   const v = inp.value.trim();
   if (!v) return;
-  const rs = D.recipes.find(r => r.id === id);
-  rs.steps.push(v);
+  const r = updateRecipe(id, r => ({ ...r, steps: [...r.steps, v] }));
   inp.value = '';
-  saveRecipesDebounced(rs);
-  rerender();
+  if (r) { saveRecipesDebounced(r); rerender(); }
 }
 
-export async function delStep(id, i) { const r = D.recipes.find(r => r.id === id); r.steps.splice(i, 1); saveRecipesDebounced(r); rerender(); }
-export async function updR(id, key, val) { const r = D.recipes.find(r => r.id === id); r[key] = val; saveRecipesDebounced(r); }
+export async function delStep(id, i) {
+  const r = updateRecipe(id, r => ({ ...r, steps: r.steps.filter((_, idx) => idx !== i) }));
+  if (r) { saveRecipesDebounced(r); rerender(); }
+}
+export async function updR(id, key, val) {
+  const r = updateRecipe(id, r => ({ ...r, [key]: val }));
+  if (r) saveRecipesDebounced(r);
+}
 
 export async function uploadRecipeImage(id, input) {
   const file = input.files[0];
@@ -330,27 +357,33 @@ export async function uploadRecipeImage(id, input) {
   const label = input.parentElement.querySelector('.img-upload-label');
   if (label) label.textContent = 'Wird hochgeladen…';
   const url = await sbUploadImage(file);
-  if (url) { const ri = D.recipes.find(r => r.id === id); ri.img = url; ri.img_owned = true; await saveRecipeNow(ri); rerender(); toast('Bild gespeichert'); }
+  if (url) { const ri = updateRecipe(id, r => ({ ...r, img: url, img_owned: true })); if (ri) { await saveRecipeNow(ri); rerender(); toast('Bild gespeichert'); } }
   else { if (label) label.textContent = 'Fehler beim Hochladen'; }
 }
 
 export async function removeRecipeImage(id) {
-  const r = D.recipes.find(r => r.id === id);
-  if (!r || !r.img) return;
-  if (r.img_owned !== false) await sbDeleteImage(r.img);
-  r.img = null; r.img_owned = undefined;
-  await saveRecipeNow(r); rerender(); toast('Foto entfernt');
+  const existing = getState().recipes.find(r => r.id === id);
+  if (!existing || !existing.img) return;
+  if (existing.img_owned !== false) await sbDeleteImage(existing.img);
+  const r = updateRecipe(id, r => ({ ...r, img: null, img_owned: undefined }));
+  if (r) { await saveRecipeNow(r); rerender(); toast('Foto entfernt'); }
 }
 
 export async function togglePublic(id) {
-  const r = D.recipes.find(r => r.id === id);
-  r.public = !r.public;
-  await saveRecipeNow(r); rerender();
-  toast(r.public ? 'Rezept ist jetzt öffentlich' : 'Rezept ist jetzt privat');
+  const existing = getState().recipes.find(r => r.id === id);
+  if (!existing) return;
+  const r = updateRecipe(id, r => ({ ...r, public: !r.public }));
+  if (r) { await saveRecipeNow(r); rerender(); toast(r.public ? 'Rezept ist jetzt öffentlich' : 'Rezept ist jetzt privat'); }
 }
 
-export async function setSrcType(id, type) { const r = D.recipes.find(r => r.id === id); r.src = { type, val: '', seite: '' }; saveRecipesDebounced(r); rerender(); }
-export async function updSrc(id, key, val) { const r = D.recipes.find(r => r.id === id); if (!r.src) r.src = { type: 'url', val: '', seite: '' }; r.src[key] = val; saveRecipesDebounced(r); rerender(); }
+export async function setSrcType(id, type) {
+  const r = updateRecipe(id, r => ({ ...r, src: { type, val: '', seite: '' } }));
+  if (r) { saveRecipesDebounced(r); rerender(); }
+}
+export async function updSrc(id, key, val) {
+  const r = updateRecipe(id, r => ({ ...r, src: { ...(r.src || { type: 'url', val: '', seite: '' }), [key]: val } }));
+  if (r) { saveRecipesDebounced(r); rerender(); }
+}
 
 export function openSrcEdit(id) {
   const panel = document.getElementById('src-edit-' + id);
@@ -431,9 +464,10 @@ export async function saveQE() {
   const portions = parseInt(document.getElementById('qe-portions').value) || 2;
   const importSrc = modal.dataset.importSrc ?? '';
   const src = importSrc ? { type: 'url', val: importSrc, seite: '' } : null;
-  const newR = { id: D.nextId++, name, cat: document.getElementById('qe-cat').value, auf: document.getElementById('qe-auf').value, time, portions, ings, steps, src, public: true };
+  const { nextId, recipes } = getState();
+  const newR = { id: nextId, name, cat: document.getElementById('qe-cat').value, auf: document.getElementById('qe-auf').value, time, portions, ings, steps, src, public: true };
   if (modal.dataset.importImg) { newR.img = modal.dataset.importImg; newR.img_owned = true; }
-  D.recipes.push(newR);
+  setState(s => ({ recipes: [...s.recipes, newR], nextId: s.nextId + 1 }));
   closeQE();
   await saveRecipeNow(newR);
   renderRFilters();
