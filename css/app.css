@@ -982,3 +982,73 @@ textarea { resize: vertical; min-block-size: 60px; line-height: 1.5; }
   from { opacity: 0; transform: translateY(-4px); }
   to   { opacity: 1; transform: translateY(0); }
 }
+
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   UTILITY — Visibility (ersetzt style="display:none")
+   ─────────────────────────────────────────────────────────────────────────── */
+
+/* Screens und Modals */
+.is-hidden   { display: none !important; }
+
+/* Spezifische Layout-Klassen für index.html */
+.modal--sm   { max-width: 420px; }
+.modal--md   { max-width: 520px; }
+
+/* Quick Entry Grid */
+.qe-header   { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--s-6); }
+.qe-header h3 { margin: 0; }
+.qe-row      { display: flex; gap: 8px; }
+.qe-row--full { grid-column: 1 / -1; }
+.qe-col      { flex: 1; }
+.qe-col--fixed { width: 70px; }
+.qe-select   { width: 100%; }
+
+/* Draw Modal */
+.draw-label  { margin-bottom: 6px; }
+.draw-pills  { margin-bottom: 1rem; }
+.draw-label--inline { margin: 0; }
+
+/* URL Import */
+.url-import-desc { font-size: 13px; color: var(--text2); margin-bottom: var(--s-6); line-height: 1.5; }
+.url-import-input { margin-bottom: var(--s-3); }
+.url-import-err  { font-size: 12px; color: var(--red); min-height: 18px; margin-bottom: var(--s-4); }
+
+/* Discover */
+.discover-filters { margin-top: 8px; }
+
+/* Recipe Detail inline styles → Klassen */
+.rd-cursor   { cursor: pointer; }
+.rd-src-btn  { margin-left: var(--s-4); flex-shrink: 0; }
+.rd-src-edit { display: none; margin-top: 10px; }
+.rd-src-edit.open { display: block; }
+.rd-pills    { gap: 6px; margin-bottom: 8px; }
+.rd-input-full { width: 100%; }
+.rd-src-input  { margin-bottom: 6px; }
+.rd-footer-actions { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+.rd-source-label   { margin-bottom: 6px; }
+.rd-actions-wrap   { padding: 10px var(--s-6) var(--s-5); }
+.rd-file-hidden    { display: none; }
+.rd-img-btn-label  { cursor: pointer; }
+
+/* Discover card */
+.discover-card-top   { cursor: pointer; }
+.discover-card-tags  { gap: 5px; margin-top: 6px; }
+.discover-chevron    { margin-left: auto; font-size: 11px; color: var(--text3); }
+.discover-detail     { margin-top: 10px; }
+.discover-actions    { margin-top: 10px; }
+.discover-footer-all { color: var(--text3); font-size: 12px; }
+
+/* Shopping */
+.shop-recipe-hint    { color: var(--text3); font-size: 8pt; margin-left: 5px; }
+
+/* Undo link im Toast */
+.toast-link { cursor: pointer; text-decoration: underline; }
+
+/* Settings */
+.settings-row--bare  { border: none; padding: 3px 0; }
+
+.shop-day-label  { font-weight: 400; color: var(--text3); }
+
+.recipe-del-btn { margin-left: 6px; padding: 4px 6px; font-size: 16px; opacity: 0.4; }
+.recipe-del-btn:hover { opacity: 1; color: var(--red); }
