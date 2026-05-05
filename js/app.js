@@ -3,7 +3,7 @@ import { subscribe, getState } from './store.js';
 import { doLogin, doRegister, doLogout, showLogin, showRegister, tryRestoreSession, obCreateFamily, obJoinFamily } from './auth.js';
 import { renderRFilters, renderRecipes, toggleRF, toggleER, delR, addIng, delIng, addStep, delStep, updR, setSrcType, updSrc, openQE, closeQE,
         saveQE, setSortOrder, uploadRecipeImage, removeRecipeImage, togglePublic, openSrcEdit, clearAufFilter, openUrlImport,
-        closeUrlImport, parseRecipeUrl, toggleCatPanel, toggleCatFilter, clearCatFilter } from './recipes.js';
+        closeUrlImport, parseRecipeUrl, toggleCatPanel, toggleCatFilter, clearCatFilter, _pendingUndo } from './recipes.js';
 import { renderWeek, openDrawModal, closeDrawModal, toggleDrawPill, setTimePill, drawWeek, backToCurrent, toggleDay, toggleDayActive, rerollDay, setPortions, setNote } from './week.js';
 import { renderShop, setShopView } from './shopping.js';
 import { renderArchiv, viewArchiveWeek } from './archive.js';
@@ -141,7 +141,7 @@ registerActions({
   'toggle-cat-panel':  (_, e) => toggleCatPanel(e),
   'toggle-cat-filter': ({ id }) => toggleCatFilter(id),
   'clear-cat-filter':  () => clearCatFilter(),
-  'undo-del-r':        () => { if (window._undoDelR) window._undoDelR(); },
+  'undo-del-r':        () => { if (_pendingUndo) _pendingUndo(); },
 
   // Woche
   'open-draw-modal':   () => openDrawModal(),

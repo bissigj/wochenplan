@@ -22,6 +22,7 @@ export let rFilters   = new Set();
 export let catFilters = new Set();
 let catPanelOpen = false;
 export let sortOrder = 'name';
+export let _pendingUndo = null;
 
 export function renderRFilters() {
   const aufEl = document.getElementById('r-auf-segment');
@@ -287,7 +288,7 @@ export async function delR(id) {
   setState(s => ({ recipes: s.recipes.filter(r => r.id !== id) }));
   rerender();
   let undone = false;
-  window._undoDelR = async () => {
+  _pendingUndo = async () => {
     if (undone) return;
     undone = true;
     setState(s => {
@@ -299,7 +300,7 @@ export async function delR(id) {
     rerender();
     toast('Rezept wiederhergestellt');
   };
-  toast(`„${removed.name}" gelöscht · <a onclick="undoDelR()" style="cursor:pointer;text-decoration:underline">Rückgängig</a>`, 8000);
+  toast(`„${removed.name}" gelöscht · <a data-action="undo-del-r" style="cursor:pointer;text-decoration:underline">Rückgängig</a>`, 8000);
   setTimeout(async () => {
     if (!undone) {
       try {
