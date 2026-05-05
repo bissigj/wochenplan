@@ -1,10 +1,17 @@
 import { D, saveSettingsNow, tagStyle } from './data.js';
+import { getState, setState } from './store.js';
 import { CAT_PALETTE, AUF_PALETTE } from './config.js';
 import { sbGet, sbInsert, sbUpdate } from './db.js';
 import { toast, esc, getTheme, setTheme } from './ui.js';
 import { renderRFilters, renderRecipes } from './recipes.js';
 import { renderWeek } from './week.js';
 import { joinFamilyByCode } from './auth.js';
+
+// ── updateSettings: atomares Update des settings-Objekts im Store ─────────────
+// patchFn(settings) → gibt ein partielles settings-Objekt zurück das gemergt wird
+function updateSettings(patchFn) {
+  setState(s => ({ settings: { ...s.settings, ...patchFn(s.settings) } }));
+}
 
 // ── Accordion state preservation ──────────────────────────────────────────────
 function getOpenAccordions() {
@@ -174,10 +181,11 @@ export async function addCat() {
   const input = document.getElementById('new-cat-input');
   const label = input.value.trim().toLowerCase();
   if (!label) return;
-  if (D.settings.cats.find(c => c.label === label)) { toast('Kategorie existiert bereits'); return; }
+  const { cats } = getState().settings;
+  if (cats.find(c => c.label === label)) { toast('Kategorie existiert bereits'); return; }
   const id = 'cat_' + Date.now();
-  const { color, bg } = nextCatColor(D.settings.cats);
-  D.settings.cats.push({ id, label, color, bg });
+  const { color, bg } = nextCatColor(cats);
+  updateSettings(s => ({ cats: [...s.cats, { id, label, color, bg }] }));
   input.value = '';
   await saveSettingsNow();
   rerenderSettings();
@@ -188,8 +196,7 @@ export async function addCat() {
 export async function updateCat(id, newLabel) {
   newLabel = newLabel.trim().toLowerCase();
   if (!newLabel) return;
-  const cat = D.settings.cats.find(c => c.id === id);
-  if (cat) cat.label = newLabel;
+  updateSettings(s => ({ cats: s.cats.map(c => c.id === id ? { ...c, label: newLabel } : c) }));
   await saveSettingsNow();
   renderRFilters();
   renderRecipes();
@@ -197,8 +204,7 @@ export async function updateCat(id, newLabel) {
 }
 
 export async function updateCatColor(id, color) {
-  const cat = D.settings.cats.find(c => c.id === id);
-  if (cat) cat.color = color;
+  updateSettings(s => ({ cats: s.cats.map(c => c.id === id ? { ...c, color } : c) }));
   await saveSettingsNow();
   renderRFilters();
   renderRecipes();
@@ -206,8 +212,7 @@ export async function updateCatColor(id, color) {
 }
 
 export async function updateCatBg(id, bg) {
-  const cat = D.settings.cats.find(c => c.id === id);
-  if (cat) cat.bg = bg;
+  updateSettings(s => ({ cats: s.cats.map(c => c.id === id ? { ...c, bg } : c) }));
   await saveSettingsNow();
   renderRFilters();
   renderRecipes();
@@ -215,11 +220,12 @@ export async function updateCatBg(id, bg) {
 }
 
 export async function deleteCat(id) {
-  const cat = D.settings.cats.find(c => c.id === id);
+  const { settings, recipes } = getState();
+  const cat = settings.cats.find(c => c.id === id);
   if (!cat) return;
-  const inUse = D.recipes.some(r => r.cat === id);
+  const inUse = recipes.some(r => r.cat === id);
   if (inUse && !confirm(`"${cat.label}" wird von Rezepten verwendet. Trotzdem löschen?`)) return;
-  D.settings.cats = D.settings.cats.filter(c => c.id !== id);
+  updateSettings(s => ({ cats: s.cats.filter(c => c.id !== id) }));
   await saveSettingsNow();
   rerenderSettings();
   renderRFilters();
@@ -231,10 +237,11 @@ export async function addAuf() {
   const input = document.getElementById('new-auf-input');
   const label = input.value.trim().toLowerCase();
   if (!label) return;
-  if (D.settings.aufwand.find(a => a.label === label)) { toast('Aufwand existiert bereits'); return; }
+  const { aufwand } = getState().settings;
+  if (aufwand.find(a => a.label === label)) { toast('Aufwand existiert bereits'); return; }
   const id = 'auf_' + Date.now();
-  const { color, bg } = nextAufColor(D.settings.aufwand);
-  D.settings.aufwand.push({ id, label, color, bg });
+  const { color, bg } = nextAufColor(aufwand);
+  updateSettings(s => ({ aufwand: [...s.aufwand, { id, label, color, bg }] }));
   input.value = '';
   await saveSettingsNow();
   rerenderSettings();
@@ -245,16 +252,14 @@ export async function addAuf() {
 export async function updateAuf(id, newLabel) {
   newLabel = newLabel.trim().toLowerCase();
   if (!newLabel) return;
-  const auf = D.settings.aufwand.find(a => a.id === id);
-  if (auf) auf.label = newLabel;
+  updateSettings(s => ({ aufwand: s.aufwand.map(a => a.id === id ? { ...a, label: newLabel } : a) }));
   await saveSettingsNow();
   renderRFilters();
   renderRecipes();
 }
 
 export async function updateAufColor(id, color) {
-  const auf = D.settings.aufwand.find(a => a.id === id);
-  if (auf) auf.color = color;
+  updateSettings(s => ({ aufwand: s.aufwand.map(a => a.id === id ? { ...a, color } : a) }));
   await saveSettingsNow();
   renderRFilters();
   renderRecipes();
@@ -262,8 +267,7 @@ export async function updateAufColor(id, color) {
 }
 
 export async function updateAufBg(id, bg) {
-  const auf = D.settings.aufwand.find(a => a.id === id);
-  if (auf) auf.bg = bg;
+  updateSettings(s => ({ aufwand: s.aufwand.map(a => a.id === id ? { ...a, bg } : a) }));
   await saveSettingsNow();
   renderRFilters();
   renderRecipes();
@@ -271,11 +275,12 @@ export async function updateAufBg(id, bg) {
 }
 
 export async function deleteAuf(id) {
-  const auf = D.settings.aufwand.find(a => a.id === id);
+  const { settings: s2, recipes: recs2 } = getState();
+  const auf = s2.aufwand.find(a => a.id === id);
   if (!auf) return;
-  const inUse = D.recipes.some(r => r.auf === id);
+  const inUse = recs2.some(r => r.auf === id);
   if (inUse && !confirm(`"${auf.label}" wird von Rezepten verwendet. Trotzdem löschen?`)) return;
-  D.settings.aufwand = D.settings.aufwand.filter(a => a.id !== id);
+  updateSettings(s => ({ aufwand: s.aufwand.filter(a => a.id !== id) }));
   await saveSettingsNow();
   rerenderSettings();
   renderRFilters();
@@ -287,9 +292,8 @@ export async function addEinh() {
   const input = document.getElementById('new-einh-input');
   const val = input.value.trim();
   if (!val) return;
-  if ((D.settings.einheiten || []).includes(val)) { toast('Einheit existiert bereits'); return; }
-  if (!D.settings.einheiten) D.settings.einheiten = [];
-  D.settings.einheiten.push(val);
+  if ((getState().settings.einheiten || []).includes(val)) { toast('Einheit existiert bereits'); return; }
+  updateSettings(s => ({ einheiten: [...(s.einheiten || []), val] }));
   input.value = '';
   await saveSettingsNow();
   rerenderSettings();
@@ -297,7 +301,7 @@ export async function addEinh() {
 }
 
 export async function deleteEinh(val) {
-  D.settings.einheiten = (D.settings.einheiten || []).filter(e => e !== val);
+  updateSettings(s => ({ einheiten: (s.einheiten || []).filter(e => e !== val) }));
   await saveSettingsNow();
   rerenderSettings();
 }
@@ -306,15 +310,15 @@ export async function deleteEinh(val) {
 export async function saveFamilyName() {
   const name = document.getElementById('family-name-input').value.trim();
   if (!name) return;
-  await sbUpdate('families', D.familyId, { name });
-  D.familyName = name;
+  await sbUpdate('families', getState().familyId, { name });
+  setState(() => ({ familyName: name }));
   toast(`Familie umbenannt zu "${name}"`);
 }
 
 async function loadFamilyMembers() {
   const el = document.getElementById('members-list');
   if (!el) return;
-  const members = await sbGet('family_members', `family_id=eq.${D.familyId}&select=user_id,role,email`);
+  const members = await sbGet('family_members', `family_id=eq.${getState().familyId}&select=user_id,role,email`);
   if (!Array.isArray(members) || !members.length) { el.textContent = 'Keine Mitglieder gefunden.'; return; }
   el.innerHTML = members.map(m =>
     `<div class="settings-row" style="border:none;padding:3px 0">
@@ -328,9 +332,9 @@ export async function createInvitation() {
   const role = document.getElementById('invite-role')?.value || 'member';
   const code = Math.random().toString(36).slice(2, 8).toUpperCase();
   await sbInsert('invitations', {
-    family_id: D.familyId,
+    family_id: getState().familyId,
     code,
-    created_by: D.userId,
+    created_by: getState().userId,
     role
   });
   const el = document.getElementById('invitation-result');

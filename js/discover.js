@@ -1,5 +1,5 @@
-import { D, getCatLabel, getAufLabel, tagStyle } from './data.js';
-import { saveRecipeNow } from './data.js';
+import { D, getCatLabel, getAufLabel, tagStyle, saveRecipeNow } from './data.js';
+import { getState, setState } from './store.js';
 import { sbGet } from './db.js';
 import { toast, esc, formatAmount } from './ui.js';
 import { renderRFilters, renderRecipes } from './recipes.js';
@@ -58,7 +58,7 @@ async function loadPublicRecipes() {
   el.innerHTML = '<div class="empty-state"><div class="empty-state-icon">⏳</div><div class="empty-state-title">Laden…</div></div>';
 
   const recs = await sbGet('recipes_v2',
-    `select=id,recipe_id,data,public,family_id&public=eq.true&family_id=neq.${D.familyId}&order=created_at.desc&limit=500`
+    `select=id,recipe_id,data,public,family_id&public=eq.true&family_id=neq.${getState().familyId}&order=created_at.desc&limit=500`
   );
 
   if (!Array.isArray(recs) || !recs.length) {
@@ -206,9 +206,10 @@ export async function importRecipe(dbId) {
   const row = allPublicRecipes.find(r => r.id === dbId);
   if (!row) { toast('Rezept nicht gefunden'); return; }
 
+  const { nextId } = getState();
   const imported = {
     ...row.data,
-    id: D.nextId++,
+    id: nextId,
     public: false,
     img_owned: false,
     src: {
@@ -217,8 +218,7 @@ export async function importRecipe(dbId) {
       originalId: dbId
     }
   };
-
-  D.recipes.push(imported);
+  setState(s => ({ recipes: [...s.recipes, imported], nextId: s.nextId + 1 }));
   await saveRecipeNow(imported);
   renderRFilters();
   renderRecipes();
