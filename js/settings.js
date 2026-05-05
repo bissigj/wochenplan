@@ -28,7 +28,7 @@ function restoreOpenAccordions(ids) {
   });
 }
 
-function rerenderSettings() {
+export function rerenderSettings() {
   const open = getOpenAccordions();
   renderSettings();
   restoreOpenAccordions(open);

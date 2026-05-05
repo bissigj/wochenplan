@@ -9,7 +9,7 @@ import { renderShop, setShopView } from './shopping.js';
 import { renderArchiv, viewArchiveWeek } from './archive.js';
 import { exportPDF, exportRecipePDF, exportShopPDF } from './pdf.js';
 import { openDiscover, closeDiscover, importRecipe, filterDiscover, setDiscoverCat, setDiscoverAuf, toggleDiscoverR, discoverLoadMore } from './discover.js';
-import { renderSettings, toggleAcc, changeTheme, addCat, updateCat, updateCatField, deleteCat, addAuf, updateAuf, updateAufField,
+import { renderSettings, rerenderSettings, toggleAcc, changeTheme, addCat, updateCat, updateCatField, deleteCat, addAuf, updateAuf, updateAufField,
         deleteAuf, addEinh, deleteEinh, saveFamilyName, createInvitation, joinFamily } from './settings.js';
 
 // ── Apply saved theme before first paint ──────────────────────────────────────
@@ -212,7 +212,7 @@ function _showTab(t) {
   showTab(t);
   if (t === 'einkauf') renderShop();
   if (t === 'archiv') renderArchiv();
-  if (t === 'einstellungen') renderSettings();
+  if (t === 'einstellungen') rerenderSettings();
 
   document.querySelectorAll('.nav-item').forEach(el => {
     el.classList.toggle('active', el.id === 'nav-' + t);
@@ -254,7 +254,7 @@ subscribe(() => {
   if (_activeTab === 'woche')         renderWeek();
   if (_activeTab === 'einkauf')       renderShop();
   if (_activeTab === 'archiv')        renderArchiv();
-  if (_activeTab === 'einstellungen') renderSettings();
+  if (_activeTab === 'einstellungen') rerenderSettings();
 });
 
 // ── Init ──────────────────────────────────────────────────────────────────────
