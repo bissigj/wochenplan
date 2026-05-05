@@ -278,7 +278,19 @@ export async function delR(id) {
     toast('Rezept wiederhergestellt');
   };
   toast(`"${removed.name}" gelöscht · <a onclick="undoDelR()" style="cursor:pointer;text-decoration:underline">Rükgängig</a>`);
-  setTimeout(async () => { if (!undone) await deleteRecipeFromDB(removed); }, 5000);
+  setTimeout(async () => {
+    if (!undone) {
+      try {
+        await deleteRecipeFromDB(removed);
+      } catch (e) {
+        // DB-Fehler: Rollback – Rezept wieder einfügen
+        D.recipes.splice(idx, 0, removed);
+        rerender();
+        toast('Fehler beim Löschen – Rezept wiederhergestellt');
+        console.error('deleteRecipeFromDB error', e);
+      }
+    }
+  }, 5000);
 }
 
 export async function addIng(id) {

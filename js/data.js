@@ -16,7 +16,7 @@ export let D = {
 
 export let dbSettingsId = null;
 export let dbWeekId = null;
-let saveTimer = null;
+const saveTimers = {};
 
 // Fix #5 / Safety: stellt sicher, dass settings immer vollständig sind
 function ensureSettingsComplete() {
@@ -29,16 +29,15 @@ function ensureSettingsComplete() {
 }
 
 export async function loadData() {
-  try {
-    const fid = D.familyId;
+  const fid = D.familyId;
 
-    // Fix #20: Parallele Queries statt sequentiell (schneller beim Login)
-    const [recs, weeks, arch, sets] = await Promise.all([
-      sbGet('recipes_v2', `select=id,recipe_id,data,public&family_id=eq.${fid}&order=recipe_id.asc`),
-      sbGet('week_plan',  `select=id,data,updated_at&family_id=eq.${fid}`),
-      sbGet('archive',    `select=id,data,kw,created_at&family_id=eq.${fid}`),
-      sbGet('settings',   `select=id,data&family_id=eq.${fid}`),
-    ]);
+  // Jeder Query einzeln abgesichert – ein Fehler bricht nicht alles ab
+  const [recs, weeks, arch, sets] = await Promise.all([
+    sbGet('recipes_v2', `select=id,recipe_id,data,public&family_id=eq.${fid}&order=recipe_id.asc`).catch(e => { console.error('recipes load error', e); return null; }),
+    sbGet('week_plan',  `select=id,data,updated_at&family_id=eq.${fid}`).catch(e => { console.error('week_plan load error', e); return null; }),
+    sbGet('archive',    `select=id,data,kw,created_at&family_id=eq.${fid}`).catch(e => { console.error('archive load error', e); return null; }),
+    sbGet('settings',   `select=id,data&family_id=eq.${fid}`).catch(e => { console.error('settings load error', e); return null; }),
+  ]);
 
     // ── Recipes – one row per recipe ─────────────────────────────────────────
     if (Array.isArray(recs) && recs.length) {
@@ -75,11 +74,6 @@ export async function loadData() {
       const ins = await sbInsert('settings', { data: D.settings, family_id: fid });
       if (ins && ins[0]) dbSettingsId = ins[0].id;
     }
-
-  } catch (e) {
-    setSyncStatus('err', 'Offline');
-    console.error(e);
-  }
 }
 
 // ── Recipe persistence ────────────────────────────────────────────────────────
@@ -107,11 +101,11 @@ export async function deleteRecipeFromDB(recipe) {
   } catch (e) { console.error('deleteRecipe error', e); }
 }
 
-// Fix #16: Fallback-Branch entfernt – die Funktion wurde nie ohne recipe aufgerufen
 export function saveRecipesDebounced(recipe) {
-  if (!recipe) return; // Sicherheitsnetz
-  clearTimeout(saveTimer);
-  saveTimer = setTimeout(async () => {
+  if (!recipe) return;
+  const key = recipe.id ?? '_unknown';
+  clearTimeout(saveTimers[key]);
+  saveTimers[key] = setTimeout(async () => {
     setSyncStatus('spin', 'Speichern…');
     try {
       await saveRecipeNow(recipe);

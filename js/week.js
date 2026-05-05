@@ -73,7 +73,21 @@ function getRecentIds() {
   return [...ids];
 }
 
+let isDrawing = false;
 export async function drawWeek() {
+  if (isDrawing) return;
+  isDrawing = true;
+  const btnConfirm = document.getElementById('draw-confirm-btn');
+  if (btnConfirm) btnConfirm.disabled = true;
+  try {
+    await _drawWeek();
+  } finally {
+    isDrawing = false;
+    if (btnConfirm) btnConfirm.disabled = false;
+  }
+}
+
+async function _drawWeek() {
   const pool = getPool();
   if (pool.length < 1) { toast('Zu wenige Rezepte für diese Filter!'); return; }
   const recent = getRecentIds();
