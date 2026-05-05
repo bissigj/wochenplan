@@ -29,9 +29,9 @@ export function renderRFilters() {
     const { settings } = getState();
     const hasAufFilter = settings.aufwand.some(a => rFilters.has(a.id));
     aufEl.innerHTML =
-      `<button class="segment ${!hasAufFilter ? 'on' : ''}" onclick="clearAufFilter()">Alle</button>` +
+      `<button class="segment ${!hasAufFilter ? 'on' : ''}" data-action="clear-auf-filter">Alle</button>` +
       settings.aufwand.map(a =>
-        `<button class="segment ${rFilters.has(a.id) ? 'on' : ''}" onclick="toggleRF('${esc(a.id)}')">${esc(a.label)}</button>`
+        `<button class="segment ${rFilters.has(a.id) ? 'on' : ''}" data-action="toggle-rf" data-id="${esc(a.id)}">${esc(a.label)}</button>`
       ).join('');
   }
   const catBtn = document.getElementById('r-cat-btn');
@@ -52,7 +52,7 @@ function _renderCatPanelContent() {
   const cats = [...s2.cats].sort((a, b) => a.label.localeCompare(b.label, 'de'));
   list.innerHTML = cats.map(c => {
     const active = catFilters.has(c.id);
-    return `<div class="cat-panel-item ${active ? 'active' : ''}" onclick="event.stopPropagation();toggleCatFilter('${esc(c.id)}')">
+    return `<div class="cat-panel-item ${active ? 'active' : ''}" data-action="toggle-cat-filter" data-id="${esc(c.id)}">
       <div class="cat-panel-dot" style="background:${esc(c.color || '#888')}"></div>
       <span class="cat-panel-label">${esc(c.label)}</span>
       <div class="cat-panel-check">${active ? `<svg viewBox="0 0 10 10" width="9" height="9" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><polyline points="1.5 5 4 7.5 8.5 2"/></svg>` : ''}</div>
@@ -133,15 +133,15 @@ export function renderRecipes(searchQuery = '') {
 
 function renderRecipeCard(r, isOpen, einheiten) {
   return `<div class="card recipe-card">
-    <div class="recipe-row" onclick="toggleER(${r.id})" style="cursor:pointer">
+    <div class="recipe-row" data-action="toggle-er" data-id="${r.id}" style="cursor:pointer">
       <span class="recipe-name-col">${esc(r.name)}</span>
       <span class="recipe-meta">${r.time ? r.time + ' min' : ''}</span>
       <span class="tag" style="${tagStyle(r.cat)}">${esc(getCatLabel(r.cat))}</span>
       <span class="tag" style="${tagStyle(r.auf)}">${esc(getAufLabel(r.auf))}</span>
-      <button class="xbtn" onclick="event.stopPropagation();delR(${r.id})"
+      <button class="xbtn" data-action="del-r" data-id="${r.id}"
         style="margin-left:6px;padding:4px 6px;font-size:16px;opacity:0.4"
-        onmouseover="this.style.opacity=1;this.style.color='var(--red)'"
-        onmouseout="this.style.opacity=0.4;this.style.color=''">×</button>
+        
+        >×</button>
     </div>
     ${isOpen ? renderRecipeDetail(r, einheiten) : ''}
   </div>`;
@@ -154,7 +154,7 @@ function renderRecipeDetail(r, einheiten) {
     return `<div class="rd-ing-row">
       <span class="rd-ing-qty">${qty || '—'}</span>
       <span class="rd-ing-name">${esc(ing.n || '')}</span>
-      <button class="xbtn" onclick="delIng(${r.id},${i})">×</button>
+      <button class="xbtn" data-action="del-ing" data-rid="${r.id}" data-i="${i}">×</button>
     </div>`;
   }).join('');
 
@@ -163,32 +163,32 @@ function renderRecipeDetail(r, einheiten) {
       <span class="drag-handle">⠿</span>
       <span class="step-num">${i + 1}</span>
       <span class="step-text">${esc(s)}</span>
-      <button class="xbtn" onclick="delStep(${r.id},${i})">×</button>
+      <button class="xbtn" data-action="del-step" data-rid="${r.id}" data-i="${i}">×</button>
     </li>`).join('');
 
   const srcBlock = r.src && r.src.val ? `
     <div class="rd-src-display">
       ${srcHTML(r.src)}
-      <button class="btn btn--sm btn--ghost" style="margin-left:var(--s-4);flex-shrink:0" onclick="openSrcEdit(${r.id})">Ändern</button>
+      <button class="btn btn--sm btn--ghost" style="margin-left:var(--s-4);flex-shrink:0" data-action="open-src-edit" data-id="${r.id}">Ändern</button>
     </div>
     <div class="rd-src-edit-panel" id="src-edit-${r.id}" style="display:none;margin-top:10px">
       <div class="pills" style="gap:6px;margin-bottom:8px">
-        <button class="pill ${r.src.type === 'url' ? 'on' : ''}" onclick="setSrcType(${r.id},'url')">🔗 URL</button>
-        <button class="pill ${r.src.type === 'buch' ? 'on' : ''}" onclick="setSrcType(${r.id},'buch')">📖 Buch</button>
+        <button class="pill ${r.src.type === 'url' ? 'on' : ''}" data-action="set-src-type" data-rid="${r.id}" data-type="url">🔗 URL</button>
+        <button class="pill ${r.src.type === 'buch' ? 'on' : ''}" data-action="set-src-type" data-rid="${r.id}" data-type="buch">📖 Buch</button>
       </div>
       ${r.src.type === 'url'
-        ? `<input type="url" value="${esc(r.src.val)}" placeholder="https://…" onchange="updSrc(${r.id},'val',this.value)" />`
-        : `<input type="text" value="${esc(r.src.val)}" placeholder="Kochbuchname" style="margin-bottom:6px" onchange="updSrc(${r.id},'val',this.value)" />
-           <input type="text" value="${esc(r.src.seite||'')}" placeholder="Seite (optional)" onchange="updSrc(${r.id},'seite',this.value)" />`}
+        ? `<input type="url" value="${esc(r.src.val)}" placeholder="https://…" data-change="upd-src" data-rid="${r.id}" data-key="val" />`
+        : `<input type="text" value="${esc(r.src.val)}" placeholder="Kochbuchname" style="margin-bottom:6px" data-change="upd-src" data-rid="${r.id}" data-key="val" />
+           <input type="text" value="${esc(r.src.seite||'')}" placeholder="Seite (optional)" data-change="upd-src" data-rid="${r.id}" data-key="seite" />`}
     </div>` : `
     <div class="pills" style="gap:6px;margin-bottom:8px">
-      <button class="pill ${!r.src || r.src.type === 'url' ? 'on' : ''}" onclick="setSrcType(${r.id},'url')">🔗 URL</button>
-      <button class="pill ${r.src && r.src.type === 'buch' ? 'on' : ''}" onclick="setSrcType(${r.id},'buch')">📖 Buch</button>
+      <button class="pill ${!r.src || r.src.type === 'url' ? 'on' : ''}" data-action="set-src-type" data-rid="${r.id}" data-type="url">🔗 URL</button>
+      <button class="pill ${r.src && r.src.type === 'buch' ? 'on' : ''}" data-action="set-src-type" data-rid="${r.id}" data-type="buch">📖 Buch</button>
     </div>
     ${(!r.src || r.src.type === 'url')
-      ? `<input type="url" value="" placeholder="https://…" onchange="updSrc(${r.id},'val',this.value)" />`
-      : `<input type="text" value="" placeholder="Kochbuchname" style="margin-bottom:6px" onchange="updSrc(${r.id},'val',this.value)" />
-         <input type="text" value="" placeholder="Seite (optional)" onchange="updSrc(${r.id},'seite',this.value)" />`}`;
+      ? `<input type="url" value="" placeholder="https://…" data-change="upd-src" data-rid="${r.id}" data-key="val" />`
+      : `<input type="text" value="" placeholder="Kochbuchname" style="margin-bottom:6px" data-change="upd-src" data-rid="${r.id}" data-key="val" />
+         <input type="text" value="" placeholder="Seite (optional)" data-change="upd-src" data-rid="${r.id}" data-key="seite" />`}`;
 
   return `<div class="recipe-detail">
     <div class="rd-img-header" style="${r.img ? `background-image:url('${esc(r.img)}')` : 'background:var(--bg3)'}">
@@ -202,36 +202,36 @@ function renderRecipeDetail(r, einheiten) {
         <div class="rd-img-actions">
           <label class="btn btn--sm rd-img-btn" style="cursor:pointer">
             <span class="img-upload-label">${r.img ? 'Foto ersetzen' : '+ Foto'}</span>
-            <input type="file" accept="image/*,image/heic" style="display:none" onchange="uploadRecipeImage(${r.id},this)" />
+            <input type="file" accept="image/*,image/heic" style="display:none" data-change="upload-img" data-id="${r.id}" />
           </label>
-          ${r.img ? `<button class="btn btn--sm rd-img-btn btn--danger" onclick="removeRecipeImage(${r.id})">Entfernen</button>` : ''}
+          ${r.img ? `<button class="btn btn--sm rd-img-btn btn--danger" data-action="remove-img" data-id="${r.id}">Entfernen</button>` : ''}
         </div>
       </div>
     </div>
     <div class="rd-name-row">
       <input type="text" class="rd-name-input" value="${esc(r.name)}"
-        onchange="updR(${r.id},'name',this.value);this.closest('.recipe-card').querySelector('.recipe-name-col').textContent=this.value" />
+        data-change="upd-r" data-rid="${r.id}" data-key="name" />
     </div>
     <div class="rd-meta-row">
       <div class="rd-meta-cell">
         <span class="rd-label">Kategorie</span>
-        <select class="inline-select" onchange="updR(${r.id},'cat',this.value)">
+        <select class="inline-select" data-change="upd-r" data-rid="${r.id}" data-key="cat">
           ${getState().settings.cats.map(c => `<option value="${esc(c.id)}" ${r.cat === c.id ? 'selected' : ''}>${esc(c.label)}</option>`).join('')}
         </select>
       </div>
       <div class="rd-meta-cell">
         <span class="rd-label">Aufwand</span>
-        <select class="inline-select" onchange="updR(${r.id},'auf',this.value)">
+        <select class="inline-select" data-change="upd-r" data-rid="${r.id}" data-key="auf">
           ${getState().settings.aufwand.map(a => `<option value="${esc(a.id)}" ${r.auf === a.id ? 'selected' : ''}>${esc(a.label)}</option>`).join('')}
         </select>
       </div>
       <div class="rd-meta-cell">
         <span class="rd-label">Zeit (min)</span>
-        <input type="number" value="${r.time || ''}" min="1" max="300" style="width:100%" onchange="updR(${r.id},'time',+this.value)" />
+        <input type="number" value="${r.time || ''}" min="1" max="300" style="width:100%" data-change="upd-r" data-rid="${r.id}" data-key="time" />
       </div>
       <div class="rd-meta-cell">
         <span class="rd-label">Portionen</span>
-        <input type="number" value="${r.portions || 2}" min="1" max="20" style="width:100%" onchange="updR(${r.id},'portions',+this.value)" />
+        <input type="number" value="${r.portions || 2}" min="1" max="20" style="width:100%" data-change="upd-r" data-rid="${r.id}" data-key="portions" />
       </div>
     </div>
     <div class="rd-divider"></div>
@@ -244,16 +244,16 @@ function renderRecipeDetail(r, einheiten) {
           <select id="iu-${r.id}" class="inline-select rd-add-unit">
             ${einheiten.map(e => `<option>${esc(e)}</option>`).join('')}
           </select>
-          <input type="text" id="in-${r.id}" placeholder="Zutat" class="rd-add-name" onkeydown="if(event.key==='Enter')addIng(${r.id})" />
-          <button class="btn btn--sm" onclick="addIng(${r.id})">+</button>
+          <input type="text" id="in-${r.id}" placeholder="Zutat" class="rd-add-name" data-submit="add-ing" data-id="${r.id}" />
+          <button class="btn btn--sm" data-action="add-ing" data-id="${r.id}">+</button>
         </div>
       </div>
       <div class="rd-col rd-col-steps">
         <div class="rd-col-title">Zubereitung</div>
         <ul class="steps-list" id="steps-${r.id}">${steps}</ul>
         <div class="rd-add-row">
-          <input type="text" id="st-${r.id}" placeholder="Neuer Schritt…" class="rd-add-step" onkeydown="if(event.key==='Enter')addStep(${r.id})" />
-          <button class="btn btn--sm" onclick="addStep(${r.id})">+</button>
+          <input type="text" id="st-${r.id}" placeholder="Neuer Schritt…" class="rd-add-step" data-submit="add-step" data-id="${r.id}" />
+          <button class="btn btn--sm" data-action="add-step" data-id="${r.id}">+</button>
         </div>
       </div>
     </div>
@@ -265,13 +265,13 @@ function renderRecipeDetail(r, einheiten) {
       </div>
       <div class="rd-footer-cell" style="display:flex;flex-direction:column;align-items:flex-start;gap:8px">
         <div class="rd-label">Sichtbarkeit</div>
-        <button class="btn btn--sm ${r.public === false ? 'btn-private' : 'btn-public'}" onclick="togglePublic(${r.id})">
+        <button class="btn btn--sm ${r.public === false ? 'btn-private' : 'btn-public'}" data-action="toggle-public" data-id="${r.id}">
           ${r.public === false ? '🔒 Privat' : '👁 Öffentlich'}
         </button>
       </div>
     </div>
     <div style="padding:10px var(--s-6) var(--s-5)">
-      <button class="btn btn--sm" onclick="exportRecipePDF(${r.id})">↓ PDF exportieren</button>
+      <button class="btn btn--sm" data-action="export-recipe-pdf" data-id="${r.id}">↓ PDF exportieren</button>
     </div>
   </div>`;
 }
@@ -350,14 +350,24 @@ export async function delStep(id, i) {
 }
 export async function updR(id, key, val) {
   const r = updateRecipe(id, r => ({ ...r, [key]: val }));
-  if (r) saveRecipesDebounced(r);
+  if (r) {
+    saveRecipesDebounced(r);
+    // Name-Header in der Karte sofort aktualisieren ohne vollen Re-render
+    if (key === 'name') {
+      const card = document.querySelector(`.recipe-card [data-action="toggle-er"][data-id="${id}"]`);
+      if (card) {
+        const nameCol = card.querySelector('.recipe-name-col');
+        if (nameCol) nameCol.textContent = val;
+      }
+    }
+  }
 }
 
-export async function uploadRecipeImage(id, input) {
-  const file = input.files[0];
+export async function uploadRecipeImage(id, el) {
+  const file = el?.files?.[0];
   if (!file) return;
   if (!file.type.startsWith('image/')) { toast('Nur Bilder erlaubt (JPG, PNG, HEIC)'); return; }
-  const label = input.parentElement.querySelector('.img-upload-label');
+  const label = el.parentElement.querySelector('.img-upload-label');
   if (label) label.textContent = 'Wird hochgeladen…';
   const url = await sbUploadImage(file);
   if (url) { const ri = updateRecipe(id, r => ({ ...r, img: url, img_owned: true })); if (ri) { await saveRecipeNow(ri); rerender(); toast('Bild gespeichert'); } }

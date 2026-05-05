@@ -91,12 +91,12 @@ function renderDiscoverFilters() {
   const { settings } = getState();
   const cats = [...settings.cats].sort((a, b) => a.label.localeCompare(b.label, 'de')).map(c =>
   `<button class="pill ${discoverCat === c.id ? 'on' : ''}" style="${tagStyle(c.id)}"
-    onclick="setDiscoverCat('${esc(c.id)}')">${esc(c.label)}</button>`
+    data-action="set-discover-cat" data-id="${esc(c.id)}">${esc(c.label)}</button>`
 ).join('');
 
   const aufs = settings.aufwand.map(a =>
     `<button class="pill ${discoverAuf === a.id ? 'on' : ''}" style="${tagStyle(a.id)}"
-      onclick="setDiscoverAuf('${esc(a.id)}')">${esc(a.label)}</button>`
+      data-action="set-discover-auf" data-id="${esc(a.id)}">${esc(a.label)}</button>`
   ).join('');
 
   el.innerHTML = cats + aufs;
@@ -124,7 +124,7 @@ function renderDiscoverCard(row, alreadyImported) {
     <div class="discover-card">
       ${r.img ? `<div class="discover-img" style="background-image:url('${esc(r.img)}')"></div>` : ''}
       <div class="discover-body">
-        <div class="discover-card-top" onclick="toggleDiscoverR('${esc(row.id)}')" style="cursor:pointer">
+        <div class="discover-card-top" data-action="toggle-discover-r" data-id="${esc(row.id)}" style="cursor:pointer">
           <div class="discover-meta">
             <span class="discover-family">🏠 ${esc(row.familyName)}</span>
             ${r.time ? `<span class="discover-time">⏱ ${r.time} min</span>` : ''}
@@ -152,7 +152,7 @@ function renderDiscoverCard(row, alreadyImported) {
         <div style="margin-top:10px">
           ${alreadyImported
             ? '<div class="discover-imported">✓ Bereits importiert</div>'
-            : `<button class="btn btn--primary btn--sm" onclick="importRecipe('${esc(row.id)}')">+ Importieren</button>`
+            : `<button class="btn btn--primary btn--sm" data-action="import-recipe" data-id="${esc(row.id)}">+ Importieren</button>`
           }
         </div>
       </div>
@@ -196,7 +196,7 @@ function renderDiscoverList() {
   }).join('');
 
   const footer = hasMore
-    ? `<div class="discover-more"><button class="btn" onclick="discoverLoadMore()">Mehr laden (${total - paged.length} weitere)</button></div>`
+    ? `<div class="discover-more"><button class="btn" data-action="discover-load-more">Mehr laden (${total - paged.length} weitere)</button></div>`
     : `<div class="discover-more" style="color:var(--text3);font-size:12px">Alle ${total} Rezepte geladen</div>`;
 
   el.innerHTML = cards + footer;

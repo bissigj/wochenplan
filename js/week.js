@@ -29,11 +29,11 @@ const TIME_OPTIONS = [
 export function openDrawModal() {
   document.getElementById('draw-diff-pills').innerHTML = getState().settings.aufwand.map(a =>
     `<button class="pill ${drawDiff.has(a.id) ? 'on' : ''}" style="${tagStyle(a.id)}"
-      data-v="${esc(a.id)}" onclick="toggleDrawPill(this)">${esc(a.label)}</button>`
+      data-action="toggle-draw-pill" data-v="${esc(a.id)}">${esc(a.label)}</button>`
   ).join('');
   document.getElementById('draw-time-pills').innerHTML = TIME_OPTIONS.map(o =>
     `<button class="pill ${drawMaxTime === o.v ? 'on' : ''}"
-      data-v="${o.v}" onclick="setTimePill(this)">${o.label}</button>`
+      data-action="set-time-pill" data-val="${o.v}">${o.label}</button>`
   ).join('');
   updatePoolInfo();
   document.getElementById('draw-modal').style.display = 'flex';
@@ -43,16 +43,18 @@ export function closeDrawModal() {
   document.getElementById('draw-modal').style.display = 'none';
 }
 
-export function toggleDrawPill(btn) {
+export function toggleDrawPill(dataset, e, el) {
+  const btn = el || e?.target?.closest('[data-action="toggle-draw-pill"]');
+  if (!btn) return;
   const v = btn.dataset.v;
   if (drawDiff.has(v) && drawDiff.size > 1) { drawDiff.delete(v); btn.classList.remove('on'); }
   else { drawDiff.add(v); btn.classList.add('on'); }
   updatePoolInfo();
 }
 
-export function setTimePill(btn) {
-  drawMaxTime = +btn.dataset.v;
-  document.querySelectorAll('#draw-time-pills .pill').forEach(b => b.classList.toggle('on', b === btn));
+export function setTimePill({ val }) {
+  drawMaxTime = +val;
+  document.querySelectorAll('#draw-time-pills .pill').forEach(b => b.classList.toggle('on', b.dataset.val === val));
   updatePoolInfo();
 }
 
@@ -194,10 +196,10 @@ function renderDayCard(d, i, plan, readonly) {
 
   const actionsHTML = readonly ? '' : `
     <div class="day-actions">
-      <button class="btn btn--sm btn--ghost" onclick="toggleDayActive(${i},event)">
+      <button class="btn btn--sm btn--ghost" data-action="toggle-day-active" data-i="${i}">
         ${d.active ? '👁 Ausblenden' : '👁 Einblenden'}
       </button>
-      <button class="btn btn--sm btn--ghost" onclick="rerollDay(${i},event)">Anderes Rezept</button>
+      <button class="btn btn--sm btn--ghost" data-action="reroll-day" data-i="${i}">Anderes Rezept</button>
     </div>`;
 
   const detailHTML = isOpen ? `
@@ -205,7 +207,7 @@ function renderDayCard(d, i, plan, readonly) {
       <div class="day-detail-portionen">
         <div class="section-title">Portionen</div>
         <input type="number" value="${d.portions || plan.portions || 2}" min="1" max="20"
-          onchange="setPortions(${i},+this.value)" />
+          data-change="set-portions" data-i="${i}" />
       </div>
       <div class="section-title">Zutaten</div>
       ${ingsHTML}
@@ -213,12 +215,12 @@ function renderDayCard(d, i, plan, readonly) {
       ${r.src && r.src.val ? `<div class="day-detail-src">${srcHTML(r.src)}</div>` : ''}
       <div class="section-title">Notiz</div>
       <textarea class="day-note-input" placeholder="z.B. ohne Zwiebeln…"
-        onchange="setNote(${i},this.value)">${esc(d.note || '')}</textarea>
+        data-change="set-note" data-i="${i}">${esc(d.note || '')}</textarea>
     </div>` : '';
 
   return `<div class="day-card ${!d.active ? 'off' : ''} ${isWeekend ? 'day-card-weekend' : ''}">
       ${r.img && d.active ? `<div class="day-card-img" style="background-image:url('${esc(r.img)}')"></div>` : ''}
-      <div class="day-card-top" onclick="toggleDay(${i})">
+      <div class="day-card-top" data-action="toggle-day" data-i="${i}">
         <div class="day-lbl ${isWeekend ? 'day-lbl-weekend' : ''}">
           ${esc(d.day)}
           ${!d.active ? `<span class="day-inactive-label">ausgeblendet</span>` : ''}

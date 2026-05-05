@@ -37,7 +37,7 @@ function rerenderSettings() {
 // ── Accordion helper ──────────────────────────────────────────────────────────
 function accordion(id, title, content, open = false) {
   return `<div class="acc-item ${open ? 'open' : ''}">
-    <button class="acc-header" onclick="toggleAcc('${esc(id)}')">
+    <button class="acc-header" data-action="toggle-acc" data-id="${esc(id)}">
       <span>${esc(title)}</span>
       <svg class="acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="6 9 12 15 18 9"/></svg>
     </button>
@@ -71,7 +71,7 @@ export function renderSettings() {
     <div id="family-section">
       <div class="settings-row">
         <input type="text" id="family-name-input" class="settings-input" value="${esc(familyName || '')}" placeholder="Familienname" />
-        <button class="btn btn--sm" onclick="saveFamilyName()">Speichern</button>
+        <button class="btn btn--sm" data-action="save-family-name">Speichern</button>
       </div>
       <div class="settings-section">
         <div class="section-title">Mitglieder</div>
@@ -84,7 +84,7 @@ export function renderSettings() {
             <option value="member">Member</option>
             <option value="admin">Admin</option>
           </select>
-          <button class="btn btn--sm" onclick="createInvitation()">Einladungscode erstellen</button>
+          <button class="btn btn--sm" data-action="create-invitation">Einladungscode erstellen</button>
         </div>
         <div id="invitation-result" class="settings-result"></div>
       </div>
@@ -92,7 +92,7 @@ export function renderSettings() {
         <div class="section-title">Familie beitreten</div>
         <div class="settings-add-row">
           <input type="text" id="invite-code-input" class="settings-invite-input" placeholder="Einladungscode…" />
-          <button class="btn btn--sm" onclick="joinFamily()">Beitreten</button>
+          <button class="btn btn--sm" data-action="join-family">Beitreten</button>
         </div>
         <div id="join-result" class="settings-result"></div>
       </div>
@@ -101,9 +101,9 @@ export function renderSettings() {
   const themeContent = `
     <div class="section-title section-title--flush">Erscheinungsbild</div>
     <div class="theme-segment">
-      <button class="${theme === 'system' ? 'on' : ''}" onclick="changeTheme('system')">Auto</button>
-      <button class="${theme === 'light'  ? 'on' : ''}" onclick="changeTheme('light')">Hell</button>
-      <button class="${theme === 'dark'   ? 'on' : ''}" onclick="changeTheme('dark')">Dunkel</button>
+      <button class="${theme === 'system' ? 'on' : ''}" data-action="change-theme" data-theme="system">Auto</button>
+      <button class="${theme === 'light'  ? 'on' : ''}" data-action="change-theme" data-theme="light">Hell</button>
+      <button class="${theme === 'dark'   ? 'on' : ''}" data-action="change-theme" data-theme="dark">Dunkel</button>
     </div>`;
 
   const catsContent = `
@@ -111,19 +111,19 @@ export function renderSettings() {
       ${cats.map(c => `
         <div class="settings-row">
           <input type="color" value="${esc(c.color)}" class="settings-color"
-            onchange="updateCatField('${esc(c.id)}', 'color', this.value)" title="Textfarbe" />
+            data-change="update-cat-field" data-id="${esc(c.id)}" data-field="color" title="Textfarbe" />
           <input type="color" value="${esc(c.bg)}" class="settings-color settings-color-bg"
-            onchange="updateCatField('${esc(c.id)}', 'bg', this.value)" title="Hintergrundfarbe" />
+            data-change="update-cat-field" data-id="${esc(c.id)}" data-field="bg" title="Hintergrundfarbe" />
           <input type="text" value="${esc(c.label)}" class="settings-input"
-            onchange="updateCat('${esc(c.id)}', this.value)" />
+            data-change="update-cat" data-id="${esc(c.id)}" />
           <span class="tag" style="${tagStyle(c.id)};flex-shrink:0">${esc(c.label)}</span>
-          <button class="btn btn--danger btn--sm" onclick="deleteCat('${esc(c.id)}')">×</button>
+          <button class="btn btn--danger btn--sm" data-action="del-cat" data-id="${esc(c.id)}">×</button>
         </div>`).join('')}
     </div>
     <div class="settings-add-row">
       <input type="text" id="new-cat-input" class="settings-add-input" placeholder="Neue Kategorie…"
-        onkeydown="if(event.key==='Enter')addCat()" />
-      <button class="btn btn--sm" onclick="addCat()">+</button>
+        data-submit="add-cat" />
+      <button class="btn btn--sm" data-action="add-cat">+</button>
     </div>`;
 
   const aufContent = `
@@ -131,19 +131,19 @@ export function renderSettings() {
       ${auf.map(a => `
         <div class="settings-row">
           <input type="color" value="${esc(a.color)}" class="settings-color"
-            onchange="updateAufField('${esc(a.id)}', 'color', this.value)" title="Textfarbe" />
+            data-change="update-auf-field" data-id="${esc(a.id)}" data-field="color" title="Textfarbe" />
           <input type="color" value="${esc(a.bg)}" class="settings-color settings-color-bg"
-            onchange="updateAufField('${esc(a.id)}', 'bg', this.value)" title="Hintergrundfarbe" />
+            data-change="update-auf-field" data-id="${esc(a.id)}" data-field="bg" title="Hintergrundfarbe" />
           <input type="text" value="${esc(a.label)}" class="settings-input"
-            onchange="updateAuf('${esc(a.id)}', this.value)" />
+            data-change="update-auf" data-id="${esc(a.id)}" />
           <span class="tag" style="${tagStyle(a.id)};flex-shrink:0">${esc(a.label)}</span>
-          <button class="btn btn--danger btn--sm" onclick="deleteAuf('${esc(a.id)}')">×</button>
+          <button class="btn btn--danger btn--sm" data-action="del-auf" data-id="${esc(a.id)}">×</button>
         </div>`).join('')}
     </div>
     <div class="settings-add-row">
       <input type="text" id="new-auf-input" class="settings-add-input" placeholder="Neuer Aufwand…"
-        onkeydown="if(event.key==='Enter')addAuf()" />
-      <button class="btn btn--sm" onclick="addAuf()">+</button>
+        data-submit="add-auf" />
+      <button class="btn btn--sm" data-action="add-auf">+</button>
     </div>`;
 
   const einhContent = `
@@ -151,13 +151,13 @@ export function renderSettings() {
       ${(settings.einheiten || []).map(e => `
         <div class="einh-tag">
           <span>${esc(e)}</span>
-          <button class="xbtn" data-einh="${esc(e)}" onclick="deleteEinh(this.dataset.einh)">×</button>
+          <button class="xbtn" data-einh="${esc(e)}" data-action="del-einh" data-val="${esc(e)}">×</button>
         </div>`).join('')}
     </div>
     <div class="settings-add-row">
       <input type="text" id="new-einh-input" class="settings-einh-add" placeholder="Neue Einheit…"
-        onkeydown="if(event.key==='Enter')addEinh()" />
-      <button class="btn btn--sm" onclick="addEinh()">+</button>
+        data-submit="add-einh" />
+      <button class="btn btn--sm" data-action="add-einh">+</button>
     </div>`;
 
   el.innerHTML = `<div class="acc-wrap">

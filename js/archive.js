@@ -17,7 +17,7 @@ export function renderArchiv() {
     return `<div class="archive-item">
       <span class="archive-kw">${esc(w.kw || '—')}</span>
       <span class="archive-recipes">${esc(names || '—')}</span>
-      <button class="btn btn--sm" onclick="viewArchiveWeek(${archive.length - 1 - i})">Ansehen</button>
+      <button class="btn btn--sm" data-action="view-archive-week" data-idx="${archive.length - 1 - i}">Ansehen</button>
     </div>`;
   }).join('') + '</div>';
 }

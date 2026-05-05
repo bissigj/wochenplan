@@ -49,7 +49,7 @@ export function renderShop() {
       return `<div class="card shop-group">
         <div class="shop-group-title">${esc(r.name)} <span style="font-weight:400;color:var(--text3)">${esc(d.day)}</span></div>
         ${r.ings.map((ing, i) => `<div class="shop-item">
-          <input type="checkbox" id="sri-${esc(d.day)}-${i}" onchange="this.nextElementSibling.classList.toggle('done',this.checked)" />
+          <input type="checkbox" id="sri-${esc(d.day)}-${i}" data-change="shop-check" />
           <label for="sri-${esc(d.day)}-${i}">${fmtIng(ing, factor)}</label>
         </div>`).join('')}
       </div>`;
@@ -61,7 +61,7 @@ export function renderShop() {
       const m = formatAmount(it.m);
       const qty = m ? `${m} ${esc(it.u || '')}`.trim() : esc(it.u || '');
       return `<div class="shop-item">
-        <input type="checkbox" id="si-${i}" onchange="this.nextElementSibling.classList.toggle('done',this.checked)" />
+        <input type="checkbox" id="si-${i}" data-change="shop-check" />
         <label for="si-${i}">${esc(it.n || '')} <span style="color:var(--text3);font-size:11px">· ${it.recipes.map(esc).join(' · ')}</span></label>
         <span class="shop-qty">${qty}</span>
       </div>`;

@@ -25,33 +25,33 @@ const FAB_ICONS = {
 
 // ── FAB konfigurieren je Tab ──────────────────────────────────────────────────
 function updateFAB(t) {
-  const fabGroup   = document.getElementById('fab-group');
-  const fab        = document.getElementById('fab-add');
+  const fabGroup    = document.getElementById('fab-group');
+  const fab         = document.getElementById('fab-add');
   const fabDiscover = document.getElementById('fab-discover');
   if (!fabGroup || !fab) return;
 
   if (t === 'rezepte') {
     fab.innerHTML = FAB_ICONS.add;
-    fab.onclick   = () => openQE();
-    fab.title     = 'Rezept hinzufügen';
+    fab.dataset.action = 'open-qe';
+    fab.title = 'Rezept hinzufügen';
     fabDiscover.innerHTML = FAB_ICONS.discover;
-    fabDiscover.onclick   = () => openDiscover();
-    fabDiscover.title     = 'Rezepte entdecken';
+    fabDiscover.dataset.action = 'open-discover';
+    fabDiscover.title = 'Rezepte entdecken';
     fabDiscover.style.display = '';
     fabGroup.classList.remove('hidden');
   } else if (t === 'woche') {
     fab.innerHTML = FAB_ICONS.generate;
-    fab.onclick   = () => openDrawModal();
-    fab.title     = 'Woche neu generieren';
+    fab.dataset.action = 'open-draw-modal';
+    fab.title = 'Woche neu generieren';
     fabDiscover.innerHTML = FAB_ICONS.pdf;
-    fabDiscover.onclick   = () => exportPDF();
-    fabDiscover.title     = 'Wochenplan als PDF';
+    fabDiscover.dataset.action = 'export-pdf';
+    fabDiscover.title = 'Wochenplan als PDF';
     fabDiscover.style.display = '';
     fabGroup.classList.remove('hidden');
   } else if (t === 'einkauf') {
     fab.innerHTML = FAB_ICONS.pdf;
-    fab.onclick   = () => exportShopPDF();
-    fab.title     = 'Einkaufsliste als PDF';
+    fab.dataset.action = 'export-shop-pdf';
+    fab.title = 'Einkaufsliste als PDF';
     fabDiscover.style.display = 'none';
     fabGroup.classList.remove('hidden');
   } else {
@@ -59,108 +59,173 @@ function updateFAB(t) {
   }
 }
 
-// ── Global functions (needed for onclick="" in HTML) ──────────────────────────
-window.doLogin           = doLogin;
-window.doRegister        = doRegister;
-window.doLogout          = doLogout;
-window.obCreateFamily    = obCreateFamily;
-window.obJoinFamily      = obJoinFamily;
-window.showLogin         = showLogin;
-window.showRegister      = showRegister;
-window.openSrcEdit       = openSrcEdit;
-window.clearAufFilter    = clearAufFilter;
-window.undoDelR          = () => { if (window._undoDelR) window._undoDelR(); };
-window.toggleCatPanel    = toggleCatPanel;
-window.toggleCatFilter   = toggleCatFilter;
-window.clearCatFilter    = clearCatFilter;
+// ── Modularer Dispatcher ──────────────────────────────────────────────────────
+const _handlers = {};
 
-const PAGE_TITLES = { rezepte: 'Rezepte', woche: 'Wochenplan', einkauf: 'Einkauf', archiv: 'Archiv', einstellungen: 'Einstellungen' };
+export function registerActions(map) {
+  Object.assign(_handlers, map);
+}
 
-window.showTab = (t) => {
+// Click-Dispatcher
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-action]');
+  if (!el) return;
+  const fn = _handlers[el.dataset.action];
+  if (fn) fn(el.dataset, e);
+});
+
+// Change-Dispatcher (select, input[type=color], input[type=number], checkbox)
+document.addEventListener('change', e => {
+  const el = e.target.closest('[data-change]');
+  if (!el) return;
+  const fn = _handlers[el.dataset.change];
+  if (fn) fn(el.dataset, e, el);
+});
+
+// Input-Dispatcher (live search, oninput)
+document.addEventListener('input', e => {
+  const el = e.target.closest('[data-input]');
+  if (!el) return;
+  const fn = _handlers[el.dataset.input];
+  if (fn) fn(el.dataset, e, el);
+});
+
+// Submit-Dispatcher (Enter-Taste)
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Enter') return;
+  const el = e.target.closest('[data-submit]');
+  if (!el) return;
+  const fn = _handlers[el.dataset.submit];
+  if (fn) fn(el.dataset, e);
+});
+
+// ── App-eigene Actions registrieren ──────────────────────────────────────────
+registerActions({
+  // Auth
+  'login':            () => doLogin(),
+  'register':         () => doRegister(),
+  'logout':           () => doLogout(),
+  'show-login':       () => showLogin(),
+  'show-register':    () => showRegister(),
+  'ob-create-family': () => obCreateFamily(),
+  'ob-join-family':   () => obJoinFamily(),
+
+  // Navigation
+  'tab-rezepte':       () => _showTab('rezepte'),
+  'tab-woche':         () => _showTab('woche'),
+  'tab-einkauf':       () => _showTab('einkauf'),
+  'tab-archiv':        () => _showTab('archiv'),
+  'tab-einstellungen': () => _showTab('einstellungen'),
+
+  // Rezepte
+  'open-qe':           () => openQE(),
+  'close-qe':          () => closeQE(),
+  'save-qe':           () => saveQE(),
+  'open-url-import':   () => openUrlImport(),
+  'close-url-import':  () => closeUrlImport(),
+  'parse-recipe-url':  () => parseRecipeUrl(),
+  'toggle-rf':         ({ id }) => toggleRF(id),
+  'toggle-er':         ({ id }) => toggleER(+id),
+  'del-r':             ({ id }) => delR(+id),
+  'add-ing':           ({ id }) => addIng(+id),
+  'del-ing':           ({ rid, i }) => delIng(+rid, +i),
+  'add-step':          ({ id }) => addStep(+id),
+  'del-step':          ({ rid, i }) => delStep(+rid, +i),
+  'set-src-type':      ({ rid, type }) => setSrcType(+rid, type),
+  'open-src-edit':     ({ id }) => openSrcEdit(+id),
+  'upload-img':        ({ id }, e, el) => { const f = el?.files?.[0]; if (f) uploadRecipeImage(+id, f); },
+  'remove-img':        ({ id }) => removeRecipeImage(+id),
+  'toggle-public':     ({ id }) => togglePublic(+id),
+  'export-recipe-pdf': ({ id }) => exportRecipePDF(+id),
+  'clear-auf-filter':  () => clearAufFilter(),
+  'toggle-cat-panel':  (_, e) => toggleCatPanel(e),
+  'toggle-cat-filter': ({ id }) => toggleCatFilter(id),
+  'clear-cat-filter':  () => clearCatFilter(),
+  'undo-del-r':        () => { if (window._undoDelR) window._undoDelR(); },
+
+  // Woche
+  'open-draw-modal':   () => openDrawModal(),
+  'close-draw-modal':  () => closeDrawModal(),
+  'draw-week':         () => drawWeek(),
+  'back-to-current':   () => backToCurrent(),
+  'toggle-day':        ({ i }) => toggleDay(+i),
+  'toggle-day-active': ({ i }, e) => toggleDayActive(+i, e),
+  'reroll-day':        ({ i }, e) => rerollDay(+i, e),
+  'export-pdf':        () => exportPDF(),
+
+  // Einkauf
+  'shop-check':         (_, e, el) => { el.nextElementSibling?.classList.toggle('done', el.checked); },
+  'shop-by-recipe':    () => setShopView('recipe'),
+  'shop-by-ing':       () => setShopView('ing'),
+  'export-shop-pdf':   () => exportShopPDF(),
+
+  // Archiv
+  'view-archive-week': ({ idx }) => viewArchiveWeek(+idx),
+
+  // Discover
+  'open-discover':     () => openDiscover(),
+  'close-discover':    () => closeDiscover(),
+  'import-recipe':     ({ id }) => importRecipe(id),
+  'toggle-discover-r': ({ id }) => toggleDiscoverR(id),
+  'discover-load-more':() => discoverLoadMore(),
+
+  // Einstellungen
+  'toggle-acc':        ({ id }) => toggleAcc(id),
+  'change-theme':      ({ theme }) => changeTheme(theme),
+  'add-cat':           () => addCat(),
+  'del-cat':           ({ id }) => deleteCat(id),
+  'add-auf':           () => addAuf(),
+  'del-auf':           ({ id }) => deleteAuf(id),
+  'add-einh':          () => addEinh(),
+  'del-einh':          ({ val }) => deleteEinh(val),
+  'save-family-name':  () => saveFamilyName(),
+  'create-invitation': () => createInvitation(),
+  'join-family':       () => joinFamily(),
+  'load-family-members': () => {},
+
+  // Change-Actions
+  'set-sort-order':    (_, e, el) => setSortOrder(el.value),
+  'set-portions':      ({ i }, e, el) => setPortions(+i, +el.value),
+  'set-note':          ({ i }, e, el) => setNote(+i, el?.value ?? ''),
+  'upd-r':             ({ rid, key }, e, el) => updR(+rid, key, el.value),
+  'upd-src':           ({ rid, key }, e, el) => updSrc(+rid, key, el.value),
+  'update-cat':        ({ id }, e, el) => updateCat(id, el.value),
+  'update-cat-field':  ({ id, field }, e, el) => updateCatField(id, field, el.value),
+  'update-auf':        ({ id }, e, el) => updateAuf(id, el.value),
+  'update-auf-field':  ({ id, field }, e, el) => updateAufField(id, field, el.value),
+
+  // Input-Actions
+  'filter-recipes':    (_, e, el) => renderRecipes(el.value.toLowerCase().trim()),
+  'filter-discover':   () => filterDiscover(),
+  'set-discover-cat':  (_, e, el) => setDiscoverCat(el.dataset.val),
+  'set-discover-auf':  (_, e, el) => setDiscoverAuf(el.dataset.val),
+
+  // Draw Modal
+  'toggle-draw-pill':  (_, e, el) => toggleDrawPill(el || e.target.closest('[data-action]') || e.target),
+  'set-time-pill':     ({ val }) => setTimePill(+val),
+  'set-note':          ({ i }, e, el) => setNote(+i, el?.value ?? ''),
+});
+
+// ── Tab-Wechsel ───────────────────────────────────────────────────────────────
+function _showTab(t) {
   _activeTab = t;
   showTab(t);
   if (t === 'einkauf') renderShop();
   if (t === 'archiv') renderArchiv();
   if (t === 'einstellungen') renderSettings();
 
-  // Mobile Bottom-Nav
   document.querySelectorAll('.nav-item').forEach(el => {
     el.classList.toggle('active', el.id === 'nav-' + t);
   });
-
-  // Desktop Header-Nav
   document.querySelectorAll('.header-nav-tab').forEach(el => {
     el.classList.toggle('active', el.id === 'hnav-' + t);
   });
 
-  // Gear-Button Farbe (Mobile)
   const gear = document.getElementById('nav-einstellungen');
   if (gear) gear.style.color = t === 'einstellungen' ? 'var(--meadow)' : '';
 
-  // FAB kontextabhängig aktualisieren
   updateFAB(t);
-};
-
-window.toggleRF          = toggleRF;
-window.toggleER          = toggleER;
-window.delR              = delR;
-window.addIng            = addIng;
-window.delIng            = delIng;
-window.addStep           = addStep;
-window.delStep           = delStep;
-window.updR              = updR;
-window.setSrcType        = setSrcType;
-window.updSrc            = updSrc;
-window.openQE            = openQE;
-window.closeQE           = closeQE;
-window.saveQE            = saveQE;
-window.openDrawModal     = openDrawModal;
-window.closeDrawModal    = closeDrawModal;
-window.toggleDrawPill    = toggleDrawPill;
-window.setTimePill       = setTimePill;
-window.drawWeek          = drawWeek;
-window.backToCurrent     = backToCurrent;
-window.toggleDay         = toggleDay;
-window.toggleDayActive   = toggleDayActive;
-window.rerollDay         = rerollDay;
-window.setPortions       = setPortions;
-window.setNote           = setNote;
-window.setShopView       = setShopView;
-window.viewArchiveWeek   = viewArchiveWeek;
-window.exportPDF         = exportPDF;
-window.exportRecipePDF   = exportRecipePDF;
-window.setSortOrder      = setSortOrder;
-window.uploadRecipeImage = uploadRecipeImage;
-window.removeRecipeImage = removeRecipeImage;
-window.togglePublic      = togglePublic;
-window.exportShopPDF     = exportShopPDF;
-window.openDiscover      = openDiscover;
-window.closeDiscover     = closeDiscover;
-window.importRecipe      = importRecipe;
-window.filterDiscover    = filterDiscover;
-window.setDiscoverCat    = setDiscoverCat;
-window.setDiscoverAuf    = setDiscoverAuf;
-window.toggleDiscoverR   = toggleDiscoverR;
-window.discoverLoadMore  = discoverLoadMore;
-window.renderSettings    = renderSettings;
-window.toggleAcc         = toggleAcc;
-window.changeTheme       = changeTheme;
-window.addCat            = addCat;
-window.updateCat         = updateCat;
-window.updateCatField    = updateCatField;
-window.deleteCat         = deleteCat;
-window.addAuf            = addAuf;
-window.updateAuf         = updateAuf;
-window.updateAufField    = updateAufField;
-window.deleteAuf         = deleteAuf;
-window.addEinh           = addEinh;
-window.deleteEinh        = deleteEinh;
-window.saveFamilyName    = saveFamilyName;
-window.createInvitation  = createInvitation;
-window.openUrlImport     = openUrlImport;
-window.closeUrlImport    = closeUrlImport;
-window.parseRecipeUrl    = parseRecipeUrl;
-window.joinFamily        = joinFamily;
+}
 
 // ── renderAll (used by auth after login) ─────────────────────────────────────
 export function renderAll() {
@@ -180,20 +245,17 @@ function populateQESelects() {
   if (aufSel) aufSel.innerHTML = settings.aufwand.map(a => `<option value="${a.id}">${a.label}</option>`).join('');
 }
 
-// ── Store-Subscriber: aktives Tab bei State-Änderung nachführen ───────────────
-// Wird in Phase 2 ausgebaut wenn Commands setState() verwenden.
+// ── Store-Subscriber ──────────────────────────────────────────────────────────
 let _activeTab = 'rezepte';
 let _loggedIn = false;
 subscribe(() => {
-  if (!_loggedIn) return; // Kein Re-render vor abgeschlossenem Login
+  if (!_loggedIn) return;
   populateQESelects();
   if (_activeTab === 'woche')         renderWeek();
   if (_activeTab === 'einkauf')       renderShop();
   if (_activeTab === 'archiv')        renderArchiv();
   if (_activeTab === 'einstellungen') renderSettings();
 });
-
-window.filterRecipes = (q) => { renderRecipes(q.toLowerCase().trim()); };
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 (async () => {
