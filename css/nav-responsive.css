@@ -64,9 +64,8 @@
     padding-block-start: var(--s-7);
   }
 
-  /* Gear + Abmelden auf Desktop verstecken */
+  /* Gear auf Desktop verstecken — Desktop-Nav übernimmt Einstellungen */
   #nav-einstellungen { display: none; }
-  .logout-label      { display: none; }
 }
 
 /* ── Mobile: alles wie bisher ──────────────────────────────────────────────── */
@@ -77,5 +76,4 @@
 
 @media (min-width: 768px) {
   #nav-einstellungen { display: none; }
-  .logout-label      { display: none; }
 }

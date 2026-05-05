@@ -97,6 +97,14 @@ body {
   font-size: 12px;
   color: var(--text3);
 }
+.btn-logout-icon {
+  opacity: 0.45;
+  transition: opacity var(--t-fast), color var(--t-fast);
+}
+.btn-logout-icon:hover {
+  opacity: 1;
+  color: var(--red);
+}
 .dot {
   inline-size: 6px;
   block-size: 6px;
