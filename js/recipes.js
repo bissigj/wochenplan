@@ -2,11 +2,14 @@ import { getCatLabel, getAufLabel, tagStyle, saveRecipesDebounced, saveRecipeNow
 import { getState, setState } from './store.js';
 import { parseIngredient } from 'https://esm.sh/@jlucaspains/sharp-recipe-parser@1.3.6';
 import { sbUploadImage, sbDeleteImage } from './db.js';
-import { fmtIng, srcHTML, toast, esc } from './ui.js';
+import { fmtIng, srcHTML, toast, esc, show, hide } from './ui.js';
 import { renderWeek } from './week.js';
 import { SUPA_URL, SUPA_KEY } from './config.js';
 
-// ── updateRecipe: atomares Update eines Rezepts im Store ─────────────────────
+// ═════════════════════════════════════════════════════════════════════════════
+// INTERNER STORE-HELPER
+// ═════════════════════════════════════════════════════════════════════════════
+
 // patchFn(recipe) → gibt ein neues (gepatchtes) Rezept-Objekt zurück
 function updateRecipe(id, patchFn) {
   const recipes = getState().recipes;
@@ -17,12 +20,25 @@ function updateRecipe(id, patchFn) {
   return updated;
 }
 
-export let expandedR  = null;
-export let rFilters   = new Set();
-export let catFilters = new Set();
-let catPanelOpen = false;
-export let sortOrder = 'name';
+// ═════════════════════════════════════════════════════════════════════════════
+// MODUL-STATE
+// ═════════════════════════════════════════════════════════════════════════════
+
+export let expandedR    = null;
+export let rFilters     = new Set();
+export let catFilters   = new Set();
+export let sortOrder    = 'name';
 export let _pendingUndo = null;
+let catPanelOpen        = false;
+
+function rerender() {
+  const q = document.getElementById('recipe-search')?.value || '';
+  renderRecipes(q);
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// FILTER
+// ═════════════════════════════════════════════════════════════════════════════
 
 export function renderRFilters() {
   const aufEl = document.getElementById('r-auf-segment');
@@ -35,28 +51,42 @@ export function renderRFilters() {
         `<button class="segment ${rFilters.has(a.id) ? 'on' : ''}" data-action="toggle-rf" data-id="${esc(a.id)}">${esc(a.label)}</button>`
       ).join('');
   }
-  const catBtn = document.getElementById('r-cat-btn');
-  if (catBtn) {
-    const n = catFilters.size;
-    const chev = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>`;
-    if (n === 0) { catBtn.innerHTML = `Kategorie ${chev}`; catBtn.classList.remove('has-filter'); }
-    else if (n === 1) { const cat = settings.cats.find(c => c.id === [...catFilters][0]); catBtn.innerHTML = `${esc(cat ? cat.label : 'Kategorie')} ${chev}`; catBtn.classList.add('has-filter'); }
-    else { catBtn.innerHTML = `${n} Kategorien ${chev}`; catBtn.classList.add('has-filter'); }
-  }
+  _renderCatBtn();
   if (catPanelOpen) _renderCatPanelContent();
+}
+
+function _renderCatBtn() {
+  const catBtn = document.getElementById('r-cat-btn');
+  if (!catBtn) return;
+  const { settings } = getState();
+  const n = catFilters.size;
+  const chev = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>`;
+  if (n === 0) {
+    catBtn.innerHTML = `Kategorie ${chev}`;
+    catBtn.classList.remove('has-filter');
+  } else if (n === 1) {
+    const cat = settings.cats.find(c => c.id === [...catFilters][0]);
+    catBtn.innerHTML = `${esc(cat ? cat.label : 'Kategorie')} ${chev}`;
+    catBtn.classList.add('has-filter');
+  } else {
+    catBtn.innerHTML = `${n} Kategorien ${chev}`;
+    catBtn.classList.add('has-filter');
+  }
 }
 
 function _renderCatPanelContent() {
   const list = document.getElementById('r-cat-panel-list');
   if (!list) return;
-  const { settings: s2 } = getState();
-  const cats = [...s2.cats].sort((a, b) => a.label.localeCompare(b.label, 'de'));
+  const cats = [...getState().settings.cats].sort((a, b) => a.label.localeCompare(b.label, 'de'));
   list.innerHTML = cats.map(c => {
     const active = catFilters.has(c.id);
+    const check = active
+      ? `<svg viewBox="0 0 10 10" width="9" height="9" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><polyline points="1.5 5 4 7.5 8.5 2"/></svg>`
+      : '';
     return `<div class="cat-panel-item ${active ? 'active' : ''}" data-action="toggle-cat-filter" data-id="${esc(c.id)}">
       <div class="cat-panel-dot" style="background:${esc(c.color || '#888')}"></div>
       <span class="cat-panel-label">${esc(c.label)}</span>
-      <div class="cat-panel-check">${active ? `<svg viewBox="0 0 10 10" width="9" height="9" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><polyline points="1.5 5 4 7.5 8.5 2"/></svg>` : ''}</div>
+      <div class="cat-panel-check">${check}</div>
     </div>`;
   }).join('');
 }
@@ -68,10 +98,10 @@ export function toggleCatPanel(e) {
   if (!panel) return;
   if (catPanelOpen) {
     _renderCatPanelContent();
-    panel.style.display = 'block';
+    panel.classList.remove('is-hidden');
     setTimeout(() => document.addEventListener('click', _closeCatPanelOutside), 0);
   } else {
-    panel.style.display = 'none';
+    panel.classList.add('is-hidden');
   }
 }
 
@@ -80,30 +110,37 @@ function _closeCatPanelOutside(e) {
   const wrap  = document.getElementById('r-cat-btn-wrap');
   if (panel && !panel.contains(e.target) && wrap && !wrap.contains(e.target)) {
     catPanelOpen = false;
-    panel.style.display = 'none';
+    panel.classList.add('is-hidden');
     document.removeEventListener('click', _closeCatPanelOutside);
   }
 }
 
+export function toggleRF(f)     { rFilters.has(f) ? rFilters.delete(f) : rFilters.add(f); renderRFilters(); renderRecipes(); }
 export function toggleCatFilter(id) { catFilters.has(id) ? catFilters.delete(id) : catFilters.add(id); renderRFilters(); renderRecipes(); }
 export function clearCatFilter()    { catFilters.clear(); renderRFilters(); renderRecipes(); }
 export function clearAufFilter()    { getState().settings.aufwand.forEach(a => rFilters.delete(a.id)); renderRFilters(); renderRecipes(); }
+export function setSortOrder(v)     { sortOrder = v; rerender(); }
 
-function rerender() { const q = document.getElementById('recipe-search')?.value || ''; renderRecipes(q); }
-export function toggleRF(f)        { rFilters.has(f) ? rFilters.delete(f) : rFilters.add(f); renderRFilters(); renderRecipes(); }
-export function setSortOrder(v)    { sortOrder = v; rerender(); }
+// ═════════════════════════════════════════════════════════════════════════════
+// RENDERING — LISTE
+// ═════════════════════════════════════════════════════════════════════════════
 
 export function renderRecipes(searchQuery = '') {
   const el = document.getElementById('r-list');
-  const { recipes, settings: rs } = getState();
+  const { recipes, settings } = getState();
   let vis = [...recipes];
+
+  // Filter
   if (rFilters.size || catFilters.size) {
-    const aufIds = rs.aufwand.map(a => a.id);
+    const aufIds = settings.aufwand.map(a => a.id);
     vis = vis.filter(r => {
       const af = [...rFilters].filter(f => aufIds.includes(f));
-      return (catFilters.size === 0 || catFilters.has(r.cat)) && (af.length === 0 || af.includes(r.auf));
+      return (catFilters.size === 0 || catFilters.has(r.cat))
+          && (af.length === 0 || af.includes(r.auf));
     });
   }
+
+  // Suche
   if (searchQuery) {
     const q = searchQuery.toLowerCase();
     vis = vis.filter(r =>
@@ -113,53 +150,74 @@ export function renderRecipes(searchQuery = '') {
       (r.ings || []).some(ing => (ing.n || '').toLowerCase().includes(q))
     );
   }
-  if (sortOrder === 'name') vis.sort((a, b) => a.name.localeCompare(b.name));
-  else if (sortOrder === 'cat') vis.sort((a, b) => (a.cat || '').localeCompare(b.cat || '') || a.name.localeCompare(b.name));
+
+  // Sortierung
+  if (sortOrder === 'name')      vis.sort((a, b) => a.name.localeCompare(b.name));
+  else if (sortOrder === 'cat')  vis.sort((a, b) => (a.cat || '').localeCompare(b.cat || '') || a.name.localeCompare(b.name));
   else if (sortOrder === 'time') vis.sort((a, b) => (a.time || 999) - (b.time || 999));
 
   if (!vis.length) {
-    const isSearch = searchQuery.length > 0 || rFilters.size > 0 || catFilters.size > 0;
-    el.innerHTML = isSearch
-      ? '<div class="empty-state"><div class="empty-state-icon">\u{1F50D}</div><div class="empty-state-title">Keine Treffer</div><div class="empty-state-sub">Versuche einen anderen Suchbegriff oder Filter.</div></div>'
-      : '<div class="empty-state"><div class="empty-state-icon">\u{1F373}</div><div class="empty-state-title">Noch keine Rezepte</div><div class="empty-state-sub">Tippe auf + um dein erstes Rezept hinzuz\u{FC}gen.</div></div>';
+    const isFiltered = searchQuery.length > 0 || rFilters.size > 0 || catFilters.size > 0;
+    el.innerHTML = isFiltered
+      ? '<div class="empty-state"><div class="empty-state-icon">🔍</div><div class="empty-state-title">Keine Treffer</div><div class="empty-state-sub">Versuche einen anderen Suchbegriff oder Filter.</div></div>'
+      : '<div class="empty-state"><div class="empty-state-icon">🍳</div><div class="empty-state-title">Noch keine Rezepte</div><div class="empty-state-sub">Tippe auf + um dein erstes Rezept hinzuzufügen.</div></div>';
     return;
   }
 
-  const einheiten = getState().settings.einheiten || [];
-  el.innerHTML = vis.map(r => {
-    const isOpen = expandedR === r.id;
-    return renderRecipeCard(r, isOpen, einheiten);
-  }).join('');
+  const einheiten = settings.einheiten || [];
+  el.innerHTML = vis.map(r => renderRecipeCard(r, expandedR === r.id, einheiten)).join('');
 }
+
+// ═════════════════════════════════════════════════════════════════════════════
+// RENDERING — KARTE
+// ═════════════════════════════════════════════════════════════════════════════
 
 function renderRecipeCard(r, isOpen, einheiten) {
   return `<div class="card recipe-card">
-    <div class="recipe-row" data-action="toggle-er" data-id="${r.id}" style="cursor:pointer">
+    <div class="recipe-row" data-action="toggle-er" data-id="${r.id}">
       <span class="recipe-name-col">${esc(r.name)}</span>
       <span class="recipe-meta">${r.time ? r.time + ' min' : ''}</span>
       <span class="tag" style="${tagStyle(r.cat)}">${esc(getCatLabel(r.cat))}</span>
       <span class="tag" style="${tagStyle(r.auf)}">${esc(getAufLabel(r.auf))}</span>
-      <button class="xbtn" data-action="del-r" data-id="${r.id}"
-        style="margin-left:6px;padding:4px 6px;font-size:16px;opacity:0.4"
-        
-        >×</button>
+      <button class="xbtn recipe-del-btn" data-action="del-r" data-id="${r.id}">×</button>
     </div>
     ${isOpen ? renderRecipeDetail(r, einheiten) : ''}
   </div>`;
 }
 
-function renderRecipeDetail(r, einheiten) {
-  const ings = (r.ings || []).map((ing, i) => {
-    const m = ing.m > 0 ? String(+ing.m.toFixed(2)).replace('.', ',') : '';
-    const qty = [m, esc(ing.u || '')].filter(Boolean).join(' ');
-    return `<div class="rd-ing-row">
-      <span class="rd-ing-qty">${qty || '—'}</span>
+// ═════════════════════════════════════════════════════════════════════════════
+// RENDERING — DETAIL (aufgeklappte Ansicht)
+// ═════════════════════════════════════════════════════════════════════════════
+
+function _fmtQty(ing) {
+  const m = ing.m > 0 ? String(+ing.m.toFixed(2)).replace('.', ',') : '';
+  return [m, esc(ing.u || '')].filter(Boolean).join(' ') || '—';
+}
+
+function _renderIngredients(r, einheiten) {
+  const rows = (r.ings || []).map((ing, i) => `
+    <div class="rd-ing-row">
+      <span class="rd-ing-qty">${_fmtQty(ing)}</span>
       <span class="rd-ing-name">${esc(ing.n || '')}</span>
       <button class="xbtn" data-action="del-ing" data-rid="${r.id}" data-i="${i}">×</button>
-    </div>`;
-  }).join('');
+    </div>`).join('');
 
-  const steps = (r.steps || []).map((s, i) => `
+  return `<div class="rd-col rd-col-ings">
+    <div class="rd-col-title">Zutaten · ${r.portions || 2} Port.</div>
+    <div class="rd-ing-list">${rows}</div>
+    <div class="rd-add-row">
+      <input type="number" id="im-${r.id}" placeholder="Menge" step="any" min="0" class="rd-add-qty" />
+      <select id="iu-${r.id}" class="inline-select rd-add-unit">
+        ${einheiten.map(e => `<option>${esc(e)}</option>`).join('')}
+      </select>
+      <input type="text" id="in-${r.id}" placeholder="Zutat" class="rd-add-name" data-submit="add-ing" data-id="${r.id}" />
+      <button class="btn btn--sm" data-action="add-ing" data-id="${r.id}">+</button>
+    </div>
+  </div>`;
+}
+
+function _renderSteps(r) {
+  const items = (r.steps || []).map((s, i) => `
     <li class="step-item" data-id="${r.id}" data-i="${i}">
       <span class="drag-handle">⠿</span>
       <span class="step-num">${i + 1}</span>
@@ -167,115 +225,144 @@ function renderRecipeDetail(r, einheiten) {
       <button class="xbtn" data-action="del-step" data-rid="${r.id}" data-i="${i}">×</button>
     </li>`).join('');
 
-  const srcBlock = r.src && r.src.val ? `
-    <div class="rd-src-display">
+  return `<div class="rd-col rd-col-steps">
+    <div class="rd-col-title">Zubereitung</div>
+    <ul class="steps-list" id="steps-${r.id}">${items}</ul>
+    <div class="rd-add-row">
+      <input type="text" id="st-${r.id}" placeholder="Neuer Schritt…" class="rd-add-step" data-submit="add-step" data-id="${r.id}" />
+      <button class="btn btn--sm" data-action="add-step" data-id="${r.id}">+</button>
+    </div>
+  </div>`;
+}
+
+function _renderSrcInputs(rid, type, val, seite) {
+  if (type === 'url') {
+    return `<input type="url" value="${esc(val)}" placeholder="https://…" data-change="upd-src" data-rid="${rid}" data-key="val" />`;
+  }
+  return `<input type="text" value="${esc(val)}" placeholder="Kochbuchname" class="rd-src-input" data-change="upd-src" data-rid="${rid}" data-key="val" />
+          <input type="text" value="${esc(seite || '')}" placeholder="Seite (optional)" data-change="upd-src" data-rid="${rid}" data-key="seite" />`;
+}
+
+function _renderSource(r) {
+  const srcType  = r.src?.type || 'url';
+  const srcVal   = r.src?.val  || '';
+  const srcSeite = r.src?.seite || '';
+
+  const typePills = `
+    <div class="pills rd-pills">
+      <button class="pill ${srcType === 'url'  ? 'on' : ''}" data-action="set-src-type" data-rid="${r.id}" data-type="url">🔗 URL</button>
+      <button class="pill ${srcType === 'buch' ? 'on' : ''}" data-action="set-src-type" data-rid="${r.id}" data-type="buch">📖 Buch</button>
+    </div>`;
+
+  if (srcVal) {
+    // Quelle vorhanden — Display + Edit-Panel
+    return `<div class="rd-src-display">
       ${srcHTML(r.src)}
-      <button class="btn btn--sm btn--ghost" style="margin-left:var(--s-4);flex-shrink:0" data-action="open-src-edit" data-id="${r.id}">Ändern</button>
+      <button class="btn btn--sm btn--ghost rd-src-btn" data-action="open-src-edit" data-id="${r.id}">Ändern</button>
     </div>
-    <div class="rd-src-edit-panel" id="src-edit-${r.id}" style="display:none;margin-top:10px">
-      <div class="pills" style="gap:6px;margin-bottom:8px">
-        <button class="pill ${r.src.type === 'url' ? 'on' : ''}" data-action="set-src-type" data-rid="${r.id}" data-type="url">🔗 URL</button>
-        <button class="pill ${r.src.type === 'buch' ? 'on' : ''}" data-action="set-src-type" data-rid="${r.id}" data-type="buch">📖 Buch</button>
+    <div class="rd-src-edit-panel is-hidden" id="src-edit-${r.id}">
+      ${typePills}
+      ${_renderSrcInputs(r.id, srcType, srcVal, srcSeite)}
+    </div>`;
+  }
+
+  // Noch keine Quelle — direkt Eingabe
+  return `${typePills}
+    ${_renderSrcInputs(r.id, srcType, srcVal, srcSeite)}`;
+}
+
+function _renderMeta(r) {
+  const catOptions = getState().settings.cats.map(c =>
+    `<option value="${esc(c.id)}" ${r.cat === c.id ? 'selected' : ''}>${esc(c.label)}</option>`
+  ).join('');
+  const aufOptions = getState().settings.aufwand.map(a =>
+    `<option value="${esc(a.id)}" ${r.auf === a.id ? 'selected' : ''}>${esc(a.label)}</option>`
+  ).join('');
+
+  return `<div class="rd-meta-row">
+    <div class="rd-meta-cell">
+      <span class="rd-label">Kategorie</span>
+      <select class="inline-select" data-change="upd-r" data-rid="${r.id}" data-key="cat">${catOptions}</select>
+    </div>
+    <div class="rd-meta-cell">
+      <span class="rd-label">Aufwand</span>
+      <select class="inline-select" data-change="upd-r" data-rid="${r.id}" data-key="auf">${aufOptions}</select>
+    </div>
+    <div class="rd-meta-cell">
+      <span class="rd-label">Zeit (min)</span>
+      <input type="number" value="${r.time || ''}" min="1" max="300" class="rd-input-full" data-change="upd-r" data-rid="${r.id}" data-key="time" />
+    </div>
+    <div class="rd-meta-cell">
+      <span class="rd-label">Portionen</span>
+      <input type="number" value="${r.portions || 2}" min="1" max="20" class="rd-input-full" data-change="upd-r" data-rid="${r.id}" data-key="portions" />
+    </div>
+  </div>`;
+}
+
+function _renderImageHeader(r) {
+  const bgStyle = r.img ? `background-image:url('${esc(r.img)}')` : 'background:var(--bg3)';
+  const uploadLabel = r.img ? 'Foto ersetzen' : '+ Foto';
+  const removeBtn = r.img
+    ? `<button class="btn btn--sm rd-img-btn btn--danger" data-action="remove-img" data-id="${r.id}">Entfernen</button>`
+    : '';
+
+  return `<div class="rd-img-header" style="${bgStyle}">
+    <div class="rd-img-overlay">
+      <div class="rd-img-meta">
+        <span class="tag" style="${tagStyle(r.cat)}">${esc(getCatLabel(r.cat))}</span>
+        <span class="tag" style="${tagStyle(r.auf)}">${esc(getAufLabel(r.auf))}</span>
+        ${r.time ? `<span class="rd-chip">${r.time} min</span>` : ''}
+        <span class="rd-chip">${r.portions || 2} Port.</span>
       </div>
-      ${r.src.type === 'url'
-        ? `<input type="url" value="${esc(r.src.val)}" placeholder="https://…" data-change="upd-src" data-rid="${r.id}" data-key="val" />`
-        : `<input type="text" value="${esc(r.src.val)}" placeholder="Kochbuchname" style="margin-bottom:6px" data-change="upd-src" data-rid="${r.id}" data-key="val" />
-           <input type="text" value="${esc(r.src.seite||'')}" placeholder="Seite (optional)" data-change="upd-src" data-rid="${r.id}" data-key="seite" />`}
-    </div>` : `
-    <div class="pills" style="gap:6px;margin-bottom:8px">
-      <button class="pill ${!r.src || r.src.type === 'url' ? 'on' : ''}" data-action="set-src-type" data-rid="${r.id}" data-type="url">🔗 URL</button>
-      <button class="pill ${r.src && r.src.type === 'buch' ? 'on' : ''}" data-action="set-src-type" data-rid="${r.id}" data-type="buch">📖 Buch</button>
+      <div class="rd-img-actions">
+        <label class="btn btn--sm rd-img-btn">
+          <span class="img-upload-label">${uploadLabel}</span>
+          <input type="file" accept="image/*,image/heic" class="rd-file-hidden" data-change="upload-img" data-id="${r.id}" />
+        </label>
+        ${removeBtn}
+      </div>
     </div>
-    ${(!r.src || r.src.type === 'url')
-      ? `<input type="url" value="" placeholder="https://…" data-change="upd-src" data-rid="${r.id}" data-key="val" />`
-      : `<input type="text" value="" placeholder="Kochbuchname" style="margin-bottom:6px" data-change="upd-src" data-rid="${r.id}" data-key="val" />
-         <input type="text" value="" placeholder="Seite (optional)" data-change="upd-src" data-rid="${r.id}" data-key="seite" />`}`;
+  </div>`;
+}
+
+function renderRecipeDetail(r, einheiten) {
+  const visibilityClass = r.public === false ? 'btn-private' : 'btn-public';
+  const visibilityLabel = r.public === false ? '🔒 Privat' : '👁 Öffentlich';
 
   return `<div class="recipe-detail">
-    <div class="rd-img-header" style="${r.img ? `background-image:url('${esc(r.img)}')` : 'background:var(--bg3)'}">
-      <div class="rd-img-overlay">
-        <div class="rd-img-meta">
-          <span class="tag" style="${tagStyle(r.cat)}">${esc(getCatLabel(r.cat))}</span>
-          <span class="tag" style="${tagStyle(r.auf)}">${esc(getAufLabel(r.auf))}</span>
-          ${r.time ? `<span class="rd-chip">${r.time} min</span>` : ''}
-          <span class="rd-chip">${r.portions || 2} Port.</span>
-        </div>
-        <div class="rd-img-actions">
-          <label class="btn btn--sm rd-img-btn" style="cursor:pointer">
-            <span class="img-upload-label">${r.img ? 'Foto ersetzen' : '+ Foto'}</span>
-            <input type="file" accept="image/*,image/heic" style="display:none" data-change="upload-img" data-id="${r.id}" />
-          </label>
-          ${r.img ? `<button class="btn btn--sm rd-img-btn btn--danger" data-action="remove-img" data-id="${r.id}">Entfernen</button>` : ''}
-        </div>
-      </div>
-    </div>
+    ${_renderImageHeader(r)}
     <div class="rd-name-row">
       <input type="text" class="rd-name-input" value="${esc(r.name)}"
         data-change="upd-r" data-rid="${r.id}" data-key="name" />
     </div>
-    <div class="rd-meta-row">
-      <div class="rd-meta-cell">
-        <span class="rd-label">Kategorie</span>
-        <select class="inline-select" data-change="upd-r" data-rid="${r.id}" data-key="cat">
-          ${getState().settings.cats.map(c => `<option value="${esc(c.id)}" ${r.cat === c.id ? 'selected' : ''}>${esc(c.label)}</option>`).join('')}
-        </select>
-      </div>
-      <div class="rd-meta-cell">
-        <span class="rd-label">Aufwand</span>
-        <select class="inline-select" data-change="upd-r" data-rid="${r.id}" data-key="auf">
-          ${getState().settings.aufwand.map(a => `<option value="${esc(a.id)}" ${r.auf === a.id ? 'selected' : ''}>${esc(a.label)}</option>`).join('')}
-        </select>
-      </div>
-      <div class="rd-meta-cell">
-        <span class="rd-label">Zeit (min)</span>
-        <input type="number" value="${r.time || ''}" min="1" max="300" style="width:100%" data-change="upd-r" data-rid="${r.id}" data-key="time" />
-      </div>
-      <div class="rd-meta-cell">
-        <span class="rd-label">Portionen</span>
-        <input type="number" value="${r.portions || 2}" min="1" max="20" style="width:100%" data-change="upd-r" data-rid="${r.id}" data-key="portions" />
-      </div>
-    </div>
+    ${_renderMeta(r)}
     <div class="rd-divider"></div>
     <div class="rd-body">
-      <div class="rd-col rd-col-ings">
-        <div class="rd-col-title">Zutaten · ${r.portions || 2} Port.</div>
-        <div class="rd-ing-list">${ings}</div>
-        <div class="rd-add-row">
-          <input type="number" id="im-${r.id}" placeholder="Menge" step="any" min="0" class="rd-add-qty" />
-          <select id="iu-${r.id}" class="inline-select rd-add-unit">
-            ${einheiten.map(e => `<option>${esc(e)}</option>`).join('')}
-          </select>
-          <input type="text" id="in-${r.id}" placeholder="Zutat" class="rd-add-name" data-submit="add-ing" data-id="${r.id}" />
-          <button class="btn btn--sm" data-action="add-ing" data-id="${r.id}">+</button>
-        </div>
-      </div>
-      <div class="rd-col rd-col-steps">
-        <div class="rd-col-title">Zubereitung</div>
-        <ul class="steps-list" id="steps-${r.id}">${steps}</ul>
-        <div class="rd-add-row">
-          <input type="text" id="st-${r.id}" placeholder="Neuer Schritt…" class="rd-add-step" data-submit="add-step" data-id="${r.id}" />
-          <button class="btn btn--sm" data-action="add-step" data-id="${r.id}">+</button>
-        </div>
-      </div>
+      ${_renderIngredients(r, einheiten)}
+      ${_renderSteps(r)}
     </div>
     <div class="rd-divider"></div>
     <div class="rd-footer">
       <div class="rd-footer-cell">
-        <div class="rd-label" style="margin-bottom:6px">Quelle</div>
-        ${srcBlock}
+        <div class="rd-label rd-source-label">Quelle</div>
+        ${_renderSource(r)}
       </div>
-      <div class="rd-footer-cell" style="display:flex;flex-direction:column;align-items:flex-start;gap:8px">
+      <div class="rd-footer-cell rd-footer-actions">
         <div class="rd-label">Sichtbarkeit</div>
-        <button class="btn btn--sm ${r.public === false ? 'btn-private' : 'btn-public'}" data-action="toggle-public" data-id="${r.id}">
-          ${r.public === false ? '🔒 Privat' : '👁 Öffentlich'}
+        <button class="btn btn--sm ${visibilityClass}" data-action="toggle-public" data-id="${r.id}">
+          ${visibilityLabel}
         </button>
       </div>
     </div>
-    <div style="padding:10px var(--s-6) var(--s-5)">
+    <div class="rd-actions-wrap">
       <button class="btn btn--sm" data-action="export-recipe-pdf" data-id="${r.id}">↓ PDF exportieren</button>
     </div>
   </div>`;
 }
+
+// ═════════════════════════════════════════════════════════════════════════════
+// CRUD-OPERATIONEN
+// ═════════════════════════════════════════════════════════════════════════════
 
 export function toggleER(id) { expandedR = expandedR === id ? null : id; rerender(); }
 
@@ -300,7 +387,7 @@ export async function delR(id) {
     rerender();
     toast('Rezept wiederhergestellt');
   };
-  toast(`„${removed.name}" gelöscht · <a data-action="undo-del-r" style="cursor:pointer;text-decoration:underline">Rückgängig</a>`, 8000);
+  toast(`„${removed.name}" gelöscht · <a data-action="undo-del-r" class="toast-link">Rückgängig</a>`, 8000);
   setTimeout(async () => {
     if (!undone) {
       try {
@@ -321,8 +408,8 @@ export async function delR(id) {
 
 export async function addIng(id) {
   const mRaw = document.getElementById('im-' + id).value;
-  const u = document.getElementById('iu-' + id).value;
-  const n = document.getElementById('in-' + id).value.trim();
+  const u    = document.getElementById('iu-' + id).value;
+  const n    = document.getElementById('in-' + id).value.trim();
   if (!n) return;
   const m = mRaw === '' ? 0 : parseFloat(mRaw);
   const r = updateRecipe(id, r => ({ ...r, ings: [...r.ings, { m: isNaN(m) ? 0 : m, u, n }] }));
@@ -338,7 +425,7 @@ export async function delIng(id, i) {
 
 export async function addStep(id) {
   const inp = document.getElementById('st-' + id);
-  const v = inp.value.trim();
+  const v   = inp.value.trim();
   if (!v) return;
   const r = updateRecipe(id, r => ({ ...r, steps: [...r.steps, v] }));
   inp.value = '';
@@ -349,17 +436,15 @@ export async function delStep(id, i) {
   const r = updateRecipe(id, r => ({ ...r, steps: r.steps.filter((_, idx) => idx !== i) }));
   if (r) { saveRecipesDebounced(r); rerender(); }
 }
+
 export async function updR(id, key, val) {
   const r = updateRecipe(id, r => ({ ...r, [key]: val }));
   if (r) {
     saveRecipesDebounced(r);
-    // Name-Header in der Karte sofort aktualisieren ohne vollen Re-render
+    // Name sofort im Karten-Header aktualisieren ohne vollen Re-render
     if (key === 'name') {
-      const card = document.querySelector(`.recipe-card [data-action="toggle-er"][data-id="${id}"]`);
-      if (card) {
-        const nameCol = card.querySelector('.recipe-name-col');
-        if (nameCol) nameCol.textContent = val;
-      }
+      const nameCol = document.querySelector(`.recipe-card [data-action="toggle-er"][data-id="${id}"] .recipe-name-col`);
+      if (nameCol) nameCol.textContent = val;
     }
   }
 }
@@ -371,8 +456,12 @@ export async function uploadRecipeImage(id, el) {
   const label = el.parentElement.querySelector('.img-upload-label');
   if (label) label.textContent = 'Wird hochgeladen…';
   const url = await sbUploadImage(file);
-  if (url) { const ri = updateRecipe(id, r => ({ ...r, img: url, img_owned: true })); if (ri) { await saveRecipeNow(ri); rerender(); toast('Bild gespeichert'); } }
-  else { if (label) label.textContent = 'Fehler beim Hochladen'; }
+  if (url) {
+    const ri = updateRecipe(id, r => ({ ...r, img: url, img_owned: true }));
+    if (ri) { await saveRecipeNow(ri); rerender(); toast('Bild gespeichert'); }
+  } else {
+    if (label) label.textContent = 'Fehler beim Hochladen';
+  }
 }
 
 export async function removeRecipeImage(id) {
@@ -387,13 +476,18 @@ export async function togglePublic(id) {
   const existing = getState().recipes.find(r => r.id === id);
   if (!existing) return;
   const r = updateRecipe(id, r => ({ ...r, public: !r.public }));
-  if (r) { await saveRecipeNow(r); rerender(); toast(r.public ? 'Rezept ist jetzt öffentlich' : 'Rezept ist jetzt privat'); }
+  if (r) {
+    await saveRecipeNow(r);
+    rerender();
+    toast(r.public ? 'Rezept ist jetzt öffentlich' : 'Rezept ist jetzt privat');
+  }
 }
 
 export async function setSrcType(id, type) {
   const r = updateRecipe(id, r => ({ ...r, src: { type, val: '', seite: '' } }));
   if (r) { saveRecipesDebounced(r); rerender(); }
 }
+
 export async function updSrc(id, key, val) {
   const r = updateRecipe(id, r => ({ ...r, src: { ...(r.src || { type: 'url', val: '', seite: '' }), [key]: val } }));
   if (r) { saveRecipesDebounced(r); rerender(); }
@@ -401,11 +495,13 @@ export async function updSrc(id, key, val) {
 
 export function openSrcEdit(id) {
   const panel = document.getElementById('src-edit-' + id);
-  if (!panel) return;
-  panel.style.display = panel.style.display !== 'none' ? 'none' : 'block';
+  if (panel) panel.classList.toggle('is-hidden');
 }
 
-// ── Quick Entry ───────────────────────────────────────────────────────────────
+// ═════════════════════════════════════════════════════════════════════════════
+// QUICK ENTRY
+// ═════════════════════════════════════════════════════════════════════════════
+
 export function openQE() {
   const modal = document.getElementById('qe-modal');
   document.getElementById('qe-name').value  = '';
@@ -414,72 +510,36 @@ export function openQE() {
   document.getElementById('qe-time').value  = '';
   delete modal.dataset.importSrc;
   delete modal.dataset.importImg;
-  modal.style.display = 'flex';
+  show(modal);
   setTimeout(() => document.getElementById('qe-name').focus(), 100);
 }
 
 export function closeQE() {
   const modal = document.getElementById('qe-modal');
-  modal.style.display = 'none';
+  hide(modal);
   delete modal.dataset.importSrc;
   delete modal.dataset.importImg;
-}
-
-export function parseIngredientLine(line) {
-  line = line.trim();
-  if (!line) return null;
-  try {
-    const r = parseIngredient(line, 'en', { additionalUOMs: {
-      dl: { short: 'dl', plural: 'dl', versions: ['dl'] },
-      cl: { short: 'cl', plural: 'cl', versions: ['cl'] },
-      EL: { short: 'EL', plural: 'EL', versions: ['el', 'EL'] },
-      TL: { short: 'TL', plural: 'TL', versions: ['tl', 'TL'] },
-      Prise: { short: 'Prise', plural: 'Prisen', versions: ['prise', 'prisen'] },
-      Bund: { short: 'Bund', plural: 'Bund', versions: ['bund'] },
-      Dose: { short: 'Dose', plural: 'Dosen', versions: ['dose', 'dosen'] },
-      Pck: { short: 'Pck.', plural: 'Pck.', versions: ['pck', 'pck.', 'päckchen'] },
-      Stück: { short: 'Stück', plural: 'Stück', versions: ['stück', 'stk', 'stk.'] },
-      Becher: { short: 'Becher', plural: 'Becher', versions: ['becher'] },
-      Glas: { short: 'Glas', plural: 'Gläser', versions: ['glas', 'gläser'] },
-      Zweig: { short: 'Zweig', plural: 'Zweige', versions: ['zweig', 'zweige'] },
-      Blatt: { short: 'Blatt', plural: 'Blätter', versions: ['blatt', 'blätter'] },
-      Zehe: { short: 'Zehe', plural: 'Zehen', versions: ['zehe', 'zehen', 'Zehe/n', 'zehe/n'] },
-      Scheibe: { short: 'Scheibe', plural: 'Scheiben', versions: ['scheibe', 'scheiben'] },
-      Handvoll: { short: 'Handvoll', plural: 'Handvoll', versions: ['handvoll'] },
-      Messerspitze: { short: 'Msp.', plural: 'Msp.', versions: ['msp', 'msp.', 'messerspitze'] },
-      Würfel: { short: 'Würfel', plural: 'Würfel', versions: ['würfel'] },
-      Knolle: { short: 'Knolle', plural: 'Knollen', versions: ['knolle', 'knollen'] },
-      Kopf: { short: 'Kopf', plural: 'Köpfe', versions: ['kopf', 'köpfe'] },
-      Stange: { short: 'Stange', plural: 'Stangen', versions: ['stange', 'stangen'] },
-      Tasse: { short: 'Tasse', plural: 'Tassen', versions: ['tasse', 'tassen'] },
-      Pkg: { short: 'Pkg.', plural: 'Pkg.', versions: ['pkg', 'pkg.', 'packung', 'packungen'] },
-    }});
-    if (r?.ingredient) return { m: r.quantity > 0 ? r.quantity : 0, u: r.unitText || '', n: r.ingredient.trim() };
-  } catch(e) {}
-  return { m: 1, u: '', n: line };
-}
-
-function splitSteps(text) {
-  if (!text.trim()) return [];
-  const numbered = text.split(/^\s*\d+[.)]\s+/m).filter(s => s.trim());
-  if (numbered.length > 1) return numbered.map(s => s.trim());
-  const lines = text.split('\n').filter(s => s.trim());
-  if (lines.length > 1) return lines.map(s => s.trim());
-  return [text.trim()];
 }
 
 export async function saveQE() {
   const name = document.getElementById('qe-name').value.trim();
   if (!name) { document.getElementById('qe-name').focus(); return; }
-  const modal = document.getElementById('qe-modal');
-  const ings  = document.getElementById('qe-ings').value.split('\n').filter(l => l.trim()).map(parseIngredientLine).filter(Boolean);
-  const steps = splitSteps(document.getElementById('qe-steps').value.trim());
+  const modal    = document.getElementById('qe-modal');
+  const ings     = document.getElementById('qe-ings').value.split('\n').filter(l => l.trim()).map(parseIngredientLine).filter(Boolean);
+  const steps    = splitSteps(document.getElementById('qe-steps').value.trim());
   const time     = parseInt(document.getElementById('qe-time').value) || null;
   const portions = parseInt(document.getElementById('qe-portions').value) || 2;
   const importSrc = modal.dataset.importSrc ?? '';
   const src = importSrc ? { type: 'url', val: importSrc, seite: '' } : null;
-  const { nextId, recipes } = getState();
-  const newR = { id: nextId, name, cat: document.getElementById('qe-cat').value, auf: document.getElementById('qe-auf').value, time, portions, ings, steps, src, public: true };
+  const { nextId } = getState();
+  const newR = {
+    id: nextId,
+    name,
+    cat:      document.getElementById('qe-cat').value,
+    auf:      document.getElementById('qe-auf').value,
+    time, portions, ings, steps, src,
+    public:   true,
+  };
   if (modal.dataset.importImg) { newR.img = modal.dataset.importImg; newR.img_owned = true; }
   setState(s => ({ recipes: [...s.recipes, newR], nextId: s.nextId + 1 }));
   closeQE();
@@ -489,9 +549,12 @@ export async function saveQE() {
   toast('Rezept hinzugefügt');
 }
 
-// ── URL-Import ────────────────────────────────────────────────────────────────
+// ═════════════════════════════════════════════════════════════════════════════
+// URL-IMPORT
+// ═════════════════════════════════════════════════════════════════════════════
+
 export function openUrlImport() {
-  document.getElementById('url-import-modal').style.display = 'flex';
+  show('url-import-modal');
   document.getElementById('url-import-input').value = '';
   document.getElementById('url-import-err').textContent = '';
   document.getElementById('url-import-btn').textContent = 'Rezept laden';
@@ -499,7 +562,7 @@ export function openUrlImport() {
 }
 
 export function closeUrlImport() {
-  document.getElementById('url-import-modal').style.display = 'none';
+  hide('url-import-modal');
 }
 
 export async function parseRecipeUrl() {
@@ -508,7 +571,9 @@ export async function parseRecipeUrl() {
   const btn   = document.getElementById('url-import-btn');
   const url   = input.value.trim();
   if (!url) { errEl.textContent = 'Bitte eine URL eingeben.'; return; }
-  errEl.textContent = ''; btn.textContent = 'Wird geladen…'; btn.disabled = true;
+  errEl.textContent = '';
+  btn.textContent = 'Wird geladen…';
+  btn.disabled = true;
   try {
     const res = await fetch(`${SUPA_URL}/functions/v1/parse-recipe`, {
       method: 'POST',
@@ -522,7 +587,8 @@ export async function parseRecipeUrl() {
   } catch (e) {
     errEl.textContent = 'Netzwerkfehler – bist du online?';
   } finally {
-    btn.textContent = 'Rezept laden'; btn.disabled = false;
+    btn.textContent = 'Rezept laden';
+    btn.disabled = false;
   }
 }
 
@@ -532,10 +598,62 @@ function openQEWithRecipe(r, sourceUrl) {
   document.getElementById('qe-name').value     = r.name     ?? '';
   document.getElementById('qe-time').value     = r.time     ?? '';
   document.getElementById('qe-portions').value = r.portions ?? 2;
-  document.getElementById('qe-ings').value  = (r.ings ?? []).map(ing => [ing.m > 0 ? String(ing.m) : '', ing.u ?? '', ing.n ?? ''].filter(Boolean).join(' ')).join('\n');
-  document.getElementById('qe-steps').value = (r.steps ?? []).map((s, i) => `${i + 1}. ${s}`).join('\n');
-  if (r.img) modal.dataset.importImg = r.img; else delete modal.dataset.importImg;
-  modal.style.display = 'flex';
+  document.getElementById('qe-ings').value  = (r.ings ?? [])
+    .map(ing => [ing.m > 0 ? String(ing.m) : '', ing.u ?? '', ing.n ?? ''].filter(Boolean).join(' '))
+    .join('\n');
+  document.getElementById('qe-steps').value = (r.steps ?? [])
+    .map((s, i) => `${i + 1}. ${s}`)
+    .join('\n');
+  if (r.img) modal.dataset.importImg = r.img;
+  else delete modal.dataset.importImg;
+  show(modal);
   setTimeout(() => { const n = document.getElementById('qe-name'); n.focus(); n.select(); }, 80);
   toast('Rezept geladen · Name prüfen, dann Kategorie & Aufwand wählen');
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// INGREDIENT PARSER (Quick Entry Hilfsfunktionen)
+// ═════════════════════════════════════════════════════════════════════════════
+
+export function parseIngredientLine(line) {
+  line = line.trim();
+  if (!line) return null;
+  try {
+    const r = parseIngredient(line, 'en', { additionalUOMs: {
+      dl:           { short: 'dl',     plural: 'dl',      versions: ['dl'] },
+      cl:           { short: 'cl',     plural: 'cl',      versions: ['cl'] },
+      EL:           { short: 'EL',     plural: 'EL',      versions: ['el', 'EL'] },
+      TL:           { short: 'TL',     plural: 'TL',      versions: ['tl', 'TL'] },
+      Prise:        { short: 'Prise',  plural: 'Prisen',  versions: ['prise', 'prisen'] },
+      Bund:         { short: 'Bund',   plural: 'Bund',    versions: ['bund'] },
+      Dose:         { short: 'Dose',   plural: 'Dosen',   versions: ['dose', 'dosen'] },
+      Pck:          { short: 'Pck.',   plural: 'Pck.',    versions: ['pck', 'pck.', 'päckchen'] },
+      Stück:        { short: 'Stück',  plural: 'Stück',   versions: ['stück', 'stk', 'stk.'] },
+      Becher:       { short: 'Becher', plural: 'Becher',  versions: ['becher'] },
+      Glas:         { short: 'Glas',   plural: 'Gläser',  versions: ['glas', 'gläser'] },
+      Zweig:        { short: 'Zweig',  plural: 'Zweige',  versions: ['zweig', 'zweige'] },
+      Blatt:        { short: 'Blatt',  plural: 'Blätter', versions: ['blatt', 'blätter'] },
+      Zehe:         { short: 'Zehe',   plural: 'Zehen',   versions: ['zehe', 'zehen', 'Zehe/n', 'zehe/n'] },
+      Scheibe:      { short: 'Scheibe',plural: 'Scheiben',versions: ['scheibe', 'scheiben'] },
+      Handvoll:     { short: 'Handvoll',plural:'Handvoll',versions: ['handvoll'] },
+      Messerspitze: { short: 'Msp.',   plural: 'Msp.',    versions: ['msp', 'msp.', 'messerspitze'] },
+      Würfel:       { short: 'Würfel', plural: 'Würfel',  versions: ['würfel'] },
+      Knolle:       { short: 'Knolle', plural: 'Knollen', versions: ['knolle', 'knollen'] },
+      Kopf:         { short: 'Kopf',   plural: 'Köpfe',   versions: ['kopf', 'köpfe'] },
+      Stange:       { short: 'Stange', plural: 'Stangen', versions: ['stange', 'stangen'] },
+      Tasse:        { short: 'Tasse',  plural: 'Tassen',  versions: ['tasse', 'tassen'] },
+      Pkg:          { short: 'Pkg.',   plural: 'Pkg.',     versions: ['pkg', 'pkg.', 'packung', 'packungen'] },
+    }});
+    if (r?.ingredient) return { m: r.quantity > 0 ? r.quantity : 0, u: r.unitText || '', n: r.ingredient.trim() };
+  } catch(e) {}
+  return { m: 1, u: '', n: line };
+}
+
+function splitSteps(text) {
+  if (!text.trim()) return [];
+  const numbered = text.split(/^\s*\d+[.)]\s+/m).filter(s => s.trim());
+  if (numbered.length > 1) return numbered.map(s => s.trim());
+  const lines = text.split('\n').filter(s => s.trim());
+  if (lines.length > 1) return lines.map(s => s.trim());
+  return [text.trim()];
 }

@@ -17,7 +17,7 @@
 <body>
 
 <!-- Login Code -->
-<div class="login-wrap" id="login-screen" style="display:none">
+<div id="login-screen" class="login-wrap is-hidden">
   <div class="login-box">
     <h2>Wochenplan</h2>
     <p>Melde dich an um loszulegen.</p>
@@ -30,7 +30,7 @@
 </div>
 
 <!-- Register -->
-<div class="login-wrap" id="register-screen" style="display:none">
+<div id="register-screen" class="login-wrap is-hidden">
   <div class="login-box">
     <h2>Registrieren</h2>
     <p>Erstelle ein Konto für den Wochenplan.</p>
@@ -43,7 +43,7 @@
 </div>
 
 <!-- Onboarding -->
-<div class="login-wrap" id="onboarding-screen" style="display:none">
+<div id="onboarding-screen" class="login-wrap is-hidden">
   <div class="login-box">
     <h2>Willkommen!</h2>
     <p>Erstelle eine neue Familie oder tritt einer bestehenden bei.</p>
@@ -73,7 +73,7 @@
 </div>
 
 <!-- Main App -->
-<div id="main-screen" style="display:none">
+<div id="main-screen" class="is-hidden">
 
 <div class="app-header">
   <div class="app-header-inner">
@@ -142,13 +142,13 @@
 </div>
 
 <!-- WOCHE -->
-<div id="tab-woche" class="tab-pane" style="display:none">
+<div id="tab-woche" class="tab-pane is-hidden">
   <div class="week-header">
     <div class="week-actions">
-      <button class="btn btn--sm" id="btn-zurueck" data-action="back-to-current" style="display:none">← Aktuelle Woche</button>
+      <button class="btn btn--sm" id="btn-zurueck" data-action="back-to-current" class="btn btn--sm is-hidden">← Aktuelle Woche</button>
     </div>
   </div>
-  <div id="archive-banner" class="archive-banner" style="display:none">
+  <div id="archive-banner" class="archive-banner is-hidden">
     <span>📁 Archivansicht</span>
     <span id="archive-banner-kw" class="archive-banner-kw"></span>
   </div>
@@ -156,7 +156,7 @@
 </div>
 
     <!-- EINKAUF -->
-    <div id="tab-einkauf" class="tab-pane" style="display:none">
+    <div id="tab-einkauf" class="tab-pane is-hidden">
       <div class="shop-header">
         <div class="segment-control">
           <button class="segment on" id="s-by-recipe" data-action="shop-by-recipe">Nach Rezept</button>
@@ -167,12 +167,12 @@
     </div>
 
     <!-- ARCHIV -->
-    <div id="tab-archiv" class="tab-pane" style="display:none">
+    <div id="tab-archiv" class="tab-pane is-hidden">
       <div id="archiv-view"><div class="empty">Noch keine archivierten Wochen.</div></div>
     </div>
 
     <!-- EINSTELLUNGEN -->
-    <div id="tab-einstellungen" class="tab-pane" style="display:none">
+    <div id="tab-einstellungen" class="tab-pane is-hidden">
     </div>
 
   </div>
@@ -211,18 +211,18 @@
 </div>
 
 <!-- Draw Modal -->
-<div class="modal-wrap" id="draw-modal" style="display:none">
+<div class="modal-wrap" id="draw-modal" class="modal-wrap is-hidden">
   <div class="modal">
     <h3>Woche generieren</h3>
-    <p class="label" style="margin-bottom:6px">Schwierigkeit</p>
-    <div class="pills" id="draw-diff-pills" style="margin-bottom:1rem">
+    <p class="label draw-label">Schwierigkeit</p>
+    <div class="pills draw-pills" id="draw-diff-pills">
     </div>
-    <p class="label" style="margin-bottom:6px">Max. Kochzeit</p>
-    <div class="pills" id="draw-time-pills" style="margin-bottom:1rem"></div>
-    <p class="label" style="margin-bottom:6px">Standardportionen</p>
+    <p class="label draw-label">Max. Kochzeit</p>
+    <div class="pills draw-pills" id="draw-time-pills"></div>
+    <p class="label draw-label">Standardportionen</p>
     <div class="draw-portions-row">
       <input type="number" id="draw-portions" value="4" min="1" max="20" />
-      <span class="label" style="margin:0">Personen</span>
+      <span class="label draw-label--inline">Personen</span>
     </div>
     <div id="draw-pool-info" class="draw-pool-info"></div>
     <div class="modal-footer">
@@ -233,31 +233,31 @@
 </div>
 
 <!-- Quick Entry Modal -->
-<div class="modal-wrap" id="qe-modal" style="display:none">
-  <div class="modal" style="max-width:520px">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--s-6)">
-      <h3 style="margin:0">Rezept erfassen</h3>
+<div class="modal-wrap" id="qe-modal" class="modal-wrap is-hidden">
+  <div class="modal modal--md">
+    <div class="qe-header">
+      <h3>Rezept erfassen</h3>
       <button class="btn btn--sm btn--ghost" data-action="open-url-import" title="Aus URL importieren">🔗 Von URL laden</button>
     </div>
     <div class="qe-grid">
-      <div style="grid-column:1/-1">
+      <div class="qe-row--full">
         <span class="label">Rezeptname</span>
         <input type="text" id="qe-name" placeholder="z.B. Spaghetti Pomodoro" />
       </div>
       <div>
         <span class="label">Kategorie</span>
-        <select id="qe-cat" style="width:100%"></select>
+        <select id="qe-cat" class="qe-select"></select>
       </div>
-      <div style="display:flex;gap:8px">
-        <div style="flex:1">
+      <div class="qe-row">
+        <div class="qe-col">
           <span class="label">Aufwand</span>
-          <select id="qe-auf" style="width:100%"></select>
+          <select id="qe-auf" class="qe-select"></select>
         </div>
-<div style="width:70px">
+<div class="qe-col--fixed">
   <span class="label">Zeit (min)</span>
   <input type="number" id="qe-time" placeholder="30" min="1" max="300" />
 </div>
-<div style="width:70px">
+<div class="qe-col--fixed">
   <span class="label">Portionen</span>
   <input type="number" id="qe-portions" placeholder="2" min="1" max="20" />
 </div>
@@ -282,17 +282,17 @@
 
 
 <!-- URL Import Modal -->
-<div class="modal-wrap" id="url-import-modal" style="display:none">
-  <div class="modal" style="max-width:420px">
+<div class="modal-wrap" id="url-import-modal" class="modal-wrap is-hidden">
+  <div class="modal modal--sm">
     <h3>Rezept von URL laden</h3>
-    <p style="font-size:13px;color:var(--text2);margin-bottom:var(--s-6);line-height:1.5">
+    <p class="url-import-desc">
       Füge die URL einer Rezeptseite ein. Unterstützt werden Seiten mit strukturierten Daten (z.B. Chefkoch, BBC Good Food, Allrecipes).
     </p>
     <span class="label">Rezept-URL</span>
     <input type="url" id="url-import-input" placeholder="https://www.chefkoch.de/rezepte/..."
-      style="margin-bottom:var(--s-3)"
+      class="url-import-input"
       data-submit="parse-recipe-url" />
-    <div id="url-import-err" style="font-size:12px;color:var(--red);min-height:18px;margin-bottom:var(--s-4)"></div>
+    <div id="url-import-err" class="url-import-err"></div>
     <div class="modal-footer">
       <button class="btn" data-action="close-url-import">Abbrechen</button>
       <button class="btn btn--primary" id="url-import-btn" data-action="parse-recipe-url">Rezept laden</button>
@@ -303,7 +303,7 @@
 <div class="toast" id="toast"></div>
 
 <!-- Discover Modal -->
-<div class="modal-wrap" id="discover-modal" style="display:none">
+<div class="modal-wrap" id="discover-modal" class="modal-wrap is-hidden">
   <div class="modal discover-modal-inner">
     <div class="discover-header">
       <h3>Rezepte entdecken</h3>
@@ -314,7 +314,7 @@
     <div class="discover-toolbar">
       <input type="text" id="discover-search" class="search-input"
         placeholder="Suchen…" data-input="filter-discover" />
-      <div class="pills" id="discover-filters" style="margin-top:8px"></div>
+      <div class="pills discover-filters" id="discover-filters"></div>
     </div>
     <div id="discover-list" class="discover-list"></div>
   </div>

@@ -1,4 +1,4 @@
-import { showTab, toast, initTheme } from './ui.js';
+import { showTab, toast, initTheme, show, hide, toggle } from './ui.js';
 import { subscribe, getState } from './store.js';
 import { doLogin, doRegister, doLogout, showLogin, showRegister, tryRestoreSession, obCreateFamily, obJoinFamily } from './auth.js';
 import { renderRFilters, renderRecipes, toggleRF, toggleER, delR, addIng, delIng, addStep, delStep, updR, setSrcType, updSrc, openQE, closeQE,
@@ -37,7 +37,7 @@ function updateFAB(t) {
     fabDiscover.innerHTML = FAB_ICONS.discover;
     fabDiscover.dataset.action = 'open-discover';
     fabDiscover.title = 'Rezepte entdecken';
-    fabDiscover.style.display = '';
+    show(fabDiscover);
     fabGroup.classList.remove('hidden');
   } else if (t === 'woche') {
     fab.innerHTML = FAB_ICONS.generate;
@@ -46,13 +46,13 @@ function updateFAB(t) {
     fabDiscover.innerHTML = FAB_ICONS.pdf;
     fabDiscover.dataset.action = 'export-pdf';
     fabDiscover.title = 'Wochenplan als PDF';
-    fabDiscover.style.display = '';
+    show(fabDiscover);
     fabGroup.classList.remove('hidden');
   } else if (t === 'einkauf') {
     fab.innerHTML = FAB_ICONS.pdf;
     fab.dataset.action = 'export-shop-pdf';
     fab.title = 'Einkaufsliste als PDF';
-    fabDiscover.style.display = 'none';
+    hide(fabDiscover);
     fabGroup.classList.remove('hidden');
   } else {
     fabGroup.classList.add('hidden');
@@ -261,6 +261,6 @@ subscribe(() => {
 (async () => {
   const restored = await tryRestoreSession();
   if (!restored) {
-    document.getElementById('login-screen').style.display = 'flex';
+    show('login-screen');
   }
 })();

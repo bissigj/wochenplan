@@ -1,6 +1,6 @@
 import { SUPA_URL, SUPA_KEY } from './config.js';
 import { H, setToken, sbGet, sbInsert, sbUpdate } from './db.js';
-import { setSyncStatus } from './ui.js';
+import { setSyncStatus, show, hide } from './ui.js';
 import { loadData } from './data.js';
 import { getState, setState } from './store.js';
 import { renderAll } from './app.js';
@@ -102,18 +102,18 @@ export function doLogout() {
   session = null;
   setToken(SUPA_KEY);
   localStorage.removeItem('wp_session');
-  document.getElementById('main-screen').style.display = 'none';
-  document.getElementById('login-screen').style.display = 'flex';
+  hide('main-screen');
+  show('login-screen');
 }
 
 export function showRegister() {
-  document.getElementById('login-screen').style.display = 'none';
-  document.getElementById('register-screen').style.display = 'flex';
+  hide('login-screen');
+  show('register-screen');
 }
 
 export function showLogin() {
-  document.getElementById('register-screen').style.display = 'none';
-  document.getElementById('login-screen').style.display = 'flex';
+  hide('register-screen');
+  show('login-screen');
 }
 
 async function resolveFamily(userId) {
@@ -135,7 +135,7 @@ export async function obCreateFamily() {
   const familyId = fam[0].id;
   setState(() => ({ familyId, familyName: name }));
   await sbInsert('family_members', { family_id: familyId, user_id: getState().userId, role: 'admin', email: session.user.email });
-  document.getElementById('onboarding-screen').style.display = 'none';
+  hide('onboarding-screen');
   await finishLogin();
 }
 
@@ -146,7 +146,7 @@ export async function obJoinFamily() {
   err.textContent = '';
   const ok = await joinFamilyByCode(code, err);
   if (!ok) return;
-  document.getElementById('onboarding-screen').style.display = 'none';
+  hide('onboarding-screen');
   await finishLogin();
 }
 
@@ -174,7 +174,7 @@ export async function joinFamilyByCode(code, errEl) {
 }
 
 async function finishLogin() {
-  document.getElementById('main-screen').style.display = '';
+  show('main-screen');
   setSyncStatus('spin', 'Lade…');
   await loadData();
   setSyncStatus('ok', 'Synchronisiert');
@@ -183,12 +183,12 @@ async function finishLogin() {
 
 export async function onLoggedIn() {
   localStorage.setItem('wp_session', JSON.stringify(session));
-  document.getElementById('login-screen').style.display = 'none';
-  document.getElementById('register-screen').style.display = 'none';
+  hide('login-screen');
+  hide('register-screen');
   setState(() => ({ userId: session.user.id, userEmail: session.user.email }));
   const hasFamily = await resolveFamily(session.user.id);
   if (!hasFamily) {
-    document.getElementById('onboarding-screen').style.display = 'flex';
+    show('onboarding-screen');
     return;
   }
   const fams = await sbGet('families', `id=eq.${getState().familyId}&select=name`);

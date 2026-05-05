@@ -1,7 +1,7 @@
 import { getCatLabel, getAufLabel, tagStyle, saveRecipeNow } from './data.js';
 import { getState, setState } from './store.js';
 import { sbGet } from './db.js';
-import { toast, esc, formatAmount } from './ui.js';
+import { toast, esc, formatAmount, show, hide } from './ui.js';
 import { renderRFilters, renderRecipes } from './recipes.js';
 
 let allPublicRecipes = [];
@@ -14,12 +14,12 @@ let discoverPage = 1;
 
 // ── Open / Close ──────────────────────────────────────────────────────────────
 export function openDiscover() {
-  document.getElementById('discover-modal').style.display = 'flex';
+  show('discover-modal');
   loadPublicRecipes();
 }
 
 export function closeDiscover() {
-  document.getElementById('discover-modal').style.display = 'none';
+  hide('discover-modal');
 }
 
 export function toggleDiscoverR(dbId) {
@@ -124,20 +124,20 @@ function renderDiscoverCard(row, alreadyImported) {
     <div class="discover-card">
       ${r.img ? `<div class="discover-img" style="background-image:url('${esc(r.img)}')"></div>` : ''}
       <div class="discover-body">
-        <div class="discover-card-top" data-action="toggle-discover-r" data-id="${esc(row.id)}" style="cursor:pointer">
+        <div class="discover-card-top" data-action="toggle-discover-r" data-id="${esc(row.id)}">
           <div class="discover-meta">
             <span class="discover-family">🏠 ${esc(row.familyName)}</span>
             ${r.time ? `<span class="discover-time">⏱ ${r.time} min</span>` : ''}
-            <span style="margin-left:auto;font-size:11px;color:var(--text3)">${isOpen ? '▲' : '▼'}</span>
+            <span class="discover-chevron">${isOpen ? '▲' : '▼'}</span>
           </div>
           <div class="discover-name">${esc(r.name)}</div>
-          <div class="row" style="gap:5px;margin-top:6px">
+          <div class="row discover-card-tags">
             <span class="tag" style="${tagStyle(r.cat)}">${esc(getCatLabel(r.cat))}</span>
             <span class="tag" style="${tagStyle(r.auf)}">${esc(getAufLabel(r.auf))}</span>
           </div>
         </div>
         ${isOpen ? `
-          <div class="recipe-detail" style="margin-top:10px">
+          <div class="recipe-detail discover-detail">
             <div class="detail-grid">
               <div>
                 <div class="section-title">Zutaten${r.portions ? ` (${r.portions} Port.)` : ''}</div>
@@ -149,7 +149,7 @@ function renderDiscoverCard(row, alreadyImported) {
               </div>
             </div>
           </div>` : ''}
-        <div style="margin-top:10px">
+        <div class="discover-actions">
           ${alreadyImported
             ? '<div class="discover-imported">✓ Bereits importiert</div>'
             : `<button class="btn btn--primary btn--sm" data-action="import-recipe" data-id="${esc(row.id)}">+ Importieren</button>`
@@ -197,7 +197,7 @@ function renderDiscoverList() {
 
   const footer = hasMore
     ? `<div class="discover-more"><button class="btn" data-action="discover-load-more">Mehr laden (${total - paged.length} weitere)</button></div>`
-    : `<div class="discover-more" style="color:var(--text3);font-size:12px">Alle ${total} Rezepte geladen</div>`;
+    : `<div class="discover-more" class="discover-footer-all">Alle ${total} Rezepte geladen</div>`;
 
   el.innerHTML = cards + footer;
 }

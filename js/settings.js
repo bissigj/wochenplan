@@ -304,7 +304,7 @@ async function loadFamilyMembers() {
   const members = await sbGet('family_members', `family_id=eq.${getState().familyId}&select=user_id,role,email`);
   if (!Array.isArray(members) || !members.length) { el.textContent = 'Keine Mitglieder gefunden.'; return; }
   el.innerHTML = members.map(m =>
-    `<div class="settings-row" style="border:none;padding:3px 0">
+    `<div class="settings-row settings-row--bare">
       <span class="settings-add-input">${esc(m.email || m.user_id.slice(0, 8) + '…')}</span>
       <span class="tag">${esc(m.role)}</span>
     </div>`

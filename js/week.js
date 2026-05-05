@@ -2,7 +2,7 @@ import { tagStyle, saveWeekNow, getCatLabel, getAufLabel } from './data.js';
 import { getState, setState } from './store.js';
 import { sbInsert } from './db.js';
 import { DAYS } from './config.js';
-import { kw, fmtIng, srcHTML, toast, esc } from './ui.js';
+import { kw, fmtIng, srcHTML, toast, esc, show, hide } from './ui.js';
 
 // ── updateWeekDay: atomares Update eines einzelnen Tages im weekPlan ─────────
 function updateWeekDay(i, patchFn) {
@@ -36,11 +36,11 @@ export function openDrawModal() {
       data-action="set-time-pill" data-val="${o.v}">${o.label}</button>`
   ).join('');
   updatePoolInfo();
-  document.getElementById('draw-modal').style.display = 'flex';
+  show('draw-modal');
 }
 
 export function closeDrawModal() {
-  document.getElementById('draw-modal').style.display = 'none';
+  hide('draw-modal');
 }
 
 export function toggleDrawPill(dataset, e, el) {
@@ -157,17 +157,17 @@ export function renderWeek() {
   if (viewingArchive) {
     const pageTitle = document.getElementById('page-title');
     if (pageTitle) pageTitle.textContent = viewingArchive.kw || 'Archivwoche';
-    banner.style.display = 'flex';
+    show(banner);
     document.getElementById('archive-banner-kw').textContent = viewingArchive.kw || '';
-    if (btnGen)  btnGen.style.display  = 'none';
-    if (btnBack) btnBack.style.display = '';
+    if (btnGen)  hide(btnGen);
+    if (btnBack) show(btnBack);
     renderWeekPlan(viewingArchive, true);
   } else {
     const pageTitle = document.getElementById('page-title');
     if (pageTitle) pageTitle.textContent = 'Wochenplan';
-    banner.style.display = 'none';
-    if (btnGen)  btnGen.style.display  = '';
-    if (btnBack) btnBack.style.display = 'none';
+    hide(banner);
+    show(btnGen);
+    hide(btnBack);
     const { weekPlan: wp } = getState();
     if (!wp.days || !wp.days.length) {
       document.getElementById('week-view').innerHTML = '<div class="empty">Noch keine Woche generiert.</div>';

@@ -47,7 +47,7 @@ export function renderShop() {
       if (!r || !r.ings || !r.ings.length) return '';
       const factor = (d.portions || plan.portions || 2) / (r.portions || 2);
       return `<div class="card shop-group">
-        <div class="shop-group-title">${esc(r.name)} <span style="font-weight:400;color:var(--text3)">${esc(d.day)}</span></div>
+        <div class="shop-group-title">${esc(r.name)} <span class="shop-day-label">${esc(d.day)}</span></div>
         ${r.ings.map((ing, i) => `<div class="shop-item">
           <input type="checkbox" id="sri-${esc(d.day)}-${i}" data-change="shop-check" />
           <label for="sri-${esc(d.day)}-${i}">${fmtIng(ing, factor)}</label>
@@ -62,7 +62,7 @@ export function renderShop() {
       const qty = m ? `${m} ${esc(it.u || '')}`.trim() : esc(it.u || '');
       return `<div class="shop-item">
         <input type="checkbox" id="si-${i}" data-change="shop-check" />
-        <label for="si-${i}">${esc(it.n || '')} <span style="color:var(--text3);font-size:11px">· ${it.recipes.map(esc).join(' · ')}</span></label>
+        <label for="si-${i}">${esc(it.n || '')} <span class="shop-recipe-hint">· ${it.recipes.map(esc).join(' · ')}</span></label>
         <span class="shop-qty">${qty}</span>
       </div>`;
     }).join('') + '</div>';

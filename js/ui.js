@@ -1,3 +1,18 @@
+// ── Visibility helpers ────────────────────────────────────────────────────────
+export function show(id) {
+  const el = typeof id === 'string' ? document.getElementById(id) : id;
+  if (el) el.classList.remove('is-hidden');
+}
+
+export function hide(id) {
+  const el = typeof id === 'string' ? document.getElementById(id) : id;
+  if (el) el.classList.add('is-hidden');
+}
+
+export function toggle(id, visible) {
+  visible ? show(id) : hide(id);
+}
+
 export function setSyncStatus(s, l) {
   const dot = document.getElementById('sync-dot');
   if (!dot) return;
@@ -17,8 +32,7 @@ export function toast(msg, duration = 4000) {
 // Tabs — jeder Tab-Name exakt einmal
 export function showTab(t) {
   ['rezepte', 'woche', 'einkauf', 'archiv', 'einstellungen'].forEach(id => {
-    const el = document.getElementById('tab-' + id);
-    if (el) el.style.display = id === t ? '' : 'none';
+    toggle('tab-' + id, id === t);
   });
 }
 
