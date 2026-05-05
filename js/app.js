@@ -34,6 +34,9 @@ function updateFAB(t) {
     fab.innerHTML = FAB_ICONS.add;
     fab.onclick   = () => openQE();
     fab.title     = 'Rezept hinzufügen';
+    fabDiscover.innerHTML = FAB_ICONS.discover;
+    fabDiscover.onclick   = () => openDiscover();
+    fabDiscover.title     = 'Rezepte entdecken';
     fabDiscover.style.display = '';
     fabGroup.classList.remove('hidden');
   } else if (t === 'woche') {
