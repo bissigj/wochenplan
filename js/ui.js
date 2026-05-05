@@ -5,11 +5,11 @@ export function setSyncStatus(s, l) {
   dot.title = l;
 }
 
-export function toast(msg) {
+export function toast(msg, duration = 4000) {
   const el = document.getElementById('toast');
   el.innerHTML = msg;
   el.classList.add('show');
-  setTimeout(() => el.classList.remove('show'), 4000);
+  setTimeout(() => el.classList.remove('show'), duration);
 }
 
 // Fix #3: 'woche' war doppelt im Array

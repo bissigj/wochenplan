@@ -283,6 +283,7 @@ export async function delR(id) {
   const idx = recipes.findIndex(r => r.id === id);
   if (idx < 0) return;
   const removed = recipes[idx];
+  if (!confirm(`„${removed.name}" wirklich löschen?`)) return;
   setState(s => ({ recipes: s.recipes.filter(r => r.id !== id) }));
   rerender();
   let undone = false;
@@ -298,13 +299,12 @@ export async function delR(id) {
     rerender();
     toast('Rezept wiederhergestellt');
   };
-  toast(`"${removed.name}" gelöscht · <a onclick="undoDelR()" style="cursor:pointer;text-decoration:underline">Rükgängig</a>`);
+  toast(`„${removed.name}" gelöscht · <a onclick="undoDelR()" style="cursor:pointer;text-decoration:underline">Rückgängig</a>`, 8000);
   setTimeout(async () => {
     if (!undone) {
       try {
         await deleteRecipeFromDB(removed);
       } catch (e) {
-        // DB-Fehler: Rollback – Rezept wieder einfügen
         setState(s => {
           const r = [...s.recipes];
           r.splice(idx, 0, removed);
@@ -315,7 +315,7 @@ export async function delR(id) {
         console.error('deleteRecipeFromDB error', e);
       }
     }
-  }, 5000);
+  }, 8000);
 }
 
 export async function addIng(id) {
