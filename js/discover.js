@@ -66,7 +66,7 @@ async function loadPublicRecipes() {
     return;
   }
 
-  // Fix #21: Statt N+1 einzeln abrufen, alle Familie-Namen in einem Query holen
+  // Alle Familiennamen in einem Query — kein N+1
   const familyIds = [...new Set(recs.map(r => r.family_id))];
   let families = {};
   if (familyIds.length) {

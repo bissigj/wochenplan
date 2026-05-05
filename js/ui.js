@@ -12,7 +12,7 @@ export function toast(msg, duration = 4000) {
   setTimeout(() => el.classList.remove('show'), duration);
 }
 
-// Fix #3: 'woche' war doppelt im Array
+// Tabs — jeder Tab-Name exakt einmal
 export function showTab(t) {
   ['rezepte', 'woche', 'einkauf', 'archiv', 'einstellungen'].forEach(id => {
     const el = document.getElementById('tab-' + id);
@@ -27,7 +27,7 @@ export function kw(d) {
   return Math.floor((dt.getTime() - sw) / 604800000) + 1;
 }
 
-// Fix #25: Zentrale Mengen-Formatierung – ganze Zahlen ohne Kommastellen, sonst 1 Nachkommastelle
+// Mengen-Formatierung: ganze Zahlen ohne Kommastellen, sonst max. 1 Nachkommastelle
 export function formatAmount(m) {
   if (m == null || !(m > 0)) return '';
   return Number.isInteger(m) ? String(m) : (Math.round(m * 10) / 10).toString();
@@ -39,7 +39,7 @@ export function fmtIng(ing, factor = 1) {
   return `${mStr} ${esc(ing.u || '')} ${esc(ing.n || '')}`.trim();
 }
 
-// Fix #26: HTML-Escape-Helper gegen XSS (wichtig für Discover-importierte Rezepte)
+// HTML-Escape für alle User-Daten — verhindert XSS bei importierten Rezepten
 export function esc(s) {
   return String(s ?? '').replace(/[&<>"']/g, c => ({
     '&': '&amp;',

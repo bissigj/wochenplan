@@ -3,11 +3,11 @@ import { DEFAULT_SETTINGS, DEFAULT_EINHEITEN, TAG_FALLBACK } from './config.js';
 import { setSyncStatus } from './ui.js';
 import { getState, setState } from './store.js';
 
-export let dbSettingsId = null;
-export let dbWeekId = null;
+let dbSettingsId = null;
+let dbWeekId = null;
 const saveTimers = {};
 
-// Fix #5 / Safety: gibt ein vollständiges settings-Objekt zurück (ohne Side-Effects)
+// Stellt sicher dass alle settings-Felder vorhanden sind (Fallback für ältere DB-Einträge)
 function ensureSettingsComplete(s) {
   const settings = (s && typeof s === 'object') ? { ...s } : {};
   if (!Array.isArray(settings.cats))      settings.cats      = [];
@@ -107,7 +107,7 @@ export function saveRecipesDebounced(recipe) {
 }
 
 // ── Week plan ─────────────────────────────────────────────────────────────────
-// Fix #2: updated_at nicht selbst setzen – Supabase-Trigger erledigt das
+// updated_at wird via Supabase-Trigger gesetzt, nicht manuell
 export async function saveWeekNow() {
   setSyncStatus('spin', 'Speichern…');
   try {
@@ -137,12 +137,12 @@ export async function saveSettingsNow() {
 }
 
 // ── Tag lookups ───────────────────────────────────────────────────────────────
-export function getCat(id) {
+function getCat(id) {
   if (!id) return null;
   return getState().settings.cats.find(c => c.id === id) || null;
 }
 
-export function getAuf(id) {
+function getAuf(id) {
   if (!id) return null;
   return getState().settings.aufwand.find(a => a.id === id) || null;
 }

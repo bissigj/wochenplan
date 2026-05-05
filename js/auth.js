@@ -90,7 +90,7 @@ export async function doRegister() {
       await onLoggedIn();
       return;
     }
-    // Fix #6: Fall 2: Email-Confirm an → klares Feedback statt stilles Nichts
+    // Email-Bestätigung aktiv: klares Feedback statt stillem Nichts
     errEl.style.color = 'var(--meadow)';
     errEl.textContent = '✓ Konto erstellt. Prüfe deine E-Mails zur Bestätigung.';
   } catch (e) {
@@ -149,8 +149,8 @@ export async function obJoinFamily() {
   await finishLogin();
 }
 
-// Fix #19: Gemeinsame Funktion für Onboarding + Settings
-// errEl: optionales DOM-Element für Fehlertexte
+// Wird sowohl beim Onboarding als auch in den Einstellungen verwendet
+// errEl: optionales DOM-Element für Fehlermeldungen
 export async function joinFamilyByCode(code, errEl) {
   const setErr = (msg) => { if (errEl) errEl.textContent = msg; };
   const inv = await sbGet('invitations', `code=eq.${code}&select=id,family_id,used_at,expires_at,role`);
