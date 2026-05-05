@@ -3,17 +3,6 @@ import { DEFAULT_SETTINGS, DEFAULT_EINHEITEN, TAG_FALLBACK } from './config.js';
 import { setSyncStatus } from './ui.js';
 import { getState, setState } from './store.js';
 
-// ── D: Proxy-Shim auf den Store ───────────────────────────────────────────────
-// Alle bestehenden Module lesen D.recipes, D.weekPlan etc. weiterhin unverändert.
-// Schreibzugriffe (D.recipes = [...], D.weekPlan = {...}) landen via set-Trap
-// im Store und lösen notify aus. Array-Mutationen (.push, .splice) landen
-// direkt auf dem Array-Objekt – das ist das verbleibende Risiko, das Phase 2
-// Modul für Modul auf setState() umstellt.
-export const D = new Proxy({}, {
-  get(_, key) { return getState()[key]; },
-  set(_, key, value) { setState(() => ({ [key]: value })); return true; },
-});
-
 export let dbSettingsId = null;
 export let dbWeekId = null;
 const saveTimers = {};
@@ -84,7 +73,7 @@ export async function saveRecipeNow(recipe) {
       await sbUpdate('recipes_v2', _dbid, { data, public: pub ?? true });
     } else {
       const ins = await sbInsert('recipes_v2', {
-        family_id: D.familyId,
+        family_id: getState().familyId,
         recipe_id: recipe.id,
         data,
         public: pub ?? true
@@ -123,9 +112,9 @@ export async function saveWeekNow() {
   setSyncStatus('spin', 'Speichern…');
   try {
     if (dbWeekId) {
-      await sbUpdate('week_plan', dbWeekId, { data: D.weekPlan });
+      await sbUpdate('week_plan', dbWeekId, { data: getState().weekPlan });
     } else {
-      const ins = await sbInsert('week_plan', { data: D.weekPlan, family_id: D.familyId });
+      const ins = await sbInsert('week_plan', { data: getState().weekPlan, family_id: getState().familyId });
       if (ins && ins[0]) dbWeekId = ins[0].id;
     }
     setSyncStatus('ok', 'Synchronisiert');
@@ -139,9 +128,9 @@ export async function saveWeekNow() {
 export async function saveSettingsNow() {
   try {
     if (dbSettingsId) {
-      await sbUpdate('settings', dbSettingsId, { data: D.settings });
+      await sbUpdate('settings', dbSettingsId, { data: getState().settings });
     } else {
-      const ins = await sbInsert('settings', { data: D.settings, family_id: D.familyId });
+      const ins = await sbInsert('settings', { data: getState().settings, family_id: getState().familyId });
       if (ins && ins[0]) dbSettingsId = ins[0].id;
     }
   } catch (e) { console.error('saveSettings error', e); }
@@ -150,12 +139,12 @@ export async function saveSettingsNow() {
 // ── Tag lookups ───────────────────────────────────────────────────────────────
 export function getCat(id) {
   if (!id) return null;
-  return D.settings.cats.find(c => c.id === id) || null;
+  return getState().settings.cats.find(c => c.id === id) || null;
 }
 
 export function getAuf(id) {
   if (!id) return null;
-  return D.settings.aufwand.find(a => a.id === id) || null;
+  return getState().settings.aufwand.find(a => a.id === id) || null;
 }
 
 export function getCatLabel(id) {

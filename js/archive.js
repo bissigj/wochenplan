@@ -1,28 +1,29 @@
-import { D } from './data.js';
+import { getState } from './store.js';
 import { showTab, esc } from './ui.js';
 import { setViewingArchive, renderWeek, expandedDays } from './week.js';
 
 export function renderArchiv() {
+  const { archive, recipes } = getState();
   const el = document.getElementById('archiv-view');
-  if (!D.archive.length) {
+  if (!archive.length) {
     el.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📦</div><div class="empty-state-title">Noch kein Archiv</div><div class="empty-state-sub">Archivierte Wochen erscheinen hier.</div></div>';
     return;
   }
-  el.innerHTML = '<div class="card">' + [...D.archive].reverse().map((w, i) => {
+  el.innerHTML = '<div class="card">' + [...archive].reverse().map((w, i) => {
     const names = (w.days || [])
       .filter(d => d.active && d.recipeId)
-      .map(d => { const r = D.recipes.find(r => r.id === d.recipeId); return r ? r.name : ''; })
+      .map(d => { const r = recipes.find(r => r.id === d.recipeId); return r ? r.name : ''; })
       .filter(Boolean).join(', ');
     return `<div class="archive-item">
       <span class="archive-kw">${esc(w.kw || '—')}</span>
       <span class="archive-recipes">${esc(names || '—')}</span>
-      <button class="btn btn--sm" onclick="viewArchiveWeek(${D.archive.length - 1 - i})">Ansehen</button>
+      <button class="btn btn--sm" onclick="viewArchiveWeek(${archive.length - 1 - i})">Ansehen</button>
     </div>`;
   }).join('') + '</div>';
 }
 
 export function viewArchiveWeek(idx) {
-  setViewingArchive(D.archive[idx]);
+  setViewingArchive(getState().archive[idx]);
   expandedDays.clear();
   showTab('woche');
   renderWeek();

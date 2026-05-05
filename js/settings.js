@@ -1,4 +1,4 @@
-import { D, saveSettingsNow, tagStyle } from './data.js';
+import { saveSettingsNow, tagStyle } from './data.js';
 import { getState, setState } from './store.js';
 import { CAT_PALETTE, AUF_PALETTE } from './config.js';
 import { sbGet, sbInsert, sbUpdate } from './db.js';
@@ -64,14 +64,15 @@ export function renderSettings() {
   const el = document.getElementById('tab-einstellungen');
   if (!el) return;
 
-  const cats  = D.settings.cats;
-  const auf   = D.settings.aufwand;
+  const { settings, familyName } = getState();
+  const cats  = settings.cats;
+  const auf   = settings.aufwand;
   const theme = getTheme();
 
   const familyContent = `
     <div id="family-section">
       <div class="settings-row">
-        <input type="text" id="family-name-input" class="settings-input" value="${esc(D.familyName || '')}" placeholder="Familienname" />
+        <input type="text" id="family-name-input" class="settings-input" value="${esc(familyName || '')}" placeholder="Familienname" />
         <button class="btn btn--sm" onclick="saveFamilyName()">Speichern</button>
       </div>
       <div class="settings-section">
@@ -149,7 +150,7 @@ export function renderSettings() {
 
   const einhContent = `
     <div class="einh-list" id="einh-list">
-      ${(D.settings.einheiten || []).map(e => `
+      ${(settings.einheiten || []).map(e => `
         <div class="einh-tag">
           <span>${esc(e)}</span>
           <button class="xbtn" data-einh="${esc(e)}" onclick="deleteEinh(this.dataset.einh)">×</button>

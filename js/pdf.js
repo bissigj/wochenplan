@@ -1,4 +1,5 @@
-import { D, getCatLabel, getAufLabel } from './data.js';
+import { getCatLabel, getAufLabel } from './data.js';
+import { getState } from './store.js';
 import { TAG_FALLBACK } from './config.js';
 import { fmtIng, toast, esc, formatAmount } from './ui.js';
 import { getActivePlan, aggregateIngredients } from './shopping.js';
@@ -19,10 +20,10 @@ const PDF = {
 };
 
 // ── Shared color helpers ──────────────────────────────────────────────────────
-const catColor = (id) => (D.settings.cats.find(c => c.id === id) || TAG_FALLBACK).color;
-const aufColor = (id) => (D.settings.aufwand.find(a => a.id === id) || TAG_FALLBACK).color;
-const catBg    = (id) => (D.settings.cats.find(c => c.id === id) || TAG_FALLBACK).bg;
-const aufBg    = (id) => (D.settings.aufwand.find(a => a.id === id) || TAG_FALLBACK).bg;
+const catColor = (id) => (getState().settings.cats.find(c => c.id === id) || TAG_FALLBACK).color;
+const aufColor = (id) => (getState().settings.aufwand.find(a => a.id === id) || TAG_FALLBACK).color;
+const catBg    = (id) => (getState().settings.cats.find(c => c.id === id) || TAG_FALLBACK).bg;
+const aufBg    = (id) => (getState().settings.aufwand.find(a => a.id === id) || TAG_FALLBACK).bg;
 
 const escUrl = (u) => String(u ?? '').replace(/'/g, '%27').replace(/"/g, '%22');
 
@@ -104,7 +105,7 @@ export function exportPDF() {
   const shopItems = aggregateIngredients(plan);
 
   const recipePages = activeDays.map(d => {
-    const r = D.recipes.find(r => r.id === d.recipeId);
+    const r = getState().recipes.find(r => r.id === d.recipeId);
     if (!r) return '';
     const factor = (d.portions || plan.portions || 2) / (r.portions || 2);
     const srcLine = r.src && r.src.val
@@ -204,7 +205,7 @@ export function exportPDF() {
     <div class="cover-kw">${esc(plan.kw)}</div>
     <div class="cover-sub">${activeDays.length} Gerichte diese Woche</div>
     <div class="week-grid">${plan.days.map(d => {
-      const r = D.recipes.find(r => r.id === d.recipeId);
+      const r = getState().recipes.find(r => r.id === d.recipeId);
       if (!d.active || !r) return `<div class="day-box"><div class="day-name">${esc(d.day)}</div><div class="day-inactive">—</div></div>`;
       return `<div class="day-box active">
         <div class="day-name">${esc(d.day)}</div>
@@ -240,7 +241,7 @@ export function exportPDF() {
 }
 
 export function exportRecipePDF(id) {
-  const r = D.recipes.find(r => r.id === id);
+  const r = getState().recipes.find(r => r.id === id);
   if (!r) return;
 
   const ingsHTML = (r.ings || []).map(ing => {

@@ -1,4 +1,4 @@
-import { D, getCatLabel, getAufLabel, tagStyle, saveRecipeNow } from './data.js';
+import { getCatLabel, getAufLabel, tagStyle, saveRecipeNow } from './data.js';
 import { getState, setState } from './store.js';
 import { sbGet } from './db.js';
 import { toast, esc, formatAmount } from './ui.js';
@@ -88,12 +88,13 @@ function renderDiscoverFilters() {
   const el = document.getElementById('discover-filters');
   if (!el) return;
 
-  const cats = [...D.settings.cats].sort((a, b) => a.label.localeCompare(b.label, 'de')).map(c =>
+  const { settings } = getState();
+  const cats = [...settings.cats].sort((a, b) => a.label.localeCompare(b.label, 'de')).map(c =>
   `<button class="pill ${discoverCat === c.id ? 'on' : ''}" style="${tagStyle(c.id)}"
     onclick="setDiscoverCat('${esc(c.id)}')">${esc(c.label)}</button>`
 ).join('');
 
-  const aufs = D.settings.aufwand.map(a =>
+  const aufs = settings.aufwand.map(a =>
     `<button class="pill ${discoverAuf === a.id ? 'on' : ''}" style="${tagStyle(a.id)}"
       onclick="setDiscoverAuf('${esc(a.id)}')">${esc(a.label)}</button>`
   ).join('');
@@ -163,7 +164,7 @@ function renderDiscoverList() {
   const el = document.getElementById('discover-list');
 
   const importedIds = new Set(
-    D.recipes
+    getState().recipes
       .filter(r => r.src?.type === 'import' && r.src?.originalId)
       .map(r => r.src.originalId)
   );

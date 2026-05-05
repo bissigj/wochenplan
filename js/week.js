@@ -1,4 +1,4 @@
-import { D, tagStyle, saveWeekNow, getCatLabel, getAufLabel } from './data.js';
+import { tagStyle, saveWeekNow, getCatLabel, getAufLabel } from './data.js';
 import { getState, setState } from './store.js';
 import { sbInsert } from './db.js';
 import { DAYS } from './config.js';
@@ -27,7 +27,7 @@ const TIME_OPTIONS = [
 ];
 
 export function openDrawModal() {
-  document.getElementById('draw-diff-pills').innerHTML = D.settings.aufwand.map(a =>
+  document.getElementById('draw-diff-pills').innerHTML = getState().settings.aufwand.map(a =>
     `<button class="pill ${drawDiff.has(a.id) ? 'on' : ''}" style="${tagStyle(a.id)}"
       data-v="${esc(a.id)}" onclick="toggleDrawPill(this)">${esc(a.label)}</button>`
   ).join('');
@@ -64,7 +64,7 @@ function updatePoolInfo() {
 }
 
 export function getPool() {
-  return D.recipes.filter(r => {
+  return getState().recipes.filter(r => {
     if (!drawDiff.has(r.auf)) return false;
     if (drawMaxTime > 0 && r.time && r.time > drawMaxTime) return false;
     return true;
@@ -73,10 +73,11 @@ export function getPool() {
 
 function getRecentIds() {
   const ids = new Set();
-  D.archive.slice(-2).forEach(w => (w.days || []).forEach(d => {
+  const { archive, weekPlan } = getState();
+  archive.slice(-2).forEach(w => (w.days || []).forEach(d => {
     if (d.recipeId) ids.add(d.recipeId);
   }));
-  (D.weekPlan.days || []).forEach(d => {
+  (weekPlan.days || []).forEach(d => {
     if (d.recipeId && d.active) ids.add(d.recipeId);
   });
   return [...ids];
@@ -165,17 +166,18 @@ export function renderWeek() {
     banner.style.display = 'none';
     if (btnGen)  btnGen.style.display  = '';
     if (btnBack) btnBack.style.display = 'none';
-    if (!D.weekPlan.days || !D.weekPlan.days.length) {
+    const { weekPlan: wp } = getState();
+    if (!wp.days || !wp.days.length) {
       document.getElementById('week-view').innerHTML = '<div class="empty">Noch keine Woche generiert.</div>';
     } else {
-      renderWeekPlan(D.weekPlan, false);
+      renderWeekPlan(wp, false);
     }
   }
 }
 
 // ── Day Card ──────────────────────────────────────────────────────────────────
 function renderDayCard(d, i, plan, readonly) {
-  const r = D.recipes.find(r => r.id === d.recipeId);
+  const r = getState().recipes.find(r => r.id === d.recipeId);
   if (!r) return '';
 
   const isOpen    = expandedDays.has(i);

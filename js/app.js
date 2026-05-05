@@ -1,5 +1,4 @@
 import { showTab, toast, initTheme } from './ui.js';
-import { D } from './data.js';
 import { subscribe } from './store.js';
 import { doLogin, doRegister, doLogout, showLogin, showRegister, tryRestoreSession, obCreateFamily, obJoinFamily } from './auth.js';
 import { renderRFilters, renderRecipes, toggleRF, toggleER, delR, addIng, delIng, addStep, delStep, updR, setSrcType, updSrc, openQE, closeQE,
@@ -175,8 +174,9 @@ export function renderAll() {
 function populateQESelects() {
   const catSel = document.getElementById('qe-cat');
   const aufSel = document.getElementById('qe-auf');
-  if (catSel) catSel.innerHTML = D.settings.cats.map(c => `<option value="${c.id}">${c.label}</option>`).join('');
-  if (aufSel) aufSel.innerHTML = D.settings.aufwand.map(a => `<option value="${a.id}">${a.label}</option>`).join('');
+  const { settings } = getState();
+  if (catSel) catSel.innerHTML = settings.cats.map(c => `<option value="${c.id}">${c.label}</option>`).join('');
+  if (aufSel) aufSel.innerHTML = settings.aufwand.map(a => `<option value="${a.id}">${a.label}</option>`).join('');
 }
 
 // ── Store-Subscriber: aktives Tab bei State-Änderung nachführen ───────────────

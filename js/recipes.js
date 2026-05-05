@@ -1,4 +1,4 @@
-import { D, getCatLabel, getAufLabel, tagStyle, saveRecipesDebounced, saveRecipeNow, deleteRecipeFromDB, saveWeekNow } from './data.js';
+import { getCatLabel, getAufLabel, tagStyle, saveRecipesDebounced, saveRecipeNow, deleteRecipeFromDB, saveWeekNow } from './data.js';
 import { getState, setState } from './store.js';
 import { parseIngredient } from 'https://esm.sh/@jlucaspains/sharp-recipe-parser@1.3.6';
 import { sbUploadImage, sbDeleteImage } from './db.js';
@@ -26,10 +26,11 @@ export let sortOrder = 'name';
 export function renderRFilters() {
   const aufEl = document.getElementById('r-auf-segment');
   if (aufEl) {
-    const hasAufFilter = D.settings.aufwand.some(a => rFilters.has(a.id));
+    const { settings } = getState();
+    const hasAufFilter = settings.aufwand.some(a => rFilters.has(a.id));
     aufEl.innerHTML =
       `<button class="segment ${!hasAufFilter ? 'on' : ''}" onclick="clearAufFilter()">Alle</button>` +
-      D.settings.aufwand.map(a =>
+      settings.aufwand.map(a =>
         `<button class="segment ${rFilters.has(a.id) ? 'on' : ''}" onclick="toggleRF('${esc(a.id)}')">${esc(a.label)}</button>`
       ).join('');
   }
@@ -38,7 +39,7 @@ export function renderRFilters() {
     const n = catFilters.size;
     const chev = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>`;
     if (n === 0) { catBtn.innerHTML = `Kategorie ${chev}`; catBtn.classList.remove('has-filter'); }
-    else if (n === 1) { const cat = D.settings.cats.find(c => c.id === [...catFilters][0]); catBtn.innerHTML = `${esc(cat ? cat.label : 'Kategorie')} ${chev}`; catBtn.classList.add('has-filter'); }
+    else if (n === 1) { const cat = settings.cats.find(c => c.id === [...catFilters][0]); catBtn.innerHTML = `${esc(cat ? cat.label : 'Kategorie')} ${chev}`; catBtn.classList.add('has-filter'); }
     else { catBtn.innerHTML = `${n} Kategorien ${chev}`; catBtn.classList.add('has-filter'); }
   }
   if (catPanelOpen) _renderCatPanelContent();
@@ -47,7 +48,8 @@ export function renderRFilters() {
 function _renderCatPanelContent() {
   const list = document.getElementById('r-cat-panel-list');
   if (!list) return;
-  const cats = [...D.settings.cats].sort((a, b) => a.label.localeCompare(b.label, 'de'));
+  const { settings: s2 } = getState();
+  const cats = [...s2.cats].sort((a, b) => a.label.localeCompare(b.label, 'de'));
   list.innerHTML = cats.map(c => {
     const active = catFilters.has(c.id);
     return `<div class="cat-panel-item ${active ? 'active' : ''}" onclick="event.stopPropagation();toggleCatFilter('${esc(c.id)}')">
@@ -84,7 +86,7 @@ function _closeCatPanelOutside(e) {
 
 export function toggleCatFilter(id) { catFilters.has(id) ? catFilters.delete(id) : catFilters.add(id); renderRFilters(); renderRecipes(); }
 export function clearCatFilter()    { catFilters.clear(); renderRFilters(); renderRecipes(); }
-export function clearAufFilter()    { D.settings.aufwand.forEach(a => rFilters.delete(a.id)); renderRFilters(); renderRecipes(); }
+export function clearAufFilter()    { getState().settings.aufwand.forEach(a => rFilters.delete(a.id)); renderRFilters(); renderRecipes(); }
 
 function rerender() { const q = document.getElementById('recipe-search')?.value || ''; renderRecipes(q); }
 export function toggleRF(f)        { rFilters.has(f) ? rFilters.delete(f) : rFilters.add(f); renderRFilters(); renderRecipes(); }
@@ -92,9 +94,10 @@ export function setSortOrder(v)    { sortOrder = v; rerender(); }
 
 export function renderRecipes(searchQuery = '') {
   const el = document.getElementById('r-list');
-  let vis = [...D.recipes];
+  const { recipes, settings: rs } = getState();
+  let vis = [...recipes];
   if (rFilters.size || catFilters.size) {
-    const aufIds = D.settings.aufwand.map(a => a.id);
+    const aufIds = rs.aufwand.map(a => a.id);
     vis = vis.filter(r => {
       const af = [...rFilters].filter(f => aufIds.includes(f));
       return (catFilters.size === 0 || catFilters.has(r.cat)) && (af.length === 0 || af.includes(r.auf));
@@ -121,7 +124,7 @@ export function renderRecipes(searchQuery = '') {
     return;
   }
 
-  const einheiten = D.settings.einheiten || [];
+  const einheiten = getState().settings.einheiten || [];
   el.innerHTML = vis.map(r => {
     const isOpen = expandedR === r.id;
     return renderRecipeCard(r, isOpen, einheiten);
@@ -213,13 +216,13 @@ function renderRecipeDetail(r, einheiten) {
       <div class="rd-meta-cell">
         <span class="rd-label">Kategorie</span>
         <select class="inline-select" onchange="updR(${r.id},'cat',this.value)">
-          ${D.settings.cats.map(c => `<option value="${esc(c.id)}" ${r.cat === c.id ? 'selected' : ''}>${esc(c.label)}</option>`).join('')}
+          ${getState().settings.cats.map(c => `<option value="${esc(c.id)}" ${r.cat === c.id ? 'selected' : ''}>${esc(c.label)}</option>`).join('')}
         </select>
       </div>
       <div class="rd-meta-cell">
         <span class="rd-label">Aufwand</span>
         <select class="inline-select" onchange="updR(${r.id},'auf',this.value)">
-          ${D.settings.aufwand.map(a => `<option value="${esc(a.id)}" ${r.auf === a.id ? 'selected' : ''}>${esc(a.label)}</option>`).join('')}
+          ${getState().settings.aufwand.map(a => `<option value="${esc(a.id)}" ${r.auf === a.id ? 'selected' : ''}>${esc(a.label)}</option>`).join('')}
         </select>
       </div>
       <div class="rd-meta-cell">

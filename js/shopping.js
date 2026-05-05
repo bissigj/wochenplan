@@ -1,4 +1,4 @@
-import { D } from './data.js';
+import { getState } from './store.js';
 import { fmtIng, esc, formatAmount } from './ui.js';
 import { viewingArchive } from './week.js';
 
@@ -8,7 +8,7 @@ export let shopView = 'recipe';
 export function aggregateIngredients(plan) {
   const agg = {};
   (plan.days || []).filter(d => d.active && d.recipeId).forEach(d => {
-    const r = D.recipes.find(r => r.id === d.recipeId);
+    const r = getState().recipes.find(r => r.id === d.recipeId);
     if (!r || !r.ings) return;
     const factor = (d.portions || plan.portions || 2) / (r.portions || 2);
     r.ings.forEach(ing => {
@@ -22,7 +22,7 @@ export function aggregateIngredients(plan) {
 }
 
 export function getActivePlan() {
-  return viewingArchive || D.weekPlan;
+  return viewingArchive || getState().weekPlan;
 }
 
 export function setShopView(v) {
@@ -43,7 +43,7 @@ export function renderShop() {
 
   if (shopView === 'recipe') {
     el.innerHTML = activeDays.map(d => {
-      const r = D.recipes.find(r => r.id === d.recipeId);
+      const r = getState().recipes.find(r => r.id === d.recipeId);
       if (!r || !r.ings || !r.ings.length) return '';
       const factor = (d.portions || plan.portions || 2) / (r.portions || 2);
       return `<div class="card shop-group">
