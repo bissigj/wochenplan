@@ -1,5 +1,6 @@
 import { showTab, toast, initTheme } from './ui.js';
 import { D } from './data.js';
+import { subscribe } from './store.js';
 import { doLogin, doRegister, doLogout, showLogin, showRegister, tryRestoreSession, obCreateFamily, obJoinFamily } from './auth.js';
 import { renderRFilters, renderRecipes, toggleRF, toggleER, delR, addIng, delIng, addStep, delStep, updR, setSrcType, updSrc, openQE, closeQE,
         saveQE, setSortOrder, uploadRecipeImage, removeRecipeImage, togglePublic, openSrcEdit, clearAufFilter, openUrlImport,
@@ -74,6 +75,7 @@ window.clearCatFilter    = clearCatFilter;
 const PAGE_TITLES = { rezepte: 'Rezepte', woche: 'Wochenplan', einkauf: 'Einkauf', archiv: 'Archiv', einstellungen: 'Einstellungen' };
 
 window.showTab = (t) => {
+  _activeTab = t;
   showTab(t);
   if (t === 'einkauf') renderShop();
   if (t === 'archiv') renderArchiv();
@@ -162,6 +164,7 @@ window.joinFamily        = joinFamily;
 
 // ── renderAll (used by auth after login) ─────────────────────────────────────
 export function renderAll() {
+  _loggedIn = true;
   renderRFilters();
   renderRecipes();
   renderWeek();
@@ -175,6 +178,19 @@ function populateQESelects() {
   if (catSel) catSel.innerHTML = D.settings.cats.map(c => `<option value="${c.id}">${c.label}</option>`).join('');
   if (aufSel) aufSel.innerHTML = D.settings.aufwand.map(a => `<option value="${a.id}">${a.label}</option>`).join('');
 }
+
+// ── Store-Subscriber: aktives Tab bei State-Änderung nachführen ───────────────
+// Wird in Phase 2 ausgebaut wenn Commands setState() verwenden.
+let _activeTab = 'rezepte';
+let _loggedIn = false;
+subscribe(() => {
+  if (!_loggedIn) return; // Kein Re-render vor abgeschlossenem Login
+  populateQESelects();
+  if (_activeTab === 'woche')         renderWeek();
+  if (_activeTab === 'einkauf')       renderShop();
+  if (_activeTab === 'archiv')        renderArchiv();
+  if (_activeTab === 'einstellungen') renderSettings();
+});
 
 window.filterRecipes = (q) => { renderRecipes(q.toLowerCase().trim()); };
 

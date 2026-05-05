@@ -1,18 +1,18 @@
 import { sbGet, sbInsert, sbUpdate, sbDelete } from './db.js';
 import { DEFAULT_SETTINGS, DEFAULT_EINHEITEN, TAG_FALLBACK } from './config.js';
 import { setSyncStatus } from './ui.js';
+import { getState, setState } from './store.js';
 
-export let D = {
-  recipes: [],
-  weekPlan: { kw: '', year: 0, days: [], portions: 2 },
-  archive: [],
-  nextId: 1,
-  settings: { cats: [], aufwand: [], einheiten: [] },
-  familyId: null,
-  familyName: '',
-  userId: null,
-  userEmail: ''
-};
+// ── D: Proxy-Shim auf den Store ───────────────────────────────────────────────
+// Alle bestehenden Module lesen D.recipes, D.weekPlan etc. weiterhin unverändert.
+// Schreibzugriffe (D.recipes = [...], D.weekPlan = {...}) landen via set-Trap
+// im Store und lösen notify aus. Array-Mutationen (.push, .splice) landen
+// direkt auf dem Array-Objekt – das ist das verbleibende Risiko, das Phase 2
+// Modul für Modul auf setState() umstellt.
+export const D = new Proxy({}, {
+  get(_, key) { return getState()[key]; },
+  set(_, key, value) { setState(() => ({ [key]: value })); return true; },
+});
 
 export let dbSettingsId = null;
 export let dbWeekId = null;
