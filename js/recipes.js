@@ -200,7 +200,7 @@ function _fmtQty(ing) {
 
 function _renderIngredients(r, einheiten) {
   const rows = (r.ings || []).map((ing, i) => `
-    <div class="rd-ing-row">
+    <div class="rd-ing-row rd-ing-row--editable" data-action="prefill-ing" data-rid="${r.id}" data-i="${i}" title="Klicken zum Bearbeiten">
       <span class="rd-ing-qty">${_fmtQty(ing)}</span>
       <span class="rd-ing-name">${esc(ing.n || '')}</span>
       <button class="xbtn" data-action="del-ing" data-rid="${r.id}" data-i="${i}">×</button>
@@ -209,13 +209,13 @@ function _renderIngredients(r, einheiten) {
   return `<div class="rd-col rd-col-ings">
     <div class="rd-col-title">Zutaten · ${r.portions || 2} Port.</div>
     <div class="rd-ing-list">${rows}</div>
-    <div class="rd-add-row">
+    <div class="rd-add-row" id="rd-add-row-${r.id}">
       <input type="number" id="im-${r.id}" placeholder="Menge" step="any" min="0" class="rd-add-qty" />
       <select id="iu-${r.id}" class="inline-select rd-add-unit">
         ${einheiten.map(e => `<option>${esc(e)}</option>`).join('')}
       </select>
       <input type="text" id="in-${r.id}" placeholder="Zutat" class="rd-add-name" data-submit="add-ing" data-id="${r.id}" />
-      <button class="btn btn--sm" data-action="add-ing" data-id="${r.id}">+</button>
+      <button class="btn btn--sm" id="ib-${r.id}" data-action="add-ing" data-id="${r.id}">+</button>
     </div>
   </div>`;
 }
@@ -410,19 +410,77 @@ export async function delR(id) {
   }, 8000);
 }
 
+// _editingIng: merkt sich welche Zutat gerade bearbeitet wird { recipeId, idx }
+let _editingIng = null;
+
+export function prefillIng(rid, idx) {
+  const recipe = getState().recipes.find(r => r.id === rid);
+  if (!recipe) return;
+  const ing = recipe.ings[idx];
+  if (!ing) return;
+
+  // Felder vorausfüllen
+  const mEl = document.getElementById('im-' + rid);
+  const uEl = document.getElementById('iu-' + rid);
+  const nEl = document.getElementById('in-' + rid);
+  const btn = document.getElementById('ib-' + rid);
+  if (!mEl || !uEl || !nEl) return;
+
+  mEl.value = ing.m > 0 ? ing.m : '';
+  nEl.value = ing.n || '';
+  // Einheit im Select vorwählen
+  const opt = [...uEl.options].find(o => o.value === ing.u);
+  if (opt) uEl.value = ing.u;
+
+  // Edit-Modus markieren
+  _editingIng = { rid, idx };
+  if (btn) { btn.textContent = '✓'; btn.classList.add('btn--editing'); }
+
+  // Zeile visuell hervorheben
+  document.querySelectorAll(`.rd-ing-row--editable[data-rid="${rid}"]`).forEach((el, i) => {
+    el.classList.toggle('rd-ing-row--active', i === idx);
+  });
+
+  nEl.focus();
+  nEl.select();
+}
+
+function _clearIngEditMode(rid) {
+  _editingIng = null;
+  const btn = document.getElementById('ib-' + rid);
+  if (btn) { btn.textContent = '+'; btn.classList.remove('btn--editing'); }
+  document.querySelectorAll(`.rd-ing-row--active`).forEach(el => el.classList.remove('rd-ing-row--active'));
+}
+
 export async function addIng(id) {
   const mRaw = document.getElementById('im-' + id).value;
   const u    = document.getElementById('iu-' + id).value;
   const n    = document.getElementById('in-' + id).value.trim();
   if (!n) return;
   const m = mRaw === '' ? 0 : parseFloat(mRaw);
-  const r = updateRecipe(id, r => ({ ...r, ings: [...r.ings, { m: isNaN(m) ? 0 : m, u, n }] }));
+  const newIng = { m: isNaN(m) ? 0 : m, u, n };
+
+  let r;
+  if (_editingIng && _editingIng.rid === id) {
+    // Edit-Modus: bestehende Zutat ersetzen
+    const idx = _editingIng.idx;
+    r = updateRecipe(id, r => ({
+      ...r,
+      ings: r.ings.map((ing, i) => i === idx ? newIng : ing)
+    }));
+    _clearIngEditMode(id);
+  } else {
+    // Normal: neue Zutat anhängen
+    r = updateRecipe(id, r => ({ ...r, ings: [...r.ings, newIng] }));
+  }
+
   document.getElementById('im-' + id).value = '';
   document.getElementById('in-' + id).value = '';
   if (r) { saveRecipesDebounced(r); rerender(); }
 }
 
 export async function delIng(id, i) {
+  if (_editingIng && _editingIng.rid === id) _clearIngEditMode(id);
   const r = updateRecipe(id, r => ({ ...r, ings: r.ings.filter((_, idx) => idx !== i) }));
   if (r) { saveRecipesDebounced(r); rerender(); }
 }

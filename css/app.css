@@ -1125,3 +1125,26 @@ textarea { resize: vertical; min-block-size: 60px; line-height: 1.5; }
   font-size: 13px;
   padding: var(--s-4) 0;
 }
+
+
+/* ── Zutaten Edit-Modus ──────────────────────────────────────────────────────── */
+.rd-ing-row--editable {
+  cursor: pointer;
+  border-radius: var(--r);
+  transition: background var(--t-fast);
+}
+
+.rd-ing-row--editable:hover {
+  background: var(--bg2);
+}
+
+.rd-ing-row--active {
+  background: var(--bg3);
+  outline: 1px solid var(--meadow);
+}
+
+.btn--editing {
+  background: var(--meadow) !important;
+  color: white !important;
+  border-color: var(--meadow) !important;
+}

@@ -3,7 +3,7 @@ import { subscribe, getState } from './store.js';
 import { doLogin, doRegister, doLogout, showLogin, showRegister, tryRestoreSession, obCreateFamily, obJoinFamily } from './auth.js';
 import { renderRFilters, renderRecipes, toggleRF, toggleER, delR, addIng, delIng, addStep, delStep, updR, setSrcType, updSrc, openQE, closeQE,
         saveQE, setSortOrder, uploadRecipeImage, removeRecipeImage, togglePublic, openSrcEdit, clearAufFilter, openUrlImport,
-        closeUrlImport, parseRecipeUrl, toggleCatPanel, toggleCatFilter, clearCatFilter, _pendingUndo } from './recipes.js';
+        closeUrlImport, parseRecipeUrl, toggleCatPanel, toggleCatFilter, clearCatFilter, _pendingUndo, prefillIng } from './recipes.js';
 import { renderWeek, openDrawModal, closeDrawModal, toggleDrawPill, setTimePill, drawWeek, backToCurrent, toggleDay, toggleDayActive, rerollDay, setPortions, setNote } from './week.js';
 import { renderShop, setShopView } from './shopping.js';
 import { renderArchiv, viewArchiveWeek } from './archive.js';
@@ -130,6 +130,7 @@ registerActions({
   'del-r':             ({ id }) => delR(+id),
   'add-ing':           ({ id }) => addIng(+id),
   'del-ing':           ({ rid, i }) => delIng(+rid, +i),
+  'prefill-ing':       ({ rid, i }, e) => { e.stopPropagation(); prefillIng(+rid, +i); },
   'add-step':          ({ id }) => addStep(+id),
   'del-step':          ({ rid, i }) => delStep(+rid, +i),
   'set-src-type':      ({ rid, type }) => setSrcType(+rid, type),
