@@ -41,6 +41,10 @@
   z-index: 60;
 }
 
+.cat-filter-panel.open {
+  display: block;
+}
+
 .cat-panel-header {
   display: flex;
   align-items: center;

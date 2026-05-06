@@ -97,11 +97,10 @@ export function toggleCatPanel(e) {
   if (!panel) return;
   if (catPanelOpen) {
     _renderCatPanelContent();
-    panel.classList.remove('is-hidden');
-    // setTimeout verhindert dass der aktuelle Klick sofort _closeCatPanelOutside triggert
+    panel.classList.add('open');
     setTimeout(() => document.addEventListener('click', _closeCatPanelOutside), 0);
   } else {
-    panel.classList.add('is-hidden');
+    panel.classList.remove('open');
     document.removeEventListener('click', _closeCatPanelOutside);
   }
 }
@@ -109,11 +108,10 @@ export function toggleCatPanel(e) {
 function _closeCatPanelOutside(e) {
   const panel = document.getElementById('r-cat-panel');
   const btn   = document.getElementById('r-cat-btn');
-  // Klick auf den Button selbst wird vom Dispatcher behandelt — hier ignorieren
   if (btn && btn.contains(e.target)) return;
   if (panel && panel.contains(e.target)) return;
   catPanelOpen = false;
-  panel?.classList.add('is-hidden');
+  panel?.classList.remove('open');
   document.removeEventListener('click', _closeCatPanelOutside);
 }
 
