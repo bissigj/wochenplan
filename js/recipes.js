@@ -109,6 +109,10 @@ function _closeCatPanelOutside(e) {
   const panel = document.getElementById('r-cat-panel');
   const btn   = document.getElementById('r-cat-btn');
   if (btn && btn.contains(e.target)) return;
+  // Element könnte durch renderRFilters aus dem DOM entfernt worden sein —
+  // in diesem Fall prüfen ob der Klick eine Panel-Action war
+  const action = e.target.closest('[data-action]')?.dataset?.action;
+  if (action === 'toggle-cat-filter' || action === 'clear-cat-filter') return;
   if (panel && panel.contains(e.target)) return;
   catPanelOpen = false;
   panel?.classList.remove('open');
