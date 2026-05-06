@@ -52,23 +52,35 @@ export function renderShop() {
 
   if (shopView === 'recipe') {
     const pantrySet = new Set((getState().settings.pantry || []).map(p => p.toLowerCase().trim()));
+
     el.innerHTML = activeDays.map(d => {
       const r = getState().recipes.find(r => r.id === d.recipeId);
       if (!r || !r.ings || !r.ings.length) return '';
       const factor = (d.portions || plan.portions || 2) / (r.portions || 2);
+
+      const toBuy  = r.ings.filter(ing => !pantrySet.has((ing.n || '').toLowerCase().trim()));
+      const pantry = r.ings.filter(ing =>  pantrySet.has((ing.n || '').toLowerCase().trim()));
+
+      const toBuyRows = toBuy.map((ing, i) => `
+        <div class="shop-item">
+          <input type="checkbox" id="sri-${esc(d.day)}-buy-${i}" data-change="shop-check" />
+          <label for="sri-${esc(d.day)}-buy-${i}">${fmtIng(ing, factor)}</label>
+          <button class="btn btn--xs shop-pantry-btn" data-action="add-pantry-item" data-val="${esc(ing.n)}" title="In den Vorrat">→ Vorrat</button>
+        </div>`).join('');
+
+      const pantryRows = pantry.length ? `
+        <div class="shop-subsection-title">Im Vorrat</div>
+        ${pantry.map((ing, i) => `
+          <div class="shop-item shop-item--pantry">
+            <input type="checkbox" id="sri-${esc(d.day)}-pantry-${i}" data-change="shop-check" />
+            <label for="sri-${esc(d.day)}-pantry-${i}">${fmtIng(ing, factor)}</label>
+            <button class="btn btn--xs shop-pantry-btn shop-pantry-btn--remove" data-action="remove-pantry-item" data-val="${esc(ing.n)}" title="Wieder einkaufen">← Einkaufen</button>
+          </div>`).join('')}` : '';
+
       return `<div class="card shop-group">
         <div class="shop-group-title">${esc(r.name)} <span class="shop-day-label">${esc(d.day)}</span></div>
-        ${r.ings.map((ing, i) => {
-          const inPantry = pantrySet.has((ing.n || '').toLowerCase().trim());
-          return `<div class="shop-item ${inPantry ? 'shop-item--pantry' : ''}">
-            <input type="checkbox" id="sri-${esc(d.day)}-${i}" data-change="shop-check" />
-            <label for="sri-${esc(d.day)}-${i}">${fmtIng(ing, factor)}</label>
-            ${inPantry
-              ? `<button class="btn btn--xs shop-pantry-btn shop-pantry-btn--remove" data-action="remove-pantry-item" data-val="${esc(ing.n)}" title="Wieder einkaufen">← Einkaufen</button>`
-              : `<button class="btn btn--xs shop-pantry-btn" data-action="add-pantry-item" data-val="${esc(ing.n)}" title="In den Vorrat verschieben">→ Vorrat</button>`
-            }
-          </div>`;
-        }).join('')}
+        ${toBuyRows || '<p class="shop-empty">Alle Zutaten im Vorrat</p>'}
+        ${pantryRows}
       </div>`;
     }).join('') || '<div class="empty">Keine Zutaten hinterlegt.</div>';
     return;

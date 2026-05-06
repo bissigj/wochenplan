@@ -212,6 +212,7 @@ function _renderIngredients(r, einheiten) {
     <div class="rd-add-row" id="rd-add-row-${r.id}">
       <input type="number" id="im-${r.id}" placeholder="Menge" step="any" min="0" class="rd-add-qty" />
       <select id="iu-${r.id}" class="inline-select rd-add-unit">
+        <option value="">—</option>
         ${einheiten.map(e => `<option>${esc(e)}</option>`).join('')}
       </select>
       <input type="text" id="in-${r.id}" placeholder="Zutat" class="rd-add-name" data-submit="add-ing" data-id="${r.id}" />
@@ -428,9 +429,8 @@ export function prefillIng(rid, idx) {
 
   mEl.value = ing.m > 0 ? ing.m : '';
   nEl.value = ing.n || '';
-  // Einheit im Select vorwählen
-  const opt = [...uEl.options].find(o => o.value === ing.u);
-  if (opt) uEl.value = ing.u;
+  // Einheit im Select vorwählen — leere Option wenn keine Einheit
+  uEl.value = ing.u || '';
 
   // Edit-Modus markieren
   _editingIng = { rid, idx };
