@@ -306,6 +306,19 @@
 <!-- Discover Modal -->
 <div id="discover-modal" class="modal-wrap is-hidden">
   <div class="modal discover-modal-inner">
+
+<!-- ── Rezept-Picker Modal ──────────────────────────────────────────────── -->
+<div id="day-picker-modal" class="modal-wrap is-hidden">
+  <div class="modal modal--sm">
+    <div class="modal-header">
+      <h3>Rezept wählen</h3>
+      <button class="modal-close" data-action="close-day-picker">×</button>
+    </div>
+    <input type="text" id="day-picker-input" class="day-picker-search" placeholder="Rezept suchen…"
+      data-input="day-picker-search" data-i="" />
+    <div class="day-picker-list" id="day-picker-list"></div>
+  </div>
+</div>
     <div class="discover-header">
       <h3>Rezepte entdecken</h3>
       <button class="btn btn--sm" data-action="close-discover">

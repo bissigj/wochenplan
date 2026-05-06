@@ -1162,24 +1162,7 @@ textarea { resize: vertical; min-block-size: 60px; line-height: 1.5; }
 }
 
 
-/* ── Rezept-Picker ───────────────────────────────────────────────────────────── */
-.day-recipe-picker {
-  position: relative;
-}
-
-.day-picker-panel {
-  position: absolute;
-  top: calc(100% + 4px);
-  left: 0;
-  width: 240px;
-  background: var(--bg);
-  border: 1px solid var(--bd);
-  border-radius: var(--r);
-  box-shadow: var(--shadow-lg);
-  z-index: 60;
-  overflow: hidden;
-}
-
+/* ── Rezept-Picker Modal ─────────────────────────────────────────────────────── */
 .day-picker-search {
   width: 100%;
   padding: var(--s-3) var(--s-4);
@@ -1188,10 +1171,12 @@ textarea { resize: vertical; min-block-size: 60px; line-height: 1.5; }
   background: var(--bg2);
   font-size: 13px;
   outline: none;
+  box-sizing: border-box;
+  border-radius: 0;
 }
 
 .day-picker-list {
-  max-height: 240px;
+  max-height: 320px;
   overflow-y: auto;
 }
 
@@ -1201,6 +1186,7 @@ textarea { resize: vertical; min-block-size: 60px; line-height: 1.5; }
   cursor: pointer;
   color: var(--text);
   transition: background var(--t-fast);
+  line-height: 1.4;
 }
 
 .day-picker-item:hover {
