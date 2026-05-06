@@ -10,7 +10,8 @@ import { renderArchiv, viewArchiveWeek } from './archive.js';
 import { exportPDF, exportRecipePDF, exportShopPDF } from './pdf.js';
 import { openDiscover, closeDiscover, importRecipe, filterDiscover, setDiscoverCat, setDiscoverAuf, toggleDiscoverR, discoverLoadMore } from './discover.js';
 import { renderSettings, rerenderSettings, toggleAcc, changeTheme, addCat, updateCat, updateCatField, deleteCat, addAuf, updateAuf, updateAufField,
-        deleteAuf, addEinh, deleteEinh, saveFamilyName, createInvitation, joinFamily } from './settings.js';
+        deleteAuf, addEinh, deleteEinh, saveFamilyName, createInvitation, joinFamily,
+        addPantryItem, removePantryItem } from './settings.js';
 
 // ── Apply saved theme before first paint ──────────────────────────────────────
 initTheme();
@@ -178,6 +179,8 @@ registerActions({
   'del-auf':           ({ id }) => deleteAuf(id),
   'add-einh':          () => addEinh(),
   'del-einh':          ({ val }) => deleteEinh(val),
+  'add-pantry-item':   ({ val }) => addPantryItem(val),
+  'remove-pantry-item':({ val }) => removePantryItem(val),
   'save-family-name':  () => saveFamilyName(),
   'create-invitation': () => createInvitation(),
   'join-family':       () => joinFamily(),

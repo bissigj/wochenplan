@@ -13,6 +13,7 @@ function ensureSettingsComplete(s) {
   if (!Array.isArray(settings.cats))      settings.cats      = [];
   if (!Array.isArray(settings.aufwand))   settings.aufwand   = [];
   if (!Array.isArray(settings.einheiten)) settings.einheiten = [...DEFAULT_EINHEITEN];
+  if (!Array.isArray(settings.pantry))    settings.pantry    = [];
   return settings;
 }
 

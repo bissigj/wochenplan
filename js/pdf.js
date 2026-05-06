@@ -63,7 +63,22 @@ export function exportShopPDF() {
     toast('Keine aktive Woche.');
     return;
   }
-  const items = aggregateIngredients(plan);
+  const { toBuy, pantry } = aggregateIngredients(plan);
+  const activeDayCount = plan.days.filter(d => d.active && d.recipeId).length;
+
+  const _pdfItem = (it) => {
+    const m = formatAmount(it.m);
+    const qty = m ? `${m} ${esc(it.u || '')}`.trim() : esc(it.u || '');
+    return `<div class="item">
+      <span class="item-name">${esc(it.n || '')}<span class="item-recipes">${it.recipes.map(esc).join(' · ')}</span></span>
+      <span class="item-qty">${qty}</span>
+    </div>`;
+  };
+
+  const pantrySection = pantry.length ? `
+    <div class="col-title" style="margin-top:24px">Im Vorrat</div>
+    <div class="grid pantry-grid">${pantry.map(_pdfItem).join('')}</div>` : '';
+
   const html = `<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><title>Einkaufsliste</title>
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
@@ -74,6 +89,7 @@ export function exportShopPDF() {
     .sub{font-size:10pt;color:${PDF.muted};margin-bottom:1cm}
     .col-title{font-size:8pt;font-weight:700;color:${PDF.brand};text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;padding-bottom:6px;border-bottom:1.5px solid ${PDF.brand}}
     .grid{columns:2;gap:20px}
+    .pantry-grid .item{opacity:0.55}
     .item{display:flex;justify-content:space-between;align-items:baseline;padding:6px 0;border-bottom:.5px solid ${PDF.line};font-size:10.5pt;break-inside:avoid}
     .item-name{color:${PDF.text}}
     .item-recipes{font-size:8pt;color:${PDF.faint};margin-left:5px}
@@ -83,16 +99,10 @@ export function exportShopPDF() {
   <div class="page">
     <div class="accent"></div>
     <div class="title">Einkaufsliste</div>
-    <div class="sub">aggregiert · ${plan.days.filter(d => d.active && d.recipeId).length} Tage</div>
-    <div class="col-title">Zutaten</div>
-    <div class="grid">${items.map(it => {
-      const m = formatAmount(it.m);
-      const qty = m ? `${m} ${esc(it.u || '')}`.trim() : esc(it.u || '');
-      return `<div class="item">
-        <span class="item-name">${esc(it.n || '')}<span class="item-recipes">${it.recipes.map(esc).join(' · ')}</span></span>
-        <span class="item-qty">${qty}</span>
-      </div>`;
-    }).join('')}</div>
+    <div class="sub">aggregiert · ${activeDayCount} Tage</div>
+    <div class="col-title">Einkaufen</div>
+    <div class="grid">${toBuy.map(_pdfItem).join('')}</div>
+    ${pantrySection}
   </div>
   </body></html>`;
   openOrDownload(html, 'einkaufsliste.html');
@@ -102,7 +112,7 @@ export function exportPDF() {
   const plan = getActivePlan();
   if (!plan.days || !plan.days.length) { toast('Keine Woche zum Exportieren.'); return; }
   const activeDays = plan.days.filter(d => d.active && d.recipeId);
-  const shopItems = aggregateIngredients(plan);
+  const { toBuy: shopItems, pantry: shopPantry } = aggregateIngredients(plan);
 
   const recipePages = activeDays.map(d => {
     const r = getState().recipes.find(r => r.id === d.recipeId);

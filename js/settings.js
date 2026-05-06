@@ -5,6 +5,7 @@ import { sbGet, sbInsert, sbUpdate } from './db.js';
 import { toast, esc, getTheme, setTheme } from './ui.js';
 import { renderRFilters, renderRecipes } from './recipes.js';
 import { renderWeek } from './week.js';
+import { renderShop } from './shopping.js';
 import { joinFamilyByCode } from './auth.js';
 
 // ── updateSettings: atomares Update des settings-Objekts im Store ─────────────
@@ -160,12 +161,27 @@ export function renderSettings() {
       <button class="btn btn--sm" data-action="add-einh">+</button>
     </div>`;
 
+  const pantryItems = (settings.pantry || []).slice().sort((a, b) => a.localeCompare(b, 'de'));
+  const pantryContent = `
+    <p class="settings-hint">Zutaten die du immer zuhause hast. Du kannst sie direkt aus der Einkaufsliste hierher verschieben.</p>
+    <div class="einh-list" id="pantry-list">
+      ${pantryItems.length
+        ? pantryItems.map(p => `
+          <div class="einh-tag">
+            <span>${esc(p)}</span>
+            <button class="xbtn" data-action="remove-pantry-item" data-val="${esc(p)}">×</button>
+          </div>`).join('')
+        : '<p class="settings-empty">Noch keine Vorrats-Zutaten. Verschiebe Zutaten aus der Einkaufsliste hierher.</p>'
+      }
+    </div>`;
+
   el.innerHTML = `<div class="acc-wrap">
     ${accordion('familie',    'Familie',           familyContent, true)}
     ${accordion('theme',      'Erscheinungsbild',  themeContent)}
     ${accordion('kategorien', 'Kategorien',        catsContent)}
     ${accordion('aufwand',    'Aufwand',           aufContent)}
     ${accordion('einheiten',  'Einheiten',         einhContent)}
+    ${accordion('vorrat',     'Vorrat',            pantryContent)}
   </div>`;
 
   loadFamilyMembers();
@@ -289,7 +305,26 @@ export async function deleteEinh(val) {
   rerenderSettings();
 }
 
-// ── Family Management ─────────────────────────────────────────────────────────
+// ── Vorrat ────────────────────────────────────────────────────────────────────
+export async function addPantryItem(name) {
+  const n = name.trim();
+  if (!n) return;
+  const { pantry = [] } = getState().settings;
+  if (pantry.some(p => p.toLowerCase() === n.toLowerCase())) return; // bereits vorhanden
+  updateSettings(s => ({ pantry: [...(s.pantry || []), n] }));
+  await saveSettingsNow();
+  rerenderSettings();
+  renderShop(); // Einkaufsliste sofort aktualisieren
+}
+
+export async function removePantryItem(val) {
+  updateSettings(s => ({ pantry: (s.pantry || []).filter(p => p !== val) }));
+  await saveSettingsNow();
+  rerenderSettings();
+  renderShop(); // Einkaufsliste sofort aktualisieren
+}
+
+
 export async function saveFamilyName() {
   const name = document.getElementById('family-name-input').value.trim();
   if (!name) return;

@@ -1052,3 +1052,76 @@ textarea { resize: vertical; min-block-size: 60px; line-height: 1.5; }
 
 .recipe-del-btn { margin-left: 6px; padding: 4px 6px; font-size: 16px; opacity: 0.4; }
 .recipe-del-btn:hover { opacity: 1; color: var(--red); }
+
+
+/* ── Einkaufsliste Vorrat ────────────────────────────────────────────────────── */
+.shop-section-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--text3);
+  margin-bottom: var(--s-3);
+  padding-bottom: var(--s-2);
+  border-bottom: 1px solid var(--border-tertiary, var(--bd));
+}
+
+.shop-section--pantry .shop-section-title {
+  color: var(--meadow);
+}
+
+.shop-item--pantry {
+  opacity: 0.6;
+}
+
+.shop-pantry-btn {
+  margin-left: var(--s-3);
+  flex-shrink: 0;
+  font-size: 11px;
+  padding: 2px 6px;
+  opacity: 0;
+  transition: opacity var(--t-fast);
+  white-space: nowrap;
+}
+
+.shop-item:hover .shop-pantry-btn {
+  opacity: 1;
+}
+
+.shop-pantry-btn--remove {
+  color: var(--meadow);
+}
+
+.btn--xs {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: var(--r);
+  border: 1px solid var(--bd);
+  background: var(--bg2);
+  cursor: pointer;
+  color: var(--text2);
+}
+
+.btn--xs:hover {
+  background: var(--bg3);
+}
+
+.settings-hint {
+  font-size: 12px;
+  color: var(--text3);
+  margin-bottom: var(--s-4);
+  line-height: 1.5;
+}
+
+.settings-empty {
+  font-size: 12px;
+  color: var(--text3);
+  font-style: italic;
+}
+
+.shop-empty {
+  text-align: center;
+  color: var(--text3);
+  font-size: 13px;
+  padding: var(--s-4) 0;
+}
