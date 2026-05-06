@@ -70,7 +70,11 @@ export function registerActions(map) {
 // Click-Dispatcher
 document.addEventListener('click', e => {
   const el = e.target.closest('[data-action]');
-  if (!el) return;
+  if (!el) {
+    // Klick direkt auf modal-wrap (Overlay) schliesst Picker
+    if (e.target.id === 'day-picker-modal') closeDayPicker();
+    return;
+  }
   const fn = _handlers[el.dataset.action];
   if (fn) fn(el.dataset, e);
 });

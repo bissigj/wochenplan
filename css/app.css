@@ -342,6 +342,35 @@ textarea { resize: vertical; min-block-size: 60px; line-height: 1.5; }
   margin-block-end: var(--s-6);
   letter-spacing: -0.2px;
 }
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-block-end: var(--s-5);
+}
+.modal-header h3 {
+  margin: 0;
+}
+.modal-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--bg2);
+  border: 1px solid var(--bd);
+  font-size: 16px;
+  color: var(--text2);
+  cursor: pointer;
+  line-height: 1;
+  flex-shrink: 0;
+  transition: background var(--t-fast), color var(--t-fast);
+}
+.modal-close:hover {
+  background: var(--bg3);
+  color: var(--text);
+}
 .modal-footer { display: flex; gap: var(--s-3); justify-content: flex-end; margin-block-start: var(--s-7); }
 
 /* ── 3f. Toast ─────────────────────────────────────────────────────────────── */
@@ -1163,25 +1192,37 @@ textarea { resize: vertical; min-block-size: 60px; line-height: 1.5; }
 
 
 /* ── Rezept-Picker Modal ─────────────────────────────────────────────────────── */
+#day-picker-modal .modal {
+  padding: var(--s-6) var(--s-6) 0;
+  overflow: hidden;
+}
+
+#day-picker-modal .modal-header {
+  margin-bottom: var(--s-4);
+}
+
 .day-picker-search {
-  width: 100%;
-  padding: var(--s-3) var(--s-4);
+  width: calc(100% + 2 * var(--s-6));
+  margin-left: calc(-1 * var(--s-6));
+  padding: var(--s-3) var(--s-6);
   border: none;
+  border-top: 1px solid var(--bd);
   border-bottom: 1px solid var(--bd);
   background: var(--bg2);
   font-size: 13px;
   outline: none;
   box-sizing: border-box;
-  border-radius: 0;
 }
 
 .day-picker-list {
   max-height: 320px;
   overflow-y: auto;
+  margin: 0 calc(-1 * var(--s-6));
+  padding-bottom: var(--s-3);
 }
 
 .day-picker-item {
-  padding: var(--s-3) var(--s-4);
+  padding: var(--s-3) var(--s-6);
   font-size: 13px;
   cursor: pointer;
   color: var(--text);
