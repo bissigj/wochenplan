@@ -4,7 +4,7 @@ import { doLogin, doRegister, doLogout, showLogin, showRegister, tryRestoreSessi
 import { renderRFilters, renderRecipes, toggleRF, toggleER, delR, addIng, delIng, addStep, delStep, updR, setSrcType, updSrc, openQE, closeQE,
         saveQE, setSortOrder, uploadRecipeImage, removeRecipeImage, togglePublic, openSrcEdit, clearAufFilter, openUrlImport,
         closeUrlImport, parseRecipeUrl, toggleCatPanel, toggleCatFilter, clearCatFilter, _pendingUndo, prefillIng } from './recipes.js';
-import { renderWeek, openDrawModal, closeDrawModal, toggleDrawPill, setTimePill, drawWeek, backToCurrent, toggleDay, toggleDayActive, rerollDay, setPortions, setNote } from './week.js';
+import { renderWeek, openDrawModal, closeDrawModal, toggleDrawPill, setTimePill, drawWeek, backToCurrent, toggleDay, toggleDayActive, rerollDay, setPortions, setNote, openDayPicker, dayPickerSearch, pickRecipeForDay } from './week.js';
 import { renderShop, setShopView } from './shopping.js';
 import { renderArchiv, viewArchiveWeek } from './archive.js';
 import { exportPDF, exportRecipePDF, exportShopPDF } from './pdf.js';
@@ -153,6 +153,8 @@ registerActions({
   'toggle-day':        ({ i }) => toggleDay(+i),
   'toggle-day-active': ({ i }, e) => toggleDayActive(+i, e),
   'reroll-day':        ({ i }, e) => rerollDay(+i, e),
+  'open-day-picker':   ({ i }, e) => openDayPicker(+i, e),
+  'pick-recipe-for-day': ({ i, rid, random }) => pickRecipeForDay(+i, rid, random === '1'),
   'export-pdf':        () => exportPDF(),
 
   // Einkauf
@@ -201,6 +203,7 @@ registerActions({
   // Input-Actions
   'filter-recipes':    (_, e, el) => renderRecipes(el.value.toLowerCase().trim()),
   'filter-discover':   () => filterDiscover(),
+  'day-picker-search': ({ i }, e, el) => dayPickerSearch(+i, el.value),
   'set-discover-cat':  (_, e, el) => setDiscoverCat(el.dataset.val),
   'set-discover-auf':  (_, e, el) => setDiscoverAuf(el.dataset.val),
 

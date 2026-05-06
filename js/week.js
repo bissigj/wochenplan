@@ -199,7 +199,14 @@ function renderDayCard(d, i, plan, readonly) {
       <button class="btn btn--sm btn--ghost" data-action="toggle-day-active" data-i="${i}">
         ${d.active ? '👁 Ausblenden' : '👁 Einblenden'}
       </button>
-      <button class="btn btn--sm btn--ghost" data-action="reroll-day" data-i="${i}">Anderes Rezept</button>
+      <div class="day-recipe-picker" id="day-picker-${i}">
+        <button class="btn btn--sm btn--ghost" data-action="open-day-picker" data-i="${i}">Rezept wählen</button>
+        <div class="day-picker-panel is-hidden" id="day-picker-panel-${i}">
+          <input type="text" class="day-picker-search" placeholder="Rezept suchen…"
+            data-input="day-picker-search" data-i="${i}" />
+          <div class="day-picker-list" id="day-picker-list-${i}"></div>
+        </div>
+      </div>
     </div>`;
 
   const detailHTML = isOpen ? `
@@ -276,6 +283,80 @@ export async function rerollDay(i, e) {
   updateWeekDay(i, () => ({ recipeId: src[Math.floor(Math.random() * src.length)].id }));
   await saveWeekNow();
   renderWeek();
+}
+
+// ── Rezept-Picker ─────────────────────────────────────────────────────────────
+let _activePicker = null;
+
+export function openDayPicker(i, e) {
+  e.stopPropagation();
+
+  // Vorherigen Picker schliessen
+  if (_activePicker !== null && _activePicker !== i) closeDayPicker(_activePicker);
+  _activePicker = i;
+
+  const panel = document.getElementById(`day-picker-panel-${i}`);
+  if (!panel) return;
+
+  panel.classList.remove('is-hidden');
+  _renderPickerList(i, '');
+
+  const input = panel.querySelector('.day-picker-search');
+  if (input) setTimeout(() => input.focus(), 50);
+
+  setTimeout(() => document.addEventListener('click', _closePickerOutside), 0);
+}
+
+function closeDayPicker(i) {
+  const panel = document.getElementById(`day-picker-panel-${i}`);
+  if (panel) panel.classList.add('is-hidden');
+  _activePicker = null;
+  document.removeEventListener('click', _closePickerOutside);
+}
+
+function _closePickerOutside(e) {
+  if (_activePicker === null) return;
+  const picker = document.getElementById(`day-picker-${_activePicker}`);
+  if (picker && picker.contains(e.target)) return;
+  const action = e.target.closest('[data-action]')?.dataset?.action;
+  if (action === 'pick-recipe-for-day' || action === 'day-picker-search') return;
+  closeDayPicker(_activePicker);
+}
+
+function _renderPickerList(i, query) {
+  const list = document.getElementById(`day-picker-list-${i}`);
+  if (!list) return;
+  const { recipes } = getState();
+  const q = query.toLowerCase().trim();
+  const filtered = recipes
+    .filter(r => !q || r.name.toLowerCase().includes(q))
+    .sort((a, b) => a.name.localeCompare(b.name, 'de'))
+    .slice(0, 20);
+
+  list.innerHTML =
+    `<div class="day-picker-item day-picker-item--random" data-action="pick-recipe-for-day" data-i="${i}" data-random="1">
+      Zufälliges Rezept
+    </div>` +
+    filtered.map(r =>
+      `<div class="day-picker-item" data-action="pick-recipe-for-day" data-i="${i}" data-rid="${r.id}">
+        ${esc(r.name)}
+      </div>`
+    ).join('');
+}
+
+export function dayPickerSearch(i, query) {
+  _renderPickerList(i, query);
+}
+
+export async function pickRecipeForDay(i, rid, random) {
+  if (random) {
+    await rerollDay(i, { stopPropagation: () => {} });
+  } else {
+    updateWeekDay(i, () => ({ recipeId: +rid }));
+    await saveWeekNow();
+    renderWeek();
+  }
+  closeDayPicker(i);
 }
 
 export async function setPortions(i, v) {
