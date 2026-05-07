@@ -148,41 +148,53 @@ export function renderSettings() {
     </div>`;
 
   const einhContent = `
-    <p class="settings-hint">Jede Einheit hat eine Anzeige-Form und optionale Varianten die beim Parsen erkannt werden.</p>
-    <div class="einh-list" id="einh-list">
-      ${(settings.einheiten || []).map((e, idx) => `
-        <div class="einh-row">
-          <div class="einh-row-main">
-            <span class="einh-canonical">${esc(e.canonical)}</span>
-            <button class="xbtn" data-action="del-einh" data-val="${esc(e.canonical)}">×</button>
-          </div>
-          <div class="einh-variants">
-            ${(e.variants || []).map(v => `<span class="einh-variant-tag">${esc(v)}</span>`).join('')}
-            <input type="text" class="einh-variant-input" placeholder="+ Variante"
-              data-submit="add-einh-variant" data-idx="${idx}"
-              data-input="einh-variant-live" data-idxv="${idx}" />
-          </div>
-        </div>`).join('')}
-    </div>
+    <p class="settings-hint">Jede Einheit hat eine Anzeige-Form und Varianten die beim Parsen erkannt werden.</p>
+    <table class="settings-table" id="einh-list">
+      <thead>
+        <tr>
+          <th>Einheit</th>
+          <th>Erkannte Varianten</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        ${(settings.einheiten || []).map((e, idx) => `
+          <tr>
+            <td class="einh-canonical-cell">${esc(e.canonical)}</td>
+            <td class="einh-variants-cell">
+              ${(e.variants || []).map(v => `<span class="einh-variant-tag">${esc(v)}</span>`).join('')}
+              <input type="text" class="einh-variant-input" placeholder="+ Variante"
+                data-submit="add-einh-variant" data-idx="${idx}" />
+            </td>
+            <td class="settings-table-action">
+              <button class="xbtn" data-action="del-einh" data-val="${esc(e.canonical)}">×</button>
+            </td>
+          </tr>`).join('')}
+      </tbody>
+    </table>
     <div class="settings-add-row">
-      <input type="text" id="new-einh-input" class="settings-einh-add" placeholder="Neue Einheit (Anzeige-Form)…"
+      <input type="text" id="new-einh-input" class="settings-input" placeholder="Neue Einheit…"
         data-submit="add-einh" />
       <button class="btn btn--sm" data-action="add-einh">+</button>
     </div>`;
 
   const pantryItems = (settings.pantry || []).slice().sort((a, b) => a.localeCompare(b, 'de'));
   const pantryContent = `
-    <p class="settings-hint">Zutaten die du immer zuhause hast. Du kannst sie direkt aus der Einkaufsliste hierher verschieben.</p>
-    <div class="einh-list" id="pantry-list">
-      ${pantryItems.length
-        ? pantryItems.map(p => `
-          <div class="einh-tag">
-            <span>${esc(p)}</span>
-            <button class="xbtn" data-action="remove-pantry-item" data-val="${esc(p)}">×</button>
-          </div>`).join('')
-        : '<p class="settings-empty">Noch keine Vorrats-Zutaten. Verschiebe Zutaten aus der Einkaufsliste hierher.</p>'
-      }
-    </div>`;
+    <p class="settings-hint">Zutaten die du immer zuhause hast. Verschiebe sie direkt aus der Einkaufsliste hierher.</p>
+    ${pantryItems.length
+      ? `<table class="settings-table" id="pantry-list">
+          <tbody>
+            ${pantryItems.map(p => `
+              <tr>
+                <td>${esc(p)}</td>
+                <td class="settings-table-action">
+                  <button class="xbtn" data-action="remove-pantry-item" data-val="${esc(p)}">×</button>
+                </td>
+              </tr>`).join('')}
+          </tbody>
+        </table>`
+      : '<p class="settings-empty">Noch keine Vorrats-Zutaten. Verschiebe Zutaten aus der Einkaufsliste hierher.</p>'
+    }`;
 
   el.innerHTML = `<div class="acc-wrap">
     ${accordion('familie',    'Familie',           familyContent, true)}

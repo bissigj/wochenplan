@@ -1246,28 +1246,45 @@ textarea { resize: vertical; min-block-size: 60px; line-height: 1.5; }
 }
 
 
-/* ── Einheiten strukturiert ──────────────────────────────────────────────────── */
-.einh-row {
-  padding: var(--s-3) 0;
-  border-bottom: 0.5px solid var(--color-border-tertiary, var(--bd));
+/* ── Settings Tabelle (Einheiten + Vorrat) ───────────────────────────────────── */
+.settings-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin-bottom: var(--s-4);
 }
 
-.einh-row:last-child { border-bottom: none; }
-
-.einh-row-main {
-  display: flex;
-  align-items: center;
-  gap: var(--s-3);
-  margin-bottom: var(--s-2);
+.settings-table th {
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--text3);
+  padding: var(--s-2) var(--s-3);
+  border-bottom: 1px solid var(--bd);
 }
 
-.einh-canonical {
+.settings-table td {
+  padding: var(--s-3) var(--s-3);
+  border-bottom: 0.5px solid var(--border-tertiary, var(--bd));
+  vertical-align: middle;
+}
+
+.settings-table tr:last-child td { border-bottom: none; }
+
+.settings-table-action {
+  width: 32px;
+  text-align: right;
+}
+
+.einh-canonical-cell {
   font-weight: 500;
-  font-size: 14px;
-  min-width: 60px;
+  width: 80px;
+  white-space: nowrap;
 }
 
-.einh-variants {
+.einh-variants-cell {
   display: flex;
   flex-wrap: wrap;
   gap: var(--s-2);
@@ -1286,6 +1303,15 @@ textarea { resize: vertical; min-block-size: 60px; line-height: 1.5; }
 .einh-variant-input {
   font-size: 11px;
   padding: 2px 8px;
-  width: 100px;
+  width: 90px;
   border-radius: var(--rpill);
+  border: 0.5px dashed var(--bd);
+  background: transparent;
+  color: var(--text2);
+}
+
+.einh-variant-input:focus {
+  outline: none;
+  border-color: var(--meadow);
+  background: var(--bg);
 }
