@@ -148,15 +148,24 @@ export function renderSettings() {
     </div>`;
 
   const einhContent = `
+    <p class="settings-hint">Jede Einheit hat eine Anzeige-Form und optionale Varianten die beim Parsen erkannt werden.</p>
     <div class="einh-list" id="einh-list">
-      ${(settings.einheiten || []).map(e => `
-        <div class="einh-tag">
-          <span>${esc(e)}</span>
-          <button class="xbtn" data-einh="${esc(e)}" data-action="del-einh" data-val="${esc(e)}">×</button>
+      ${(settings.einheiten || []).map((e, idx) => `
+        <div class="einh-row">
+          <div class="einh-row-main">
+            <span class="einh-canonical">${esc(e.canonical)}</span>
+            <button class="xbtn" data-action="del-einh" data-val="${esc(e.canonical)}">×</button>
+          </div>
+          <div class="einh-variants">
+            ${(e.variants || []).map(v => `<span class="einh-variant-tag">${esc(v)}</span>`).join('')}
+            <input type="text" class="einh-variant-input" placeholder="+ Variante"
+              data-submit="add-einh-variant" data-idx="${idx}"
+              data-input="einh-variant-live" data-idxv="${idx}" />
+          </div>
         </div>`).join('')}
     </div>
     <div class="settings-add-row">
-      <input type="text" id="new-einh-input" class="settings-einh-add" placeholder="Neue Einheit…"
+      <input type="text" id="new-einh-input" class="settings-einh-add" placeholder="Neue Einheit (Anzeige-Form)…"
         data-submit="add-einh" />
       <button class="btn btn--sm" data-action="add-einh">+</button>
     </div>`;
@@ -291,8 +300,13 @@ export async function addEinh() {
   const input = document.getElementById('new-einh-input');
   const val = input.value.trim();
   if (!val) return;
-  if ((getState().settings.einheiten || []).includes(val)) { toast('Einheit existiert bereits'); return; }
-  updateSettings(s => ({ einheiten: [...(s.einheiten || []), val] }));
+  const einheiten = getState().settings.einheiten || [];
+  if (einheiten.some(e => e.canonical.toLowerCase() === val.toLowerCase())) {
+    toast('Einheit existiert bereits'); return;
+  }
+  updateSettings(s => ({
+    einheiten: [...(s.einheiten || []), { canonical: val, variants: [val.toLowerCase()] }]
+  }));
   input.value = '';
   await saveSettingsNow();
   rerenderSettings();
@@ -300,7 +314,23 @@ export async function addEinh() {
 }
 
 export async function deleteEinh(val) {
-  updateSettings(s => ({ einheiten: (s.einheiten || []).filter(e => e !== val) }));
+  updateSettings(s => ({ einheiten: (s.einheiten || []).filter(e => e.canonical !== val) }));
+  await saveSettingsNow();
+  rerenderSettings();
+}
+
+export async function addEinhVariant(idx, variant) {
+  const v = variant.trim().toLowerCase();
+  if (!v) return;
+  const einheiten = getState().settings.einheiten || [];
+  if (+idx < 0 || +idx >= einheiten.length) return;
+  const entry = einheiten[+idx];
+  if ((entry.variants || []).includes(v)) return;
+  updateSettings(s => ({
+    einheiten: s.einheiten.map((e, i) => i === +idx
+      ? { ...e, variants: [...(e.variants || []), v] }
+      : e)
+  }));
   await saveSettingsNow();
   rerenderSettings();
 }

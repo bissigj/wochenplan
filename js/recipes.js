@@ -587,7 +587,7 @@ export async function saveQE() {
   const name = document.getElementById('qe-name').value.trim();
   if (!name) { document.getElementById('qe-name').focus(); return; }
   const modal    = document.getElementById('qe-modal');
-  const ings     = parseIngredientLines(document.getElementById('qe-ings').value);
+  const ings     = parseIngredientLines(document.getElementById('qe-ings').value, getState().settings.einheiten);
   const steps    = splitSteps(document.getElementById('qe-steps').value.trim());
   const time     = parseInt(document.getElementById('qe-time').value) || null;
   const portions = parseInt(document.getElementById('qe-portions').value) || 2;

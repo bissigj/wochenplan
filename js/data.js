@@ -10,10 +10,23 @@ const saveTimers = {};
 // Stellt sicher dass alle settings-Felder vorhanden sind (Fallback für ältere DB-Einträge)
 function ensureSettingsComplete(s) {
   const settings = (s && typeof s === 'object') ? { ...s } : {};
-  if (!Array.isArray(settings.cats))      settings.cats      = [];
-  if (!Array.isArray(settings.aufwand))   settings.aufwand   = [];
-  if (!Array.isArray(settings.einheiten)) settings.einheiten = [...DEFAULT_EINHEITEN];
-  if (!Array.isArray(settings.pantry))    settings.pantry    = [];
+  if (!Array.isArray(settings.cats))    settings.cats    = [];
+  if (!Array.isArray(settings.aufwand)) settings.aufwand = [];
+  if (!Array.isArray(settings.pantry))  settings.pantry  = [];
+
+  // Einheiten: Upgrade von alter flacher String-Liste auf strukturierte Form
+  if (!Array.isArray(settings.einheiten) || settings.einheiten.length === 0) {
+    settings.einheiten = JSON.parse(JSON.stringify(DEFAULT_EINHEITEN));
+  } else if (typeof settings.einheiten[0] === 'string') {
+    // Alte Struktur: ['g', 'kg', 'EL', ...] → neue Struktur mit canonical + variants
+    settings.einheiten = settings.einheiten.map(str => {
+      // Suche ob es einen passenden Default-Eintrag gibt
+      const def = DEFAULT_EINHEITEN.find(d => d.canonical === str);
+      if (def) return { ...def };
+      // Unbekannte Einheit: canonical = str, variants = [str.toLowerCase()]
+      return { canonical: str, variants: [str.toLowerCase()] };
+    });
+  }
   return settings;
 }
 

@@ -54,5 +54,33 @@ export const DEFAULT_SETTINGS = {
   ]
 };
 
-export const DEFAULT_EINHEITEN = ['Stück','g','kg','dl','cl','ml','l','EL','TL','Prise','Bund','Dose','Pck.'];
+export const DEFAULT_EINHEITEN = [
+  { canonical: 'Stück',        variants: ['stück', 'stk', 'stk.', 'stück.'] },
+  { canonical: 'g',            variants: ['g', 'gr', 'gramm', 'gram'] },
+  { canonical: 'kg',           variants: ['kg', 'kilogramm', 'kilogram'] },
+  { canonical: 'dl',           variants: ['dl'] },
+  { canonical: 'cl',           variants: ['cl'] },
+  { canonical: 'ml',           variants: ['ml', 'milliliter'] },
+  { canonical: 'l',            variants: ['l', 'liter', 'litre'] },
+  { canonical: 'EL',           variants: ['el', 'essl', 'esslöffel'] },
+  { canonical: 'TL',           variants: ['tl', 'teel', 'teelöffel'] },
+  { canonical: 'Prise',        variants: ['prise', 'prisen'] },
+  { canonical: 'Bund',         variants: ['bund'] },
+  { canonical: 'Dose',         variants: ['dose', 'dosen'] },
+  { canonical: 'Pck.',         variants: ['pck', 'pck.', 'päckchen', 'packung'] },
+  { canonical: 'Becher',       variants: ['becher'] },
+  { canonical: 'Glas',         variants: ['glas', 'gläser'] },
+  { canonical: 'Zehe',         variants: ['zehe', 'zehen', 'zehe/n'] },
+  { canonical: 'Scheibe',      variants: ['scheibe', 'scheiben'] },
+  { canonical: 'Zweig',        variants: ['zweig', 'zweige'] },
+  { canonical: 'Blatt',        variants: ['blatt', 'blätter'] },
+  { canonical: 'Handvoll',     variants: ['handvoll'] },
+  { canonical: 'Msp.',         variants: ['msp', 'msp.', 'messerspitze'] },
+  { canonical: 'Würfel',       variants: ['würfel'] },
+  { canonical: 'Knolle',       variants: ['knolle', 'knollen'] },
+  { canonical: 'Kopf',         variants: ['kopf', 'köpfe'] },
+  { canonical: 'Stange',       variants: ['stange', 'stangen'] },
+  { canonical: 'Tasse',        variants: ['tasse', 'tassen'] },
+  { canonical: 'Pkg.',         variants: ['pkg', 'pkg.'] },
+];
 
