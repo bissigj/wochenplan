@@ -180,7 +180,7 @@ export async function exportDayToBring(day) {
 
   try {
     toast('Wird nach Bring! exportiert…');
-    const count = await exportRecipeToBring(toBuy, factor, bring.email, bring.password);
+    const count = await exportRecipeToBring(toBuy, factor, r.name, r.id, d.day, bring.email, bring.password);
     toast(`✓ ${count} Zutaten von „${r.name}" nach Bring! exportiert`);
   } catch (e) {
     toast(`Bring!-Fehler: ${e.message}`);
