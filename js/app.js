@@ -5,13 +5,13 @@ import { renderRFilters, renderRecipes, toggleRF, toggleER, delR, addIng, delIng
         saveQE, setSortOrder, uploadRecipeImage, removeRecipeImage, togglePublic, openSrcEdit, clearAufFilter, openUrlImport,
         closeUrlImport, parseRecipeUrl, toggleCatPanel, toggleCatFilter, clearCatFilter, _pendingUndo, prefillIng } from './recipes.js';
 import { renderWeek, openDrawModal, closeDrawModal, toggleDrawPill, setTimePill, drawWeek, backToCurrent, toggleDay, toggleDayActive, rerollDay, setPortions, setNote, openDayPicker, closeDayPicker, dayPickerSearch, pickRecipeForDay } from './week.js';
-import { renderShop, setShopView } from './shopping.js';
+import { renderShop, setShopView, exportDayToBring } from './shopping.js';
 import { renderArchiv, viewArchiveWeek } from './archive.js';
 import { exportPDF, exportRecipePDF, exportShopPDF } from './pdf.js';
 import { openDiscover, closeDiscover, importRecipe, filterDiscover, setDiscoverCat, setDiscoverAuf, toggleDiscoverR, discoverLoadMore } from './discover.js';
 import { renderSettings, rerenderSettings, toggleAcc, changeTheme, addCat, updateCat, updateCatField, deleteCat, addAuf, updateAuf, updateAufField,
         deleteAuf, addEinh, deleteEinh, addEinhVariant, saveFamilyName, createInvitation, joinFamily,
-        addPantryItem, removePantryItem } from './settings.js';
+        addPantryItem, removePantryItem, saveBringCredentials } from './settings.js';
 
 // ── Apply saved theme before first paint ──────────────────────────────────────
 initTheme();
@@ -190,7 +190,8 @@ registerActions({
   'add-einh-variant':  ({ idx }, e, el) => { if (el?.value?.trim()) { addEinhVariant(+idx, el.value); el.value = ''; } },
   'add-pantry-item':   ({ val }) => addPantryItem(val),
   'remove-pantry-item':({ val }) => removePantryItem(val),
-  'save-family-name':  () => saveFamilyName(),
+  'save-bring-credentials': () => saveBringCredentials(),
+  'export-day-to-bring':    ({ day }) => exportDayToBring(day),
   'create-invitation': () => createInvitation(),
   'join-family':       () => joinFamily(),
   'load-family-members': () => {},

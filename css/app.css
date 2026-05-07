@@ -1315,3 +1315,44 @@ textarea { resize: vertical; min-block-size: 60px; line-height: 1.5; }
   border-color: var(--meadow);
   background: var(--bg);
 }
+
+
+/* ── Bring! Integration ──────────────────────────────────────────────────────── */
+.shop-group-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.shop-bring-btn {
+  font-size: 11px;
+  padding: 2px 8px;
+  color: var(--meadow);
+  border-color: var(--meadow);
+  opacity: 0.7;
+  transition: opacity var(--t-fast);
+  flex-shrink: 0;
+}
+
+.shop-bring-btn:hover {
+  opacity: 1;
+  background: color-mix(in srgb, var(--meadow) 10%, transparent);
+}
+
+.settings-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  margin-bottom: var(--s-4);
+}
+
+.settings-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text2);
+}
+
+.settings-input {
+  width: 100%;
+  max-width: 320px;
+}

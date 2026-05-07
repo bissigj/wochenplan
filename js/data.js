@@ -13,6 +13,7 @@ function ensureSettingsComplete(s) {
   if (!Array.isArray(settings.cats))    settings.cats    = [];
   if (!Array.isArray(settings.aufwand)) settings.aufwand = [];
   if (!Array.isArray(settings.pantry))  settings.pantry  = [];
+  if (!settings.bring) settings.bring = { email: '', password: '' };
 
   // Einheiten: Upgrade von alter flacher String-Liste auf strukturierte Form
   if (!Array.isArray(settings.einheiten) || settings.einheiten.length === 0) {

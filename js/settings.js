@@ -196,6 +196,24 @@ export function renderSettings() {
       : '<p class="settings-empty">Noch keine Vorrats-Zutaten. Verschiebe Zutaten aus der Einkaufsliste hierher.</p>'
     }`;
 
+  const bring = settings.bring || {};
+  const bringContent = `
+    <p class="settings-hint">Zugangsdaten für die Bring! Einkaufslisten-App. Zutaten können direkt aus dem Einkauf nach Bring! exportiert werden.</p>
+    <div class="settings-field">
+      <label class="settings-label">E-Mail</label>
+      <input type="email" id="bring-email" class="settings-input" value="${esc(bring.email || '')}"
+        placeholder="deine@email.com" />
+    </div>
+    <div class="settings-field">
+      <label class="settings-label">Passwort</label>
+      <input type="password" id="bring-password" class="settings-input" value="${esc(bring.password || '')}"
+        placeholder="Bring! Passwort" />
+    </div>
+    <div class="settings-add-row">
+      <button class="btn btn--sm" data-action="save-bring-credentials">Speichern</button>
+      ${bring.email ? `<span class="settings-hint" style="margin:0">Verbunden als ${esc(bring.email)}</span>` : ''}
+    </div>`;
+
   el.innerHTML = `<div class="acc-wrap">
     ${accordion('familie',    'Familie',           familyContent, true)}
     ${accordion('theme',      'Erscheinungsbild',  themeContent)}
@@ -203,6 +221,7 @@ export function renderSettings() {
     ${accordion('aufwand',    'Aufwand',           aufContent)}
     ${accordion('einheiten',  'Einheiten',         einhContent)}
     ${accordion('vorrat',     'Vorrat',            pantryContent)}
+    ${accordion('bring',      'Bring!',            bringContent)}
   </div>`;
 
   loadFamilyMembers();
@@ -348,6 +367,16 @@ export async function addEinhVariant(idx, variant) {
 }
 
 // ── Vorrat ────────────────────────────────────────────────────────────────────
+// ── Bring! ────────────────────────────────────────────────────────────────────
+export async function saveBringCredentials() {
+  const email    = document.getElementById('bring-email')?.value.trim() || '';
+  const password = document.getElementById('bring-password')?.value || '';
+  updateSettings(s => ({ bring: { email, password } }));
+  await saveSettingsNow();
+  rerenderSettings();
+  toast(email ? 'Bring!-Zugangsdaten gespeichert' : 'Bring!-Zugangsdaten entfernt');
+}
+
 export async function addPantryItem(name) {
   const n = name.trim();
   if (!n) return;

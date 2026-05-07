@@ -1,6 +1,7 @@
 import { getState } from './store.js';
-import { fmtIng, esc, formatAmount } from './ui.js';
+import { fmtIng, esc, formatAmount, toast } from './ui.js';
 import { viewingArchive } from './week.js';
+import { exportRecipeToBring } from './bring.js';
 
 export let shopView = 'recipe';
 
@@ -61,6 +62,8 @@ export function renderShop() {
       const toBuy  = r.ings.filter(ing => !pantrySet.has((ing.n || '').toLowerCase().trim()));
       const pantry = r.ings.filter(ing =>  pantrySet.has((ing.n || '').toLowerCase().trim()));
 
+      const hasBring = !!(getState().settings.bring?.email);
+
       const toBuyRows = toBuy.map((ing, i) => `
         <div class="shop-item">
           <input type="checkbox" id="sri-${esc(d.day)}-buy-${i}" data-change="shop-check" />
@@ -77,8 +80,16 @@ export function renderShop() {
             <button class="btn btn--xs shop-pantry-btn shop-pantry-btn--remove" data-action="remove-pantry-item" data-val="${esc(ing.n)}" title="Wieder einkaufen">← Einkaufen</button>
           </div>`).join('')}` : '';
 
+      const bringBtn = hasBring && toBuy.length
+        ? `<button class="btn btn--xs shop-bring-btn" data-action="export-day-to-bring"
+            data-day="${esc(d.day)}" title="Zutaten nach Bring! exportieren">→ Bring!</button>`
+        : '';
+
       return `<div class="card shop-group">
-        <div class="shop-group-title">${esc(r.name)} <span class="shop-day-label">${esc(d.day)}</span></div>
+        <div class="shop-group-title">
+          <span>${esc(r.name)} <span class="shop-day-label">${esc(d.day)}</span></span>
+          ${bringBtn}
+        </div>
         ${toBuyRows || '<p class="shop-empty">Alle Zutaten im Vorrat</p>'}
         ${pantryRows}
       </div>`;
@@ -139,4 +150,40 @@ function _renderPantrySection(items) {
       </div>`;
     }).join('')}
   </div>`;
+}
+
+// ── Bring! Export ─────────────────────────────────────────────────────────────
+export async function exportDayToBring(day) {
+  const { settings } = getState();
+  const bring = settings.bring || {};
+
+  if (!bring.email || !bring.password) {
+    toast('Keine Bring!-Zugangsdaten hinterlegt. Bitte in den Einstellungen ergänzen.');
+    return;
+  }
+
+  const plan = getActivePlan();
+  const pantrySet = new Set((settings.pantry || []).map(p => p.toLowerCase().trim()));
+  const d = (plan.days || []).find(d => d.day === day);
+  if (!d) return;
+
+  const r = getState().recipes.find(r => r.id === d.recipeId);
+  if (!r || !r.ings) return;
+
+  const factor = (d.portions || plan.portions || 2) / (r.portions || 2);
+  const toBuy = r.ings.filter(ing => !pantrySet.has((ing.n || '').toLowerCase().trim()));
+
+  if (!toBuy.length) {
+    toast('Alle Zutaten im Vorrat — nichts zu exportieren');
+    return;
+  }
+
+  try {
+    toast('Wird nach Bring! exportiert…');
+    const count = await exportRecipeToBring(toBuy, factor, bring.email, bring.password);
+    toast(`✓ ${count} Zutaten von „${r.name}" nach Bring! exportiert`);
+  } catch (e) {
+    toast(`Bring!-Fehler: ${e.message}`);
+    console.error('Bring! export error:', e);
+  }
 }
