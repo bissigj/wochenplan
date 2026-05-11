@@ -14,7 +14,7 @@ function deterministicUuid(seed) {
   return `${hex}-${hex2.slice(0,4)}-4${hex.slice(1,4)}-8${hex2.slice(1,4)}-${hex}${hex2.slice(0,4)}`;
 }
 
-export async function exportRecipeToBring(ings, factor, recipeName, recipeId, day, email, password) {
+export async function exportRecipeToBring(ings, factor, recipeId, day, email, password) {
   if (!email || !password) throw new Error('Keine Bring!-Zugangsdaten hinterlegt');
   if (!ings || !ings.length) throw new Error('Keine Zutaten zum Exportieren');
 
@@ -26,7 +26,7 @@ export async function exportRecipeToBring(ings, factor, recipeName, recipeId, da
       const qty = m > 0
         ? `${+m.toFixed(2).replace(/\.?0+$/, '')} ${ing.u || ''}`.trim()
         : (ing.u || '');
-      const spec = [qty, recipeName].filter(Boolean).join(' — ');
+      const spec = qty || '';
       // UUID deterministisch aus Rezept-ID + Tag + Zutatname
       // → nochmals exportieren = überschreiben, nicht duplizieren
       const uuid = deterministicUuid(`${recipeId}-${day}-${name}`);
