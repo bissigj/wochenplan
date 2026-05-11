@@ -6,6 +6,17 @@ import { exportRecipeToBring } from './bring.js';
 export let shopView = 'recipe';
 
 // ── Aggregation ───────────────────────────────────────────────────────────────
+// Aggregiert Zutaten eines einzelnen Rezepts — gleiche Zutat+Einheit wird summiert
+function aggregateRecipeIngs(ings, factor) {
+  const agg = {};
+  for (const ing of (ings || [])) {
+    const key = (ing.n || '').toLowerCase().trim() + ':' + (ing.u || '');
+    if (!agg[key]) agg[key] = { n: ing.n, u: ing.u, m: 0 };
+    agg[key].m += (ing.m || 0) * factor;
+  }
+  return Object.values(agg);
+}
+
 // Gibt { toBuy: [...], pantry: [...] } zurück
 // Matching gegen pantry ist exakt (case-insensitive trim)
 export function aggregateIngredients(plan) {
@@ -59,8 +70,9 @@ export function renderShop() {
       if (!r || !r.ings || !r.ings.length) return '';
       const factor = (d.portions || plan.portions || 2) / (r.portions || 2);
 
-      const toBuy  = r.ings.filter(ing => !pantrySet.has((ing.n || '').toLowerCase().trim()));
-      const pantry = r.ings.filter(ing =>  pantrySet.has((ing.n || '').toLowerCase().trim()));
+      const allIngs   = aggregateRecipeIngs(r.ings, factor);
+      const toBuy  = allIngs.filter(ing => !pantrySet.has((ing.n || '').toLowerCase().trim()));
+      const pantry = allIngs.filter(ing =>  pantrySet.has((ing.n || '').toLowerCase().trim()));
 
       const hasBring = !!(getState().settings.bring?.email);
 
@@ -171,7 +183,8 @@ export async function exportDayToBring(day) {
   if (!r || !r.ings) return;
 
   const factor = (d.portions || plan.portions || 2) / (r.portions || 2);
-  const toBuy = r.ings.filter(ing => !pantrySet.has((ing.n || '').toLowerCase().trim()));
+  const allIngs = aggregateRecipeIngs(r.ings, factor);
+  const toBuy = allIngs.filter(ing => !pantrySet.has((ing.n || '').toLowerCase().trim()));
 
   if (!toBuy.length) {
     toast('Alle Zutaten im Vorrat — nichts zu exportieren');
