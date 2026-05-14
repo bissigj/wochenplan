@@ -213,7 +213,10 @@ function _renderIngredients(r, einheiten) {
       <input type="number" id="im-${r.id}" placeholder="Menge" step="any" min="0" class="rd-add-qty" />
       <select id="iu-${r.id}" class="inline-select rd-add-unit">
         <option value="">—</option>
-        ${einheiten.map(e => `<option>${esc(e)}</option>`).join('')}
+        ${einheiten.map(e => {
+          const label = typeof e === 'string' ? e : e.canonical;
+          return `<option value="${esc(label)}">${esc(label)}</option>`;
+        }).join('')}
       </select>
       <input type="text" id="in-${r.id}" placeholder="Zutat" class="rd-add-name" data-submit="add-ing" data-id="${r.id}" />
       <button class="btn btn--sm" id="ib-${r.id}" data-action="add-ing" data-id="${r.id}">+</button>

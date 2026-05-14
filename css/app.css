@@ -1356,3 +1356,165 @@ textarea { resize: vertical; min-block-size: 60px; line-height: 1.5; }
   width: 100%;
   max-width: 320px;
 }
+
+
+/* ═════════════════════════════════════════════════════════════════════════════
+   MOBILE OPTIMIERUNGEN
+   ═════════════════════════════════════════════════════════════════════════════ */
+
+/* ── Touch: Hover-only Buttons immer sichtbar ────────────────────────────────
+   Auf Touch-Geräten gibt es keinen Hover — Buttons müssen immer sichtbar sein */
+@media (hover: none) {
+  .shop-pantry-btn   { opacity: 1; }
+  .recipe-del-btn    { opacity: 0.6; }
+  .shop-bring-btn    { opacity: 1; }
+  .day-card:hover    { transform: none; box-shadow: none; }
+  .day-card-top:hover { background: transparent; }
+}
+
+/* ── Wochenplan: 1 Spalte auf kleinen Screens ────────────────────────────────
+   Tageskarten werden auf Mobile vertikal gestapelt */
+@media (max-width: 600px) {
+  .week-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Rezept-Detail: Zutaten + Schritte untereinander auf Mobile ──────────────
+   Statt 2 Spalten nebeneinander, 1 Spalte gestapelt */
+@media (max-width: 640px) {
+  .rd-body {
+    flex-direction: column;
+  }
+  .rd-col {
+    min-width: 0;
+  }
+  .rd-col-steps {
+    border-inline-start: none;
+    border-block-start: 1px solid var(--bd);
+    padding-block-start: var(--s-5);
+    margin-block-start: var(--s-4);
+  }
+}
+
+/* ── Quick Entry Modal: Grid umbrechen auf Mobile ────────────────────────────
+   Kategorie / Aufwand / Zeit / Portionen untereinander */
+@media (max-width: 480px) {
+  .qe-row {
+    flex-wrap: wrap;
+  }
+  .qe-col {
+    flex: 1 1 40%;
+    min-width: 0;
+  }
+  .qe-col--fixed {
+    width: auto;
+    flex: 1 1 40%;
+  }
+  .modal--md {
+    max-width: 100%;
+  }
+  .modal--sm {
+    max-width: 100%;
+  }
+}
+
+/* ── Modals: volle Breite auf kleinen Screens ────────────────────────────────
+   Modals sollen auf Mobile die volle Breite nutzen */
+@media (max-width: 480px) {
+  .modal-wrap {
+    padding: var(--s-3);
+    align-items: flex-end;  /* Modal von unten einblenden auf Mobile */
+  }
+  .modal {
+    border-radius: var(--r) var(--r) 0 0;  /* nur oben abgerundet */
+    max-width: 100% !important;
+    width: 100%;
+  }
+  .discover-modal-inner {
+    max-inline-size: 100%;
+    block-size: 92vh;
+    border-radius: var(--r) var(--r) 0 0;
+  }
+  #day-picker-modal .modal {
+    border-radius: var(--r) var(--r) 0 0;
+  }
+}
+
+/* ── Einheiten-Tabelle: kompakter auf Mobile ─────────────────────────────────
+   Canonical-Spalte schmaler, Varianten umbrechen */
+@media (max-width: 480px) {
+  .einh-canonical-cell {
+    width: 60px;
+    font-size: 12px;
+  }
+  .einh-variant-tag {
+    font-size: 10px;
+    padding: 1px 6px;
+  }
+  .einh-variant-input {
+    width: 70px;
+    font-size: 11px;
+  }
+}
+
+/* ── Settings Tabelle: auf Mobile anpassen ───────────────────────────────────
+   Vorrat-Tabelle auf Mobile */
+@media (max-width: 480px) {
+  .settings-table {
+    font-size: 12px;
+  }
+  .settings-table td {
+    padding: var(--s-2) var(--s-2);
+  }
+}
+
+/* ── Einkaufsliste: Shop-Group Title auf Mobile ──────────────────────────────
+   Rezeptname + Bring-Button umbrechen wenn zu eng */
+@media (max-width: 480px) {
+  .shop-group-title {
+    flex-wrap: wrap;
+    gap: var(--s-2);
+  }
+  .shop-bring-btn {
+    margin-left: 0;
+  }
+}
+
+/* ── Rezepte Filter: Suche + Sort auf Mobile ─────────────────────────────────
+   Sort-Dropdown auf Mobile unter die Filter-Row */
+@media (max-width: 480px) {
+  .r-toolbar {
+    flex-wrap: wrap;
+    gap: var(--s-3);
+  }
+  .sort-select {
+    width: 100%;
+  }
+}
+
+/* ── Week Day Actions: Buttons umbrechen ─────────────────────────────────────
+   "Ausblenden" und "Rezept wählen" untereinander wenn zu eng */
+@media (max-width: 380px) {
+  .day-actions {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--s-2);
+  }
+}
+
+/* ── iOS Safari: Scroll-Fix für Modals ───────────────────────────────────────
+   Verhindert Body-Scroll wenn Modal offen */
+.modal-open {
+  overflow: hidden;
+  position: fixed;
+  width: 100%;
+}
+
+/* ── Discover-Modal inner scroll ────────────────────────────────────────────
+   -webkit-overflow-scrolling für iOS */
+.discover-modal-inner,
+.day-picker-list {
+  -webkit-overflow-scrolling: touch;
+  overflow-y: auto;
+}

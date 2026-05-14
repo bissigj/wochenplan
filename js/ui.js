@@ -1,12 +1,23 @@
 // ── Visibility helpers ────────────────────────────────────────────────────────
 export function show(id) {
   const el = typeof id === 'string' ? document.getElementById(id) : id;
-  if (el) el.classList.remove('is-hidden');
+  if (!el) return;
+  el.classList.remove('is-hidden');
+  // iOS Scroll-Fix: Body fixieren wenn Modal offen
+  if (el.classList.contains('modal-wrap')) {
+    document.body.classList.add('modal-open');
+  }
 }
 
 export function hide(id) {
   const el = typeof id === 'string' ? document.getElementById(id) : id;
-  if (el) el.classList.add('is-hidden');
+  if (!el) return;
+  el.classList.add('is-hidden');
+  // iOS Scroll-Fix: Body-Scroll freigeben wenn kein Modal mehr offen
+  if (el.classList.contains('modal-wrap')) {
+    const anyOpen = document.querySelector('.modal-wrap:not(.is-hidden)');
+    if (!anyOpen) document.body.classList.remove('modal-open');
+  }
 }
 
 export function toggle(id, visible) {
